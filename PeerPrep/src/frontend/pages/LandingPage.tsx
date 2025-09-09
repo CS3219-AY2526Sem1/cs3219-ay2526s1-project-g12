@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import LandingImg from "../assets/Images/landing_page_img.png";
 
 function LandingPage() {
@@ -7,7 +8,7 @@ function LandingPage() {
                 {/* Left side text */}
                 <div className="flex justify-center items-center">
                     <div className="text-left space-y-5">
-                        <p className="text-7xl lg:text-8xl font-bold font-mono bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text">
+                        <p className="peerprep-logo">
                             PeerPrep
                         </p>
                         <div className="text-4xl lg:text-5xl font-bold">
@@ -21,9 +22,14 @@ function LandingPage() {
                         </p>
                         <div className="grid grid-cols-2 gap-4 md:px-10 lg:px-20">
                             <button className="btn btn-primary">Get Started</button>
-                            <button className="btn btn-primary btn-soft">Login</button>
+                            <Link
+                                to="/auth/login" // route path
+                                className="btn btn-primary btn-soft"
+                            >
+                                Go to Login
+                            </Link>
                         </div>
-                        <p className="pt-15">GOOGLE /  AWS / META / MICROSOFT</p>
+                        <p className="pt-15 normal-text">GOOGLE /  AWS / META / MICROSOFT</p>
                     </div>
                 </div>
 

@@ -40,3 +40,10 @@
 }
 
 /* Custom CSS Classes */
+.normal-text {
+    @apply text-lg lg:text-xl
+}
+
+.peerprep-logo {
+    @apply text-7xl lg:text-8xl font-bold font-mono bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text
+}
