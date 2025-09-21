@@ -1,16 +1,19 @@
 import random
+
 from fastapi import HTTPException
-from utils.logger import log
+from tortoise.exceptions import DoesNotExist
+
+from models.api_models import CreateQuestionModel, UpdateQuestionModel
 from models.db_models import (
-    Question,
     Category,
     Difficulty,
+    Question,
     QuestionCategory,
 )
 from models.models import (
     convert_question_orm_to_py_model,
 )
-from tortoise.exceptions import DoesNotExist
+from utils.logger import log
 
 
 async def fetch_question_details(question_id: int) -> object:

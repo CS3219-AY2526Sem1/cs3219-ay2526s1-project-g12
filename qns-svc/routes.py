@@ -1,14 +1,18 @@
 from fastapi import FastAPI
-from service.database_svc import register_database
+
 from controllers.question_controller import (
+    create_question_details,
+    fetch_all_questions,
+    fetch_categories,
     fetch_difficulty_levels,
     fetch_question_bank_categories,
     fetch_question_bank_category_difficulty_levels,
     fetch_question_details,
-    fetch_all_questions,
-    fetch_categories,
     fetch_single_question_from_bank,
+    update_question_details,
 )
+from models.api_models import CreateQuestionModel, UpdateQuestionModel
+from service.database_svc import register_database
 
 app = FastAPI()
 register_database(app)

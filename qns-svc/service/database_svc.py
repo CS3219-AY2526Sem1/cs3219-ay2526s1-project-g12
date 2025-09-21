@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from tortoise import Tortoise
 from tortoise.contrib.fastapi import register_tortoise
-from utils.utils import get_envvar
+
 from utils.logger import log
+from utils.utils import get_envvar
 
 ORM_CONFIG = {
     "connections": {"default": get_envvar("DATABASE_URL")},

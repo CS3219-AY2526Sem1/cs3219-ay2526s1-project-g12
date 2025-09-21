@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+
 from models.db_models import Question
 
 
