@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from controllers.question_controller import (
     create_question_details,
+    delete_question_details,
     fetch_all_questions,
     fetch_categories,
     fetch_difficulty_levels,
@@ -31,6 +32,23 @@ async def get_all_questions(start: int | None = None, end: int | None = None):
 @app.get("/questions/{question_id}")
 async def get_question(question_id: int):
     return await fetch_question_details(question_id)
+
+
+@app.post("/questions/")
+async def post_create_question(question: CreateQuestionModel):
+    return await create_question_details(question)
+
+
+@app.put("/questions/{question_id}")
+async def put_update_question(
+    question_id: int, updated_qns_details: UpdateQuestionModel
+):
+    return await update_question_details(question_id, updated_qns_details)
+
+
+@app.delete("/questions/{question_id}")
+async def delete_delete_question(question_id: int):
+    return await delete_question_details(question_id)
 
 
 @app.get("/category/")
