@@ -61,20 +61,18 @@ async def fetch_question_details(question_id: int) -> object:
 
 async def create_question_details(question: CreateQuestionModel) -> dict:
     log.info(f"Creating question details with title {question.title}")
-    try:
-        await _validate_categories(question.categories)
-        await _validate_difficulty(question.difficulty)
 
-        qns = await Question.create(
-            title=question.title,
-            description=question.description,
-            difficulty_id=question.difficulty,
-        )
-        for category in question.categories:
-            await QuestionCategory.create(question_id=qns.id, category_id=category)
-        return {"message": "Question added successfully"}
-    except DoesNotExist:
-        raise HTTPException(status_code=400, detail="Invalid Question content")
+    await _validate_categories(question.categories)
+    await _validate_difficulty(question.difficulty)
+
+    qns = await Question.create(
+        title=question.title,
+        description=question.description,
+        difficulty_id=question.difficulty,
+    )
+    for category in question.categories:
+        await QuestionCategory.create(question_id=qns.id, category_id=category)
+    return {"message": "Question added successfully"}
 
 
 async def update_question_details(
@@ -82,32 +80,31 @@ async def update_question_details(
 ) -> dict:
     log.info(f"Updating question details with id {question_id}")
     await _validate_question(question_id)
-    try:
-        qns_update_dict = {}
-        if updated_qns_details.title:
-            qns_update_dict["title"] = updated_qns_details.title
-        if updated_qns_details.description:
-            qns_update_dict["description"] = updated_qns_details.description
-        if updated_qns_details.difficulty:
-            await _validate_difficulty(updated_qns_details.difficulty)
-            qns_update_dict["difficulty_id"] = updated_qns_details.difficulty
 
-        if qns_update_dict:
-            qns = await Question.get(id=question_id)
-            log.info(f"Updating Question of id {question_id} using: {qns_update_dict}")
-            await qns.update_from_dict(qns_update_dict)
+    qns_update_dict = {}
+    if updated_qns_details.title:
+        qns_update_dict["title"] = updated_qns_details.title
+    if updated_qns_details.description:
+        qns_update_dict["description"] = updated_qns_details.description
+    if updated_qns_details.difficulty:
+        await _validate_difficulty(updated_qns_details.difficulty)
+        qns_update_dict["difficulty_id"] = updated_qns_details.difficulty
 
-        if updated_qns_details.categories:
-            await _validate_categories(updated_qns_details.categories)
-            await QuestionCategory.filter(question_id=question_id).delete()
-            await QuestionCategory.bulk_create([
-                QuestionCategory(question_id=question_id, category_id=cat)
-                for cat in updated_qns_details.categories
-            ])
+    if qns_update_dict:
+        qns = await Question.get(id=question_id)
+        log.info(f"Updating Question of id {question_id} using: {qns_update_dict}")
+        upd_qns = qns.update_from_dict(qns_update_dict)
+        await upd_qns.save()
 
-        return {"message": "Question updated successfully"}
-    except (DoesNotExist, IntegrityError):
-        raise HTTPException(status_code=400, detail="Invalid Question ID")
+    if updated_qns_details.categories:
+        await _validate_categories(updated_qns_details.categories)
+        await QuestionCategory.filter(question_id=question_id).delete()
+        await QuestionCategory.bulk_create([
+            QuestionCategory(question_id=question_id, category_id=cat)
+            for cat in updated_qns_details.categories
+        ])
+
+    return {"message": "Question updated successfully"}
 
 
 async def delete_question_details(question_id: int) -> dict:
@@ -142,8 +139,8 @@ async def fetch_all_questions(start: int | None = None, end: int | None = None) 
     if start is not None and end is not None:
         qns_db_list = (
             await Question.all()
-            .offset(start)
-            .limit(end - start)
+            .offset(start - 1)
+            .limit(end - start + 1)
             .prefetch_related("difficulty")
         )
     else:
