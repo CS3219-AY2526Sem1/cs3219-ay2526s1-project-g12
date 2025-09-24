@@ -1,15 +1,11 @@
-import type { ReactNode } from "react"
+import type { ReactNode } from "react";
 
 type Props = {
-    children: ReactNode
-}
+  children: ReactNode;
+};
 
 function MainLayout({ children }: Props) {
-    return (
-        <div>
-            {children}
-        </div>
-    )
+  return <div>{children}</div>;
 }
 
-export default MainLayout
+export default MainLayout;
