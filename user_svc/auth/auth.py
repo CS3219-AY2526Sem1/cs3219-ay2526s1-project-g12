@@ -1,11 +1,11 @@
 from fastapi import Depends
-from fastapi_users.authentication import AuthenticationBackend, BearerTransport
+from fastapi_users.authentication import AuthenticationBackend, CookieTransport
 from fastapi_users.authentication.strategy.db import AccessTokenDatabase, DatabaseStrategy
 
 from db.models import AccessToken
-from db.dependencies import get_access_token_db
+from auth.dependencies import get_access_token_db
 
-bearer_transport = BearerTransport(tokenUrl="auth/login")
+cookie_transport = CookieTransport(cookie_max_age=3600)
 
 def get_database_strategy(
     access_token_db: AccessTokenDatabase[AccessToken] = Depends(get_access_token_db),
@@ -14,6 +14,6 @@ def get_database_strategy(
 
 auth_backend = AuthenticationBackend(
     name="database",
-    transport=bearer_transport,
+    transport=cookie_transport,
     get_strategy=get_database_strategy,
 )

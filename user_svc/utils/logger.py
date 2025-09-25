@@ -2,7 +2,7 @@ import logging
 import logging.handlers
 import os
 
-from utils import get_envvar
+from utils.utils import get_envvar
 
 LOG_DATE_FMT = "%d-%m-%Y %H:%M:%S"
 
