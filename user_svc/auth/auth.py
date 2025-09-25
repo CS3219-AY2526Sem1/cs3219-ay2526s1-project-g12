@@ -3,7 +3,7 @@ from fastapi_users.authentication import AuthenticationBackend, BearerTransport
 from fastapi_users.authentication.strategy.db import AccessTokenDatabase, DatabaseStrategy
 
 from db.models import AccessToken
-from db.session import get_access_token_db
+from db.dependencies import get_access_token_db
 
 bearer_transport = BearerTransport(tokenUrl="auth/login")
 
