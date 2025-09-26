@@ -1,7 +1,7 @@
 import random
 
 from fastapi import HTTPException
-from tortoise.exceptions import DoesNotExist, IntegrityError
+from tortoise.exceptions import DoesNotExist
 
 from models.api_models import CreateQuestionModel, UpdateQuestionModel
 from models.db_models import (

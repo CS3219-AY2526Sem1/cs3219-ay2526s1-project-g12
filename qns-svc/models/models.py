@@ -8,7 +8,7 @@ class QuestionModel(BaseModel):
     title: str
     description: str
     difficulty: str
-    categories: list
+    categories: list[str]
 
 
 def convert_question_orm_to_py_model(qns: Question, categories: list) -> QuestionModel:
