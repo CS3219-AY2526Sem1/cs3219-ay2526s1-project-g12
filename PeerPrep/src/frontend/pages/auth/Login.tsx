@@ -67,18 +67,14 @@ function Login() {
           <div className="flex w-full flex-col items-center ">
             <ul className="menu menu-horizontal">
               <li>
-                <a>
-                  <img
-                    src={GitHubLogo}
-                    alt="GitHubSignIn"
-                    className="h-5 w-5" // same size as original SVG
-                  />
-                </a>
+                <button className="btn btn-ghost border-none p-5">
+                  <img src={GitHubLogo} alt="GitHubSignIn" className="h-5 w-5" /> {/*same size as original SVG*/}
+                </button>
               </li>
               <li>
-                <a>
+                <button className="btn btn-ghost border-none p-5">
                   <img src={GoogleLogo} alt="GmailSignIn" className="h-5 w-5" />
-                </a>
+                </button>
               </li>
             </ul>
           </div>

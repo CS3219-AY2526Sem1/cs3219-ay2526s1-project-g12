@@ -4,8 +4,8 @@ function NavBar() {
   return (
     <div className="navbar">
       <div className="navbar-start text-3xl font-bold">
-        <text className="text-lime-800">Peer</text>
-        <text className="text-blue-800">Prep</text>
+        <span className="text-lime-800">Peer</span>
+        <span className="text-blue-800">Prep</span>
       </div>
       <div className="navbar-end">
         <div className="flex  gap-10">

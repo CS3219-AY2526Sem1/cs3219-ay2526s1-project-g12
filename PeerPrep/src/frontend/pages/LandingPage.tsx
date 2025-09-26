@@ -18,7 +18,7 @@ function LandingPage() {
               Connect with peers, practice problems, <br />
               and ace your next technical interview!
             </p>
-            <div className="grid grid-cols-2 gap-4 md:px-10 lg:px-20">
+            <div className="grid grid-cols-2 gap-4">
               <button className="btn btn-primary">Get Started</button>
               <Link
                 to="/auth/login" // route path
@@ -35,6 +35,7 @@ function LandingPage() {
         <div className="flex justify-center items-center ">
           <img
             src={LandingImg}
+            alt="PeerPrep landing page illustration"
             className="max-h-screen w-auto object-contain scale-80"
           />
         </div>
