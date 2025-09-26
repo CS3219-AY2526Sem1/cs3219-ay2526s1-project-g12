@@ -11,7 +11,7 @@ fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend])
 
 router = APIRouter()
 router.include_router(
-    fastapi_users.get_auth_router(auth_backend),
+    fastapi_users.get_auth_router(auth_backend, requires_verification=False),
     prefix="/auth",
     tags=["auth"],
 )
@@ -31,7 +31,7 @@ router.include_router(
     tags=["auth"],
 )
 router.include_router(
-    fastapi_users.get_users_router(UserRead, UserUpdate),
+    fastapi_users.get_users_router(UserRead, UserUpdate, requires_verification=False),
     prefix="/users",
     tags=["users"],
 )
