@@ -1,11 +1,12 @@
 import uuid
+
 from fastapi import APIRouter
 from fastapi_users import FastAPIUsers
 
-from db.models import User
 from auth.auth import auth_backend
-from auth.schemas import UserRead, UserCreate, UserUpdate
 from auth.dependencies import get_user_manager
+from auth.schemas import UserCreate, UserRead, UserUpdate
+from db.models import User
 
 fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend])
 

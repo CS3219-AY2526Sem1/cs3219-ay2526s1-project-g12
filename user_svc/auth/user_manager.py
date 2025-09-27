@@ -1,16 +1,14 @@
+import re
 import uuid
-from typing import Optional, Union, Dict, Any
+from typing import Any, Dict, Optional, Union
 
 from fastapi import Request, Response
-from fastapi_users import BaseUserManager, UUIDIDMixin, InvalidPasswordException
+from fastapi_users import BaseUserManager, InvalidPasswordException, UUIDIDMixin
 
 from auth.schemas import UserCreate
 from db.models import User
-
 from utils.logger import log
 from utils.utils import get_envvar
-
-import re
 
 SECRET = get_envvar("JWT_SECRET")
 

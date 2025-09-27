@@ -1,7 +1,7 @@
 import uuid
 from typing import Annotated
-from fastapi_users import schemas
 
+from fastapi_users import schemas
 from pydantic import Field
 
 
