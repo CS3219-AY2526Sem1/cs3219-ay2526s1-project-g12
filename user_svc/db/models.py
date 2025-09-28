@@ -46,7 +46,7 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     """
     first_name: Mapped[str] = mapped_column(String(50))
     last_name: Mapped[str] = mapped_column(String(50))
-    role_id: Mapped[str] = mapped_column(
+    role_id: Mapped[int] = mapped_column(
         ForeignKey("roles.id"),
         default=config.default_role_id,
     )
