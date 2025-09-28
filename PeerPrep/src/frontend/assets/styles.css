@@ -67,8 +67,8 @@
   --radius-box: 0.5rem;
 
   /* base size value (padding, spacing, or thickness) */
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
+  --size-selector: 0.3rem;
+  --size-field: 0.3rem;
 
   --border: 1px;
 
@@ -78,10 +78,6 @@
 }
 
 /* Custom CSS Classes */
-.normal-text {
-  @apply text-lg lg:text-xl;
-}
-
 .peerprep-logo {
-  @apply text-7xl lg:text-8xl bg-gradient-to-r from-secondary to-primary text-transparent bg-clip-text font-ibm-serif;
+  @apply font-ibm-serif text-[clamp(2rem,3.2vw,4rem)] tracking-widest bg-gradient-to-r from-secondary to-primary text-transparent bg-clip-text m-0;
 }
