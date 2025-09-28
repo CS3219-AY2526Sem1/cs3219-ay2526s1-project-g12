@@ -6,7 +6,7 @@ function LandingPage() {
     <div className="grid grid-cols-2 gap-2 h-screen">
       {/* Left side text */}
       <div className="flex flex-col justify-center pl-40 space-y-6">
-        <span className="peerprep-logo">PeerPrep</span>
+        <span className="peerprep-logo pb-2">PeerPrep</span>
         <span className="text-[clamp(3rem,4.8vw,6rem)] font-semibold tracking-wider leading-[0.95] pb-4">
           <span className="whitespace-nowrap">Master Tech </span>
           <br />

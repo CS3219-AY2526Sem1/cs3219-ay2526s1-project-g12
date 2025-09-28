@@ -50,8 +50,8 @@
   --color-secondary-content: #ffffff;
   --color-accent: oklch(55% 0.288 302.321);
   --color-accent-content: oklch(98% 0.018 155.826);
-  --color-neutral: oklch(37% 0.013 285.805);
-  --color-neutral-content: oklch(98% 0 0);
+  --color-neutral: #d4d4d4;
+  --color-neutral-content: #737373;
   --color-info: oklch(78% 0.154 211.53);
   --color-info-content: oklch(30% 0.056 229.695);
   --color-success: oklch(79% 0.209 151.711);
@@ -79,5 +79,5 @@
 
 /* Custom CSS Classes */
 .peerprep-logo {
-  @apply font-ibm-serif text-[clamp(2rem,3.2vw,4rem)] tracking-widest bg-gradient-to-r from-secondary to-primary text-transparent bg-clip-text m-0;
+  @apply font-ibm-serif text-[clamp(2rem,3.2vw,4rem)] tracking-widest leading-none bg-gradient-to-r from-secondary to-primary text-transparent bg-clip-text m-0;
 }
