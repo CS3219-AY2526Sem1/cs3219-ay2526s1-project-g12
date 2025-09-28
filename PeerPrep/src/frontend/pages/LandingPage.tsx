@@ -17,9 +17,10 @@ function LandingPage() {
           interview!
         </p>
         <div className="grid grid-cols-2 gap-7 w-7/10">
-          <button className="btn btn-primary btn-lg text-[clamp(0.9rem,1.2vw,1.5rem)] font-normal">
+          <Link
+            to="/auth/register" // route path
             Get Started
-          </button>
+          </Link>
           <Link
             to="/auth/login" // route path
             className="btn btn-primary btn-soft btn-lg text-[clamp(0.9rem,1.2vw,1.5rem)] font-normal"
