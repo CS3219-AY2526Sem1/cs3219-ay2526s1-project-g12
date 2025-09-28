@@ -8,9 +8,11 @@ from fastapi_users import BaseUserManager, InvalidPasswordException, UUIDIDMixin
 from auth.schemas import UserCreate
 from db.models import User
 from utils.logger import log
-from utils.utils import get_envvar
+from utils.utils import AppConfig
 
-SECRET = get_envvar("JWT_SECRET")
+config = AppConfig()
+
+SECRET = config.jwt_secret
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_secret = SECRET
@@ -89,5 +91,3 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
     async def on_after_delete(self, user: User, request: Optional[Request] = None):
         log.info(f"User {user.id} is successfully deleted")
-
-

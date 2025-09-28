@@ -2,16 +2,18 @@ import logging
 import logging.handlers
 import os
 
-from utils.utils import get_envvar
+from utils.utils import AppConfig
 
 LOG_DATE_FMT = "%d-%m-%Y %H:%M:%S"
 
-if not os.path.exists(get_envvar("LOG_DIR")):
-    os.mkdir(get_envvar("LOG_DIR"))
+config = AppConfig()
 
-log = logging.getLogger(get_envvar("LOG_NAME"))
+if not os.path.exists(config.log_dir):
+    os.mkdir(config.log_dir)
+
+log = logging.getLogger(config.log_name)
 log.propagate = False
-log.setLevel(get_envvar("LOG_LEVEL"))
+log.setLevel(config.log_level)
 
 formatter = logging.Formatter(
     fmt="%(asctime)s|%(levelname)s|%(message)s", datefmt=LOG_DATE_FMT
@@ -20,7 +22,7 @@ formatter = logging.Formatter(
 
 def create_time_rotating_file_handler(log_level, filename, formatter):
     handler = logging.handlers.TimedRotatingFileHandler(
-        f"{get_envvar('LOG_DIR')}/{filename}.log", when="midnight", backupCount=30
+        f"{config.log_dir}/{filename}.log", when="midnight", backupCount=30
     )
     handler.setLevel(log_level)
     handler.setFormatter(formatter)
