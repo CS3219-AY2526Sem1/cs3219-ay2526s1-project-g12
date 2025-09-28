@@ -6,13 +6,11 @@ function LandingPage() {
     <div>
       <div className="grid grid-cols-2 gap-2 h-full md:pt-40 lg:pt-20">
         {/* Left side text */}
-        <div className="flex justify-center items-center">
-          <div className="text-left space-y-5">
-            <p className="peerprep-logo">PeerPrep</p>
-            <div className="text-4xl lg:text-5xl font-bold">
-              <p> Master Tech</p>
-              <p> Interviews</p>
-              <p>Together</p>
+        <div className="flex justify-center items-center px-40">
+          <div className="text-left space-y-6">
+            <span className="peerprep-logo mb-1">PeerPrep</span>
+            <div className="text-8xl font-semibold tracking-wider leading-[0.95]">
+              <span>Master Tech Interviews Together</span>
             </div>
             <p className="text-xl lg:text-3xl">
               Connect with peers, practice problems, <br />
