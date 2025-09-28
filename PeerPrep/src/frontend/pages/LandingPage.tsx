@@ -19,7 +19,9 @@ function LandingPage() {
               and ace your next technical interview!
             </p>
             <div className="grid grid-cols-2 gap-4">
-              <button className="btn btn-primary">Get Started</button>
+              <Link
+                to="/auth/register" // route path
+                 className="btn btn-primary">Get Started</Link>
               <Link
                 to="/auth/login" // route path
                 className="btn btn-primary btn-soft"
