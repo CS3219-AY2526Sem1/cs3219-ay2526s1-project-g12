@@ -113,7 +113,6 @@ export default function Register() {
         password: formData.password,
         first_name: formData.first_name,
         last_name: formData.last_name,
-        role_id: Roles.User, // Default role (User)
       });
 
       if (registerRes.error) {

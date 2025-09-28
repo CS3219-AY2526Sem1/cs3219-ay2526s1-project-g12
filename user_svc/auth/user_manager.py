@@ -23,6 +23,20 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         password: str,
         user: Union[UserCreate, User],
     ) -> None:
+        """Validates the password with the following rules:
+        - At least 8 characters
+        - At least one uppercase letter
+        - At least one lowercase letter
+        - At least one number or symbol
+        - Should not contain the e-mail address
+
+        Args:
+            password: Password string to validate
+            user: User object or UserCreate object
+
+        Raises:
+            InvalidPasswordException: If the password is invalid
+        """
         # Length check
         if len(password) < 8:
             raise InvalidPasswordException(

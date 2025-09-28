@@ -3,6 +3,10 @@ from fastapi_users_db_sqlalchemy.access_token import SQLAlchemyBaseAccessTokenTa
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
+from utils.utils import AppConfig
+
+config = AppConfig()
+
 
 class Base(DeclarativeBase):
     """Base class for all database models."""
@@ -22,7 +26,7 @@ class Role(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     role: Mapped[str]
 
-    users: Mapped[list["User"]] = relationship(back_populates="role")
+    users: Mapped[list["User"]] = relationship(back_populates="role", lazy="selectin")
 
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
@@ -42,9 +46,12 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     """
     first_name: Mapped[str] = mapped_column(String(50))
     last_name: Mapped[str] = mapped_column(String(50))
-    role_id: Mapped[str] = mapped_column(ForeignKey("roles.id"))
+    role_id: Mapped[str] = mapped_column(
+        ForeignKey("roles.id"),
+        default=config.default_role_id,
+    )
 
-    role: Mapped[Role] = relationship(back_populates="users")
+    role: Mapped[Role] = relationship(back_populates="users", lazy="selectin")
 
 class AccessToken(SQLAlchemyBaseAccessTokenTableUUID, Base):
     """Class representing the access tokens table in the database.
