@@ -12,11 +12,6 @@ interface RegisterForm {
   last_name: string;
 }
 
-enum Roles {
-User = 1,
-Admin = 2
-}
-
 interface User {
   id: string;
   email: string;
