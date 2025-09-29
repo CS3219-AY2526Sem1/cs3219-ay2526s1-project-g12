@@ -74,7 +74,6 @@ class ApiClient {
     password: string;
     first_name: string;
     last_name: string;
-    role_id: number;
   }): Promise<ApiResponse<any>> {
     return this.request('/auth/register', {
       method: 'POST',
