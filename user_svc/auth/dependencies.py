@@ -6,8 +6,8 @@ from fastapi_users_db_sqlalchemy.access_token import SQLAlchemyAccessTokenDataba
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth.user_manager import UserManager
-from db.models import AccessToken, User
-from db.session import get_async_session
+from models.db_models import AccessToken, User
+from models.session import get_async_session
 
 
 async def get_user_db(

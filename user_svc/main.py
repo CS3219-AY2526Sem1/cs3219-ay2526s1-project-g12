@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from auth.router import fastapi_users
 from auth.router import router as auth_router
-from db.models import User
+from models.db_models import User
 
 app = FastAPI(title="PeerPrep API Gateway")
 # Configure CORS

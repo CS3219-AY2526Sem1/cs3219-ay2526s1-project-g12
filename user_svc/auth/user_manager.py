@@ -5,8 +5,8 @@ from typing import Any, Dict, Optional, Union
 from fastapi import Request, Response
 from fastapi_users import BaseUserManager, InvalidPasswordException, UUIDIDMixin
 
-from auth.schemas import UserCreate
-from db.models import User
+from models.api_models import UserCreate
+from models.db_models import User
 from utils.logger import log
 from utils.utils import AppConfig
 

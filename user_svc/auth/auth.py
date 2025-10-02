@@ -6,7 +6,7 @@ from fastapi_users.authentication.strategy.db import (
 )
 
 from auth.dependencies import get_access_token_db
-from db.models import AccessToken
+from models.db_models import AccessToken
 from utils.utils import AppConfig
 
 config = AppConfig()
