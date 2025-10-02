@@ -5,7 +5,7 @@ from fastapi_users.db import SQLAlchemyUserDatabase
 from fastapi_users_db_sqlalchemy.access_token import SQLAlchemyAccessTokenDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.user_manager import UserManager
+from controllers.user_controller import UserController
 from models.db_models import AccessToken, User
 from service.db_session_svc import get_async_session
 
@@ -37,4 +37,4 @@ async def get_access_token_db(
     yield SQLAlchemyAccessTokenDatabase(session, AccessToken)
 
 async def get_user_manager(user_db=Depends(get_user_db)):
-    yield UserManager(user_db)
+    yield UserController(user_db)

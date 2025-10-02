@@ -1,8 +1,8 @@
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from auth.router import fastapi_users
-from auth.router import router as auth_router
+from routes.auth_router import fastapi_users
+from routes.auth_router import router as auth_router
 from models.db_models import User
 
 app = FastAPI(title="PeerPrep API Gateway")
@@ -15,7 +15,7 @@ origins = [
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,  # Important for cookie-based auth
+    allow_credentials=True,  # Important for cookie-based controllers
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["Set-Cookie"],

@@ -14,7 +14,7 @@ config = AppConfig()
 
 SECRET = config.jwt_secret
 
-class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
+class UserController(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_secret = SECRET
     verification_token_secret = SECRET
 
