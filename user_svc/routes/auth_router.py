@@ -24,7 +24,7 @@ cookie_transport = CookieTransport(
     cookie_httponly=True,  # Prevents JavaScript access (security)
     cookie_samesite="lax"
 )
-def get_database_strategy(
+def _get_database_strategy(
     access_token_db: AccessTokenDatabase[AccessToken] = Depends(get_access_token_db),
 ) -> DatabaseStrategy:
     """Provides the database strategy for authentication.
@@ -40,7 +40,7 @@ def get_database_strategy(
 auth_backend = AuthenticationBackend(
     name="database",
     transport=cookie_transport,
-    get_strategy=get_database_strategy,
+    get_strategy=_get_database_strategy,
 )
 
 fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend])
