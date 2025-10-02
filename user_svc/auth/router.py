@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from fastapi_users import FastAPIUsers
 
 from auth.auth import auth_backend
-from auth.dependencies import get_user_manager
+from service.db_svc import get_user_manager
 from models.api_models import UserCreate, UserRead, UserUpdate
 from models.db_models import User
 

@@ -5,7 +5,7 @@ from fastapi_users.authentication.strategy.db import (
     DatabaseStrategy,
 )
 
-from auth.dependencies import get_access_token_db
+from service.db_svc import get_access_token_db
 from models.db_models import AccessToken
 from utils.utils import AppConfig
 

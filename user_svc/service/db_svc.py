@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth.user_manager import UserManager
 from models.db_models import AccessToken, User
-from models.session import get_async_session
+from service.db_session_svc import get_async_session
 
 
 async def get_user_db(
