@@ -1,7 +1,8 @@
 from contextlib import asynccontextmanager
-from controllers.matching_controller import ping_redis_server, find_match
-from fastapi import FastAPI
+from controllers.matching_controller import ping_redis_server, fetch_fastapi_websocket_url,  add_user, remove_user
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from models.api_models import MatchRequest
+from models.websocket_models import WebsocketConnectionManager
 from service.redis_service import connect_to_redis, sever_connection
 
 @asynccontextmanager
@@ -9,10 +10,11 @@ async def lifespan(app: FastAPI):
     """
     Set up variables for the matching service.
     """
-    app.state.redis = connect_to_redis()
+    app.state.redis_connection = connect_to_redis()
+    app.state.websocket_manager = WebsocketConnectionManager()
     yield
     # This is the shut down procedure when the matching service stops.
-    sever_connection(app.state.redis)
+    sever_connection(app.state.redis_connection)
     
 app = FastAPI(lifespan=lifespan)
 
@@ -20,17 +22,45 @@ app = FastAPI(lifespan=lifespan)
 async def root():
     return {"status": "success"}
 
-@app.get("/check/connection")
+@app.get("/check_connection")
 async def check_connection():
     """
     Check if the redis server is up and responding.
     """
-    return ping_redis_server(app.state.redis)
+    return ping_redis_server(app.state.redis_connection)
 
-@app.post("/find/match")
-async def match(request: MatchRequest):
+@app.get("/get_ws_url")
+async def get_ws_url():
     """
-    Find a match given the citera set. If no match is found then add them into the queue.
+    Fetches the websocket URL for the user.
     """
-    find_match(request, app.state.redis)
-    return {"status": "success"}
+    return fetch_fastapi_websocket_url()
+
+@app.post("/enter_matchmaking")
+async def enter(request: MatchRequest):
+    """
+    Find a match given the citera set.
+    """
+    return add_user(request, app.state.redis_connection, app.state.websocket_manager)
+
+@app.post("/exit_matchmaking")
+async def exit(request: MatchRequest):
+    """
+    Find a match given the citera set.
+    """
+    return remove_user(request, app.state.redis_connection, app.state.websocket_manager)
+
+@app.websocket("/ws/{user_id}")
+async def establish_websocket(websocket: WebSocket, user_id: str):
+    """
+    Upgrades the HTTP request to a websocket.
+    """
+    manager = app.state.websocket_manager
+    await manager.connect(user_id, websocket)
+    try:
+        while True:
+            # Keep connection alive
+            await websocket.receive_text() 
+    except WebSocketDisconnect:
+        # If the websocket disconnects midway through then we will remove it from our manager
+        manager.disconnect(user_id)
