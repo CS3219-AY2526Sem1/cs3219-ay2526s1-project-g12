@@ -18,8 +18,9 @@ class WebsocketConnectionManager ():
         """
         Disconnect the websocket connection for the given user.
         """
-        await self.active_connections[user_id].close()
-        self.remove_websocket_connection(user_id)
+        if (self.active_connections.get(user_id, False)):
+            await self.active_connections[user_id].close()
+            self.remove_websocket_connection(user_id)
 
     def remove_websocket_connection(self, user_id: str):
         """
@@ -31,6 +32,13 @@ class WebsocketConnectionManager ():
         """
         Send a message to the user through the websocket.
         """
-        websocket = self.active_connections.get(user_id)
+        websocket = self.active_connections.get(user_id, None)
         if websocket:
             await websocket.send_text(message)
+    
+    async def broadcast(self, message:str, *users: str):
+        """
+        Broadcast a message to all the selected users.
+        """
+        for user in users:
+            await self.send_message_to_user(user, message)

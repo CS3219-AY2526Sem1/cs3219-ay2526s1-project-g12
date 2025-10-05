@@ -1,7 +1,8 @@
 from models.api_models import MatchRequest
+from models.queue_models import QueueManager
 from models.websocket_models import WebsocketConnectionManager
 from redis import Redis
-from service.redis_service import check_redis_availability, check_queue, enqueue_user, dequeue_user
+from service.redis_service import check_redis_availability, enqueue_user, update_match_response
 from utils.utils import get_envvar
 
 ENV_FASTAPI_PORT_KEY = "FASTAPI_PORT"
@@ -25,21 +26,18 @@ def fetch_fastapi_websocket_url() -> dict:
     ws_url = f"ws://localhost:{fastapi_port}/ws"
     return  {"ws_url": ws_url}
 
-def add_user(user: MatchRequest, redis_connection: Redis, manager: WebsocketConnectionManager) -> dict:
+async def add_user(user: MatchRequest, redis_connection: Redis, websocket_manager: WebsocketConnectionManager, queue_manager: QueueManager) -> dict:
     """
-    Checks if there is a person queueing with the same topic, otherwise add them to the queue.
+    Adds the user into the queue based on their difficulty and category.
     """
-    enqueue_user(user.user_id, user.difficulty, user.category, redis_connection)
+    response = enqueue_user(user.user_id, user.difficulty, user.category, redis_connection)
+    await queue_manager.spawn_new_worker(user.difficulty, user.category, redis_connection, websocket_manager)
+    return response
 
-def remove_user(user: MatchRequest, redis_connection: Redis, manager: WebsocketConnectionManager) -> None:
+def confirm_match(match_id: str, user_id: str, redis_connection: Redis) -> dict:
     """
-    Removes the user from the queue that they are in.
+    Adds the user into the queue based on their.
     """
-    dequeue_user(user.user_id, user.difficulty, user.category, redis_connection)
-    manager.disconnect(user.user_id)
-
-def alert_user(user_id: str, manager: WebsocketConnectionManager):
-    """
-    Send a message to the user through the websocket connection that a match has been found.
-    """
-    manager.send_to_player(user_id, "A match has been found")
+    update_match_response(match_id, user_id, redis_connection)
+    return {"status": "success"}
+    

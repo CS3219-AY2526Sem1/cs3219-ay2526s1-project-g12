@@ -1,7 +1,8 @@
 from contextlib import asynccontextmanager
-from controllers.matching_controller import ping_redis_server, fetch_fastapi_websocket_url,  add_user, remove_user
+from controllers.matching_controller import ping_redis_server, fetch_fastapi_websocket_url,  add_user, confirm_match
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from models.api_models import MatchRequest
+from models.queue_models import  QueueManager
 from models.websocket_models import WebsocketConnectionManager
 from service.redis_service import connect_to_redis, sever_connection
 
@@ -12,6 +13,7 @@ async def lifespan(app: FastAPI):
     """
     app.state.redis_connection = connect_to_redis()
     app.state.websocket_manager = WebsocketConnectionManager()
+    app.state.queue_manager = QueueManager()
     yield
     # This is the shut down procedure when the matching service stops.
     sever_connection(app.state.redis_connection)
@@ -39,16 +41,16 @@ async def get_ws_url():
 @app.post("/enter_matchmaking")
 async def enter(request: MatchRequest):
     """
-    Find a match given the citera set.
+    Adds the user into the queue based on the user's citeria.
     """
-    return add_user(request, app.state.redis_connection, app.state.websocket_manager)
+    return await add_user(request, app.state.redis_connection, app.state.websocket_manager, app.state.queue_manager)
 
-@app.post("/exit_matchmaking")
-async def exit(request: MatchRequest):
+@app.post("/confirm_match/{match_id}/{user_id}")
+async def comfirm(match_id: str, user_id: str):
     """
-    Find a match given the citera set.
+    Comfirms the match.
     """
-    return remove_user(request, app.state.redis_connection, app.state.websocket_manager)
+    return confirm_match(match_id, user_id, app.state.redis_connection)
 
 @app.websocket("/ws/{user_id}")
 async def establish_websocket(websocket: WebSocket, user_id: str):
