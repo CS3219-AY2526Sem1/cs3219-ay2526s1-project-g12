@@ -54,8 +54,8 @@
   --color-neutral-content: #737373;
   --color-info: oklch(78% 0.154 211.53);
   --color-info-content: oklch(30% 0.056 229.695);
-  --color-success: oklch(79% 0.209 151.711);
-  --color-success-content: oklch(27% 0.046 192.524);
+  --color-success: #4d7c0f;
+  --color-success-content: #ffffff;
   --color-warning: #eab308;
   --color-warning-content: #ffffff;
   --color-error: #f87171;
