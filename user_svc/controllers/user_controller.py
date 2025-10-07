@@ -5,14 +5,16 @@ from typing import Any, Dict, Optional, Union
 from fastapi import Request, Response
 from fastapi_users import BaseUserManager, InvalidPasswordException, UUIDIDMixin
 
-from auth.schemas import UserCreate
-from db.models import User
+from models.api_models import UserCreate
+from models.db_models import User
 from utils.logger import log
-from utils.utils import get_envvar
+from utils.utils import AppConfig
 
-SECRET = get_envvar("JWT_SECRET")
+config = AppConfig()
 
-class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
+SECRET = config.jwt_secret
+
+class UserController(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_secret = SECRET
     verification_token_secret = SECRET
 
@@ -21,6 +23,20 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         password: str,
         user: Union[UserCreate, User],
     ) -> None:
+        """Validates the password with the following rules:
+        - At least 8 characters
+        - At least one uppercase letter
+        - At least one lowercase letter
+        - At least one number or symbol
+        - Should not contain the e-mail address
+
+        Args:
+            password: Password string to validate
+            user: User object or UserCreate object
+
+        Raises:
+            InvalidPasswordException: If the password is invalid
+        """
         # Length check
         if len(password) < 8:
             raise InvalidPasswordException(
@@ -89,5 +105,3 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
     async def on_after_delete(self, user: User, request: Optional[Request] = None):
         log.info(f"User {user.id} is successfully deleted")
-
-

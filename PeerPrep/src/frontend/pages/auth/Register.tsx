@@ -12,12 +12,6 @@ interface RegisterForm {
   last_name: string;
 }
 
-export const Roles = {
-  User: 1,
-  Admin: 2,
-} as const;
-type Roles = (typeof Roles)[keyof typeof Roles];
-
 interface User {
   id: string;
   email: string;
@@ -119,7 +113,6 @@ export default function Register() {
         password: formData.password,
         first_name: formData.first_name,
         last_name: formData.last_name,
-        role_id: Roles.User, // Default role (User)
       });
 
       if (registerRes.error) {
