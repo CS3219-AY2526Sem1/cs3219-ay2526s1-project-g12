@@ -1,9 +1,10 @@
 import NavBar from "../components/NavBar";
+import { NAV_BUTTONS } from "../config/NavConfig";
 
 function Dashboard() {
   return (
     <div className="min-h-screen px-20 py-10">
-      <NavBar></NavBar>
+      <NavBar buttons={NAV_BUTTONS} />
 
       {/* Welcome Section */}
       <h1 className="text-6xl font-semibold p-2">Welcome, John Doe</h1>

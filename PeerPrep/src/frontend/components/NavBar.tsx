@@ -1,6 +1,16 @@
+import { Link } from "react-router";
 import "../assets/styles.css";
 
-function NavBar() {
+interface NavBarProps {
+  buttons: {
+    label: string;
+    role: string;
+    route: string;
+    style: string;
+  }[];
+}
+
+function NavBar({ buttons }: NavBarProps) {
   return (
     <div className="navbar">
       <div className="flex-1">
@@ -8,14 +18,11 @@ function NavBar() {
       </div>
 
       <div className="flex gap-2">
-        <button className="btn btn-warning font-normal">⚠ Manage Qns</button>
-        <button className="btn btn-primary font-normal">
-          ✈ Initiate Match
-        </button>
-        <button className="btn btn-success font-normal">
-          👤 Account Setting
-        </button>
-        <button className="btn btn-success font-normal">🚪 Logout</button>
+        {buttons.map((btn) => (
+          <Link to={btn.route} className={`btn ${btn.style} font-normal`}>
+            {btn.label}
+          </Link>
+        ))}
       </div>
     </div>
   );
