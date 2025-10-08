@@ -3,7 +3,12 @@ import random
 from fastapi import HTTPException
 from tortoise.exceptions import DoesNotExist
 
-from models.api_models import CreateQuestionModel, UpdateQuestionModel
+from models.api_models import (
+    CreateDeleteCategoryModel,
+    CreateQuestionModel,
+    UpdateCategoryModel,
+    UpdateQuestionModel,
+)
 from models.db_models import (
     Category,
     Difficulty,
@@ -123,6 +128,51 @@ async def fetch_categories() -> dict:
 
     categories_list = [cat.name for cat in categories_db]
     return {"categories": categories_list}
+
+
+async def create_category(category: CreateDeleteCategoryModel) -> dict:
+    does_category_exist = await Category.filter(name=category.name).exists()
+    if does_category_exist:
+        raise HTTPException(
+            status_code=400, detail=f"Category {category.name} already exists"
+        )
+
+    await Category.create(name=category.name)
+
+    return {"message": f"Category {category.name} created successfully"}
+
+
+async def update_category(update_category: UpdateCategoryModel) -> dict:
+    await _validate_categories([update_category.name])
+    does_new_category_exist = await Category.filter(
+        name=update_category.new_name
+    ).exists()
+    if does_new_category_exist:
+        raise HTTPException(status_code=400, detail="Category already exists")
+
+    await Category.create(name=update_category.new_name)
+    await QuestionCategory.filter(category_id=update_category.name).update(
+        category_id=update_category.new_name
+    )
+    await Category.filter(name=update_category.name).delete()
+
+    return {
+        "message": f"Category {update_category.name} updated to {update_category.new_name} successfully"
+    }
+
+
+async def delete_category(category: CreateDeleteCategoryModel) -> dict:
+    await _validate_categories([category.name])
+
+    is_category_in_use = await QuestionCategory.filter(category=category.name).exists()
+    if is_category_in_use:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Category {category.name} is currently in use. Unable to delete",
+        )
+
+    await Category.filter(name=category.name).delete()
+    return {"message": f"Category {category.name} deleted successfully"}
 
 
 async def fetch_difficulty_levels() -> dict:

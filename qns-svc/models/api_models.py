@@ -16,3 +16,12 @@ class UpdateQuestionModel(BaseModel):
     description: Annotated[str | None, Field(min_length=1)] = None
     difficulty: Annotated[str | None, Field(min_length=1)] = None
     categories: Annotated[list[str] | None, Len(min_length=1)] = None
+
+
+class CreateDeleteCategoryModel(BaseModel):
+    name: Annotated[str, Field(min_length=1)]
+
+
+class UpdateCategoryModel(BaseModel):
+    name: Annotated[str, Field(min_length=1)]
+    new_name: Annotated[str, Field(min_length=1)]
