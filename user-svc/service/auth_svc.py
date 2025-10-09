@@ -1,8 +1,10 @@
 import uuid
+from typing import Optional, Annotated
 
-from fastapi import Depends
-from fastapi_users import FastAPIUsers
-from fastapi_users.authentication import BearerTransport, AuthenticationBackend, JWTStrategy
+from fastapi import Depends, Header, HTTPException, status
+from fastapi_users import FastAPIUsers, models, exceptions
+from fastapi_users.authentication import BearerTransport, AuthenticationBackend, JWTStrategy, Authenticator
+from fastapi_users.authentication.authenticator import EnabledBackendsDependency
 
 from controllers.user_controller import UserController
 from models.db_models import User
@@ -26,4 +28,45 @@ auth_backend = AuthenticationBackend(
     get_strategy=_get_jwt_strategy,
 )
 
+class UuidAuthenticator(Authenticator):
+    def current_user(
+            self,
+            optional: bool = False,
+            active: bool = False,
+            verified: bool = False,
+            superuser: bool = False,
+            get_enabled_backends: Optional[
+                EnabledBackendsDependency[models.UP, models.ID]
+            ] = None,
+    ):
+        async def current_user_dependency(
+                x_user_id: Annotated[uuid.UUID | None, Header(alias="X-User-ID")] = None,
+                user_manager=Depends(self.get_user_manager),
+        ):
+            user: Optional[models.UP] = None
+            if x_user_id is not None:
+                try:
+                    parsed_id = user_manager.parse_id(x_user_id)
+                    user = await user_manager.get(parsed_id)
+                except (exceptions.UserNotExists, exceptions.InvalidID):
+                    pass
+
+            status_code = status.HTTP_401_UNAUTHORIZED
+            if user:
+                status_code = status.HTTP_403_FORBIDDEN
+                if active and not user.is_active:
+                    status_code = status.HTTP_401_UNAUTHORIZED
+                    user = None
+                elif (
+                        verified and not user.is_verified or superuser and not user.is_superuser
+                ):
+                    user = None
+
+            if not user and not optional:
+                raise HTTPException(status_code=status_code)
+            return user
+
+        return current_user_dependency
+
 fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend])
+fastapi_users.authenticator = UuidAuthenticator([auth_backend], fastapi_users.get_user_manager)
