@@ -12,11 +12,11 @@ from utils.utils import AppConfig
 
 config = AppConfig()
 
-SECRET = config.jwt_secret
-
 class UserController(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
-    reset_password_token_secret = SECRET
-    verification_token_secret = SECRET
+    reset_password_token_secret = config.reset_token_secret
+    reset_password_token_lifetime_seconds = config.reset_token_expire_seconds
+    verification_token_secret = config.verify_token_secret
+    verification_token_lifetime_seconds = config.verify_token_expire_seconds
 
     async def validate_password(
         self,
