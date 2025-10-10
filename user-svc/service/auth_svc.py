@@ -1,12 +1,16 @@
 import uuid
 from typing import Optional, Annotated
 
-from fastapi import Depends, Header, HTTPException, status
+from fastapi import Depends, Response, Header, HTTPException, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 from fastapi_users import FastAPIUsers, models, exceptions
-from fastapi_users.authentication import BearerTransport, AuthenticationBackend, JWTStrategy, Authenticator
+from fastapi_users.authentication import BearerTransport, AuthenticationBackend, JWTStrategy, Authenticator, Strategy
 from fastapi_users.authentication.authenticator import EnabledBackendsDependency
+from fastapi_users.openapi import OpenAPIResponseType
 
 from controllers.user_controller import UserController
+from models.api_models import UuidBearerResponse
 from models.db_models import User
 from service.db_svc import get_user_db
 from utils.utils import AppConfig
@@ -17,18 +21,52 @@ config = AppConfig()
 async def get_user_manager(user_db=Depends(get_user_db)):
     yield UserController(user_db)
 
-bearer_transport = BearerTransport(tokenUrl="auth/login")
-
 def _get_jwt_strategy() -> JWTStrategy:
-    return JWTStrategy(secret=config.jwt_secret, lifetime_seconds=None)
+    return JWTStrategy(secret=config.jwt_secret, lifetime_seconds=1)
 
-auth_backend = AuthenticationBackend(
-    name="jwt",
-    transport=bearer_transport,
-    get_strategy=_get_jwt_strategy,
-)
 
-class UuidAuthenticator(Authenticator):
+class UuidBearerTransport(BearerTransport):
+    """Custom bearer transport that includes user_id in the login response."""
+    async def get_login_response(self, token: str, **kwargs) -> Response:
+        """Overridden method to include user_id in the response."""
+        user_id = kwargs.get("user_id")
+        bearer_response = UuidBearerResponse(access_token=token, token_type="bearer", user_id=user_id)
+        return JSONResponse(jsonable_encoder(bearer_response))
+
+    @staticmethod
+    def get_openapi_login_responses_success() -> OpenAPIResponseType:
+        """Custom OpenAPI response schema including user_id."""
+        return {
+            status.HTTP_200_OK: {
+                "model": UuidBearerResponse,
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1"
+                            "c2VyX2lkIjoiOTIyMWZmYzktNjQwZi00MzcyLTg2Z"
+                            "DMtY2U2NDJjYmE1NjAzIiwiYXVkIjoiZmFzdGFwaS"
+                            "11c2VyczphdXRoIiwiZXhwIjoxNTcxNTA0MTkzfQ."
+                            "M10bjOe45I5Ncu_uXvOmVV8QxnL-nZfcH96U90JaocI",
+                            "token_type": "bearer",
+                            "user_id": "9e9b8b9f-98cd-4e0c-b8e1-8ef4fbc4e3b2",
+                        }
+                    }
+                },
+            },
+        }
+
+
+class UuidAuthenticationBackend(AuthenticationBackend[models.UP, models.ID]):
+    transport: UuidBearerTransport
+
+    async def login(
+            self, strategy: Strategy[User, uuid.UUID], user: User
+    ) -> Response:
+        token = await strategy.write_token(user)
+        return await self.transport.get_login_response(token, user_id=user.id)
+
+
+class UuidAuthenticator(Authenticator[models.UP, models.ID]):
     def current_user(
             self,
             optional: bool = False,
@@ -68,5 +106,15 @@ class UuidAuthenticator(Authenticator):
 
         return current_user_dependency
 
+bearer_transport = UuidBearerTransport(tokenUrl="auth/login")
+
+auth_backend = UuidAuthenticationBackend(
+    name="jwt",
+    transport=bearer_transport,
+    get_strategy=_get_jwt_strategy,
+)
+
 fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend])
-fastapi_users.authenticator = UuidAuthenticator([auth_backend], fastapi_users.get_user_manager)
+fastapi_users.authenticator = UuidAuthenticator(
+    [auth_backend], fastapi_users.get_user_manager
+)

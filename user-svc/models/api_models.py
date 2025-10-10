@@ -2,6 +2,7 @@ import uuid
 from typing import Annotated
 
 from fastapi_users import schemas
+from fastapi_users.authentication.transport.bearer import BearerResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -61,3 +62,14 @@ class UserUpdate(schemas.BaseUserUpdate):
     password: Annotated[str | None, Field(min_length=8)] = None
     first_name: Annotated[str | None, Field(min_length=1, max_length=50)] = None
     last_name: Annotated[str | None, Field(min_length=1, max_length=50)] = None
+
+
+class UuidBearerResponse(BearerResponse):
+    """Class representing a bearer token response with user ID.
+
+    Attributes:
+        access_token (str): The access token.
+        token_type (str): The type of the token, typically "Bearer".
+        user_id (uuid): The unique identifier of the user associated with the token.
+    """
+    user_id: uuid.UUID
