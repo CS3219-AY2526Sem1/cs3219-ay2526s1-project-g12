@@ -2,7 +2,12 @@ from unittest.mock import AsyncMock, patch
 
 from httpx import ASGITransport, AsyncClient
 
-from models.api_models import CreateQuestionModel, UpdateQuestionModel
+from models.api_models import (
+    CreateDeleteCategoryModel,
+    CreateQuestionModel,
+    UpdateCategoryModel,
+    UpdateQuestionModel,
+)
 from routes import app
 
 
@@ -109,6 +114,70 @@ class TestRoutes:
         ) as ac:
             await ac.delete("/questions/1")
         mock_fetch.assert_called_once_with(1)
+
+    @patch("routes.create_category", new_callable=AsyncMock)
+    async def test_post_create_category_valid_payload_success(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {"name": "New Cat"}
+        cdcm = CreateDeleteCategoryModel(**json_payload)
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.post("/category/", json=json_payload)
+        mock_fetch.assert_called_once_with(cdcm)
+
+    @patch("routes.create_category", new_callable=AsyncMock)
+    async def test_post_create_category_invalid_payload_failure(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.post("/category/", json=json_payload)
+        mock_fetch.assert_not_called()
+
+    @patch("routes.update_category", new_callable=AsyncMock)
+    async def test_put_update_category_valid_payload_success(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {"name": "Old Cat", "new_name": "New Cat"}
+        cdcm = UpdateCategoryModel(**json_payload)
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.put("/category/", json=json_payload)
+        mock_fetch.assert_called_once_with(cdcm)
+
+    @patch("routes.update_category", new_callable=AsyncMock)
+    async def test_put_update_category_invalid_payload_failure(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.put("/category/", json=json_payload)
+        mock_fetch.assert_not_called()
+
+    @patch("routes.delete_category", new_callable=AsyncMock)
+    async def test_delete_delete_category_valid_payload_success(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {"name": "Del Cat"}
+        cdcm = CreateDeleteCategoryModel(**json_payload)
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            # Have to use underlying .request() instead of delete() since delete() do not support json payload
+            await ac.request(method="DELETE", url="/category/", json=json_payload)
+        mock_fetch.assert_called_once_with(cdcm)
+
+    @patch("routes.delete_category", new_callable=AsyncMock)
+    async def test_delete_delete_category_invalid_payload_failure(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.request(method="DELETE", url="/category/", json=json_payload)
+        mock_fetch.assert_not_called()
 
     @patch("routes.fetch_categories", new_callable=AsyncMock)
     async def test_get_categories(self, mock_fetch):
