@@ -52,14 +52,3 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     )
 
     role: Mapped[Role] = relationship(back_populates="users", lazy="selectin")
-
-class AccessToken(SQLAlchemyBaseAccessTokenTableUUID, Base):
-    """Class representing the access tokens table in the database.
-
-    Attributes:
-        id (UUID): The primary key of the access token.
-        token (str): The access token.
-        user_id (UUID): The foreign key to the users table.
-        user (User): The user associated with the access token.
-    """
-    pass
