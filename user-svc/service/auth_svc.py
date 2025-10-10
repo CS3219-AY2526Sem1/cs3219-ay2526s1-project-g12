@@ -19,9 +19,22 @@ from utils.utils import AppConfig
 config = AppConfig()
 
 async def get_user_manager(user_db=Depends(get_user_db)):
+    """Dependency to get the user manager.
+
+    Args:
+        user_db: The user database dependency.
+
+    Yields:
+        An instance of UserController.
+    """
     yield UserController(user_db)
 
 def _get_jwt_strategy() -> JWTStrategy:
+    """Method to get the JWT strategy for authentication.
+
+    Returns:
+        An instance of JWTStrategy with the configured secret and token lifetime.
+    """
     return JWTStrategy(secret=config.jwt_secret, lifetime_seconds=1)
 
 
@@ -57,16 +70,19 @@ class UuidBearerTransport(BearerTransport):
 
 
 class UuidAuthenticationBackend(AuthenticationBackend[models.UP, models.ID]):
+    """Custom authentication backend using UUIDs."""
     transport: UuidBearerTransport
 
     async def login(
             self, strategy: Strategy[User, uuid.UUID], user: User
     ) -> Response:
+        """Overridden login method to include user_id in the response."""
         token = await strategy.write_token(user)
         return await self.transport.get_login_response(token, user_id=user.id)
 
 
 class UuidAuthenticator(Authenticator[models.UP, models.ID]):
+    """Custom authenticator to retrieve current user based on X-User-ID header."""
     def current_user(
             self,
             optional: bool = False,
@@ -77,6 +93,7 @@ class UuidAuthenticator(Authenticator[models.UP, models.ID]):
                 EnabledBackendsDependency[models.UP, models.ID]
             ] = None,
     ):
+        """Custom current user dependency that retrieves user based on X-User-ID header."""
         async def current_user_dependency(
                 x_user_id: Annotated[uuid.UUID | None, Header(alias="X-User-ID")] = None,
                 user_manager=Depends(self.get_user_manager),
