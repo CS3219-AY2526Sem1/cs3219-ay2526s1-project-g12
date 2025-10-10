@@ -13,11 +13,11 @@ function AuthLayout({ children }: Props) {
         {/* Left column */}
         {children}
         {/* Right column */}
-        <div>
+        <div className="min-h-screen">
           <img
             src={AuthPanelImage}
             alt="AuthPanelImage"
-            className="object-cover w-screen h-screen"
+            className="object-cover w-screen h-full"
           />
         </div>
       </div>
