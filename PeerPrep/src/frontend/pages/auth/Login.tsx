@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { apiClient } from '../../components/api';
-import GitHubLogo from '../../assets/Images/github-logo.png';
-import GoogleLogo from '../../assets/Images/google-logo.png';
-import { Link } from 'react-router';
+import React, { useState, useEffect } from "react";
+import { apiClient } from "../../components/api";
+import GitHubLogo from "../../assets/Images/github-logo.png";
+import GoogleLogo from "../../assets/Images/google-logo.png";
+import { Link } from "react-router";
 
 interface User {
   id: string;
@@ -16,8 +16,8 @@ interface User {
 }
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -32,7 +32,7 @@ export default function Login() {
           setUser(userRes.data as User);
         }
       } catch (err) {
-        console.log('User not authenticated');
+        console.log("User not authenticated");
       } finally {
         setCheckingAuth(false);
       }
@@ -46,28 +46,29 @@ export default function Login() {
     setLoading(true);
     setError(null);
 
-    console.log('Login attempt:', email);
+    console.log("Login attempt:", email);
 
     try {
       const loginRes = await apiClient.login(email, password);
 
       if (loginRes.error) {
         setError(loginRes.error);
-      } else { // Login successful - FastAPI-Users typically returns 204 No Content
+      } else {
+        // Login successful - FastAPI-Users typically returns 204 No Content
         // fetch the current user to confirm authentication
         const userRes = await apiClient.getCurrentUser();
 
         if (userRes.data && !userRes.error) {
           setUser(userRes.data as User);
-          setEmail(''); // Clear form
-          setPassword('');
+          setEmail(""); // Clear form
+          setPassword("");
         } else {
-          setError('Login succeeded but failed to fetch user data');
+          setError("Login succeeded but failed to fetch user data");
         }
       }
     } catch (err: any) {
-      console.error('Login error:', err);
-      setError(err.message || 'Unexpected error during login');
+      console.error("Login error:", err);
+      setError(err.message || "Unexpected error during login");
     } finally {
       setLoading(false);
     }
@@ -77,12 +78,12 @@ export default function Login() {
     try {
       await apiClient.logout();
       setUser(null);
-      setEmail('');
-      setPassword('');
+      setEmail("");
+      setPassword("");
       setError(null);
     } catch (err) {
-      console.error('Logout error:', err);
-      setError('Failed to logout');
+      console.error("Logout error:", err);
+      setError("Failed to logout");
     }
   };
 
@@ -95,10 +96,10 @@ export default function Login() {
     );
   }
 
-  // User is authenticated - show welcome screen
+  // User is authenticated - show welcome screen [to be replaced with dashboard]
   if (user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
             <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
@@ -112,10 +113,11 @@ export default function Login() {
                 <strong>Email:</strong> {user.email}
               </p>
               <p className="text-gray-600 mb-2">
-                <strong>Status:</strong> {user.is_active ? 'Active' : 'Inactive'}
+                <strong>Status:</strong>{" "}
+                {user.is_active ? "Active" : "Inactive"}
               </p>
               <p className="text-gray-600 mb-4">
-                <strong>Verified:</strong> {user.is_verified ? 'Yes' : 'No'}
+                <strong>Verified:</strong> {user.is_verified ? "Yes" : "No"}
               </p>
 
               <button
@@ -133,120 +135,107 @@ export default function Login() {
 
   // User is not authenticated - show login form
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <form onSubmit={handleLogin}>
+      <div className="flex flex-col justify-center max-w-md w-full min-h-screen mx-auto space-y-4">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign In
-          </h2>
+          <span className="text-[clamp(0.85rem,0.8vw,1rem)] font-medium tracking-[0.20em]">
+            WELCOME BACK TO
+          </span>
+          <br />
+          <span className="peerprep-logo">PeerPrep</span>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          {error && (
-            <div className="alert alert-error">
-              <span>{error}</span>
-            </div>
+        {error && (
+          <div className="alert alert-error">
+            <span>{error}</span>
+          </div>
+        )}
+
+        <fieldset className="pb-3">
+          <label htmlFor="email" className="fieldset-legend font-normal">
+            Email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            className="input validator w-full"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={loading}
+          />
+
+          <label htmlFor="password" className="fieldset-legend font-normal">
+            Password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            className="input validator w-full"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
+          />
+
+          <Link to="/auth/reset" className="font-light text-sm underline">
+            Forgot your password?
+          </Link>
+        </fieldset>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn btn-primary w-full font-normal"
+        >
+          {loading ? (
+            <>
+              <span className="loading loading-spinner loading-sm mr-2"></span>
+              Signing in...
+            </>
+          ) : (
+            "Sign In"
           )}
+        </button>
 
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div className="mb-4">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="input input-bordered w-full"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-              />
-            </div>
+        <div className="divider divider-neutral mt-0">OR</div>
 
-            <div className="mb-6">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="input input-bordered w-full"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
-              />
-            </div>
-          </div>
+        {/* UI to sign in using other platforms */}
+        {/* Hides Google login btn for now*/}
+        {/*
+         <button
+          type="button"
+          className="btn btn-primary btn-soft w-full font-normal pb-3"
+          disabled
+        >
+          <img className="h-5 w-5" src={GoogleLogo} alt="Google logo" />
+          <span className="ml-2">Continue with Google</span>
+        </button> 
+        */}
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-            >
-              {loading ? (
-                <>
-                  <span className="loading loading-spinner loading-sm mr-2"></span>
-                  Signing in...
-                </>
-              ) : (
-                'Sign In'
-              )}
-            </button>
-          </div>
+        <button
+          type="button"
+          className="btn btn-primary btn-soft w-full font-normal mb-3"
+          disabled // Disable until Github login is set up
+        >
+          <img className="h-5 w-5" src={GitHubLogo} alt="GitHub logo" />
+          <span className="ml-2">Continue with GitHub</span>
+        </button>
 
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-gray-50 text-gray-500">OR</span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                disabled
-              >
-                <img className="h-5 w-5" src={GoogleLogo} alt="Google logo" />
-                <span className="ml-2">Google</span>
-              </button>
-
-              <button
-                type="button"
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                disabled
-              >
-                <img className="h-5 w-5" src={GitHubLogo} alt="GitHub logo" />
-                <span className="ml-2">GitHub</span>
-              </button>
-            </div>
-          </div>
-          {/* Additional Register Link at Bottom */}
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              New to our platform?{' '}
-              <Link
-                to="/auth/register"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                Sign up for free
-              </Link>
-            </p>
-          </div>
-        </form>
+        {/* Additional Register Link at Bottom */}
+        <p className="text-center">
+          Don't have an account?&nbsp;
+          <Link to="/auth/register" className="underline">
+            Sign up
+          </Link>
+        </p>
       </div>
-    </div>
+    </form>
   );
 }
