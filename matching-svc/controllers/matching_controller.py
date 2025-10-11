@@ -68,7 +68,7 @@ async def wait_for_match(match_request: MatchRequest, queue_connection:Redis, me
     If no match is found then remove the user from the queue.
     """
     key = format_match_found_key(match_request.user_id)
-    message =  await message_queue_connection.blpop(key, timeout=5) # Timeout 3 Minutes
+    message =  await message_queue_connection.blpop(key, timeout=180) # Timeout 3 Minutes
 
     try:
         if message is None:    
