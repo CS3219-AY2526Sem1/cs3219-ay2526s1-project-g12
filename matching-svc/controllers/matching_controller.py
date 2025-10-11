@@ -1,43 +1,72 @@
 from models.api_models import MatchRequest
-from models.queue_models import QueueManager
-from models.websocket_models import WebsocketConnectionManager
-from redis import Redis
-from service.redis_service import check_redis_availability, enqueue_user, update_match_response
-from utils.utils import get_envvar
+from redis.asyncio import Redis
+from redis.asyncio.lock import Lock
+from service.redis_message_service import send_match_found_message
+from service.redis_queue_service import add_to_queued_users_set, find_partner, enqueue_user, remove_from_queued_users_set
+from utils.utils import format_lock_key, format_queue_key, ping_redis_server, format_match_found_key
+from uuid import uuid5, NAMESPACE_DNS
 
-ENV_FASTAPI_PORT_KEY = "FASTAPI_PORT"
-
-def ping_redis_server(redis_connection: Redis) -> dict:
+def check_redis_connection(reds_connection: Redis):
     """
-    Ping the redis server and check if it is responding.
+    Checks if the connection between redis is up and running.
     """
-    response: bool = check_redis_availability(redis_connection)
+    response = ping_redis_server(reds_connection)
     if (response):
-        return {"redis_status": "up"}
+        return {"status": "success", "redis": "responding"}
     else:
-        return {"redis_status": "down"}
+        return {"status": "success", "redis": "not responding"}
 
-def fetch_fastapi_websocket_url() -> dict:
+async def find_match(match_request: MatchRequest, queue_connection: Redis,  message_queue_connection: Redis) -> dict:
     """
-    Returns the websocket_url.
+    Finds a match based on the user topic and difficulty.
     """
-    fastapi_port = get_envvar(ENV_FASTAPI_PORT_KEY)
-    # TODO: Change localhost to the actual IP address of the matching service during deployment
-    ws_url = f"ws://localhost:{fastapi_port}/ws"
-    return  {"ws_url": ws_url}
-
-async def add_user(user: MatchRequest, redis_connection: Redis, websocket_manager: WebsocketConnectionManager, queue_manager: QueueManager) -> dict:
-    """
-    Adds the user into the queue based on their difficulty and category.
-    """
-    response = enqueue_user(user.user_id, user.difficulty, user.category, redis_connection)
-    await queue_manager.spawn_new_worker(user.difficulty, user.category, redis_connection, websocket_manager)
-    return response
-
-def confirm_match(match_id: str, user_id: str, redis_connection: Redis) -> dict:
-    """
-    Adds the user into the queue based on their.
-    """
-    update_match_response(match_id, user_id, redis_connection)
-    return {"status": "success"}
+    # Check if the user is already in the queue if they are then we don't continue.
+    if (not await add_to_queued_users_set(match_request.user_id, queue_connection)):
+        return {"status": "failure", "messsage": "user is already in the queue"}
     
+    queue_key = format_queue_key(match_request.difficulty, match_request.category)
+    lock_key = format_lock_key(match_request.difficulty, match_request.category)
+    # This lock will be sync accross all match-svc instances as long as the key used is the same
+    # timeout = safety fallback, given 2 mins
+    lock = Lock(queue_connection, lock_key, timeout=120) 
+
+    # Ensure that at any time only 1 request is updating the redis queue
+    await  lock.acquire()
+    try:
+        # Check if a match can be made
+        partner = await find_partner(queue_key, queue_connection)
+        print(partner == "")
+
+        if (partner == ""): # No partner found then add the user to the queue
+            await enqueue_user(match_request.user_id, queue_key, queue_connection)
+        else:
+            # Create a unique match ID
+            match_id = str(uuid5(NAMESPACE_DNS, match_request.user_id + partner))
+
+            # First alert the other user through the message queue
+            await send_match_found_message(partner, match_id, message_queue_connection)
+
+            # We can return a resposne saying we have found a match
+            return {"status" : "match found", "match_id" : match_id, "message" : "match has been found"}
+
+    finally:
+        # Redis Lock class handles if the lock is expired it will not release another person's lock
+        await lock.release()
+    
+    # Then we will constantly poll until a match has been found
+    return await wait_for_match(match_request, queue_connection, message_queue_connection)
+
+async def wait_for_match(match_request: MatchRequest, queue_connection:Redis, message_queue_connection:Redis) -> dict:
+    """
+    Waits for a match found message from the message queue for a period of time before returning.\n
+    If no match is found then remove the user from the queue.
+    """
+    key = format_match_found_key(match_request.user_id)
+    message =  await message_queue_connection.blpop(key, timeout=180) # Timeout 3 Minutes
+
+    if message is None:
+        return {"status" : "match not found", "message" : "could not find a match after 10 minutes"}
+    else:
+        remove_from_queued_users_set(match_request.user_id, queue_connection)
+        match_id = message[1] # Index 0 is the key where the value is popped from
+        return {"status" : "match found", "match_id" : match_id, "message" : "match has been found"}
