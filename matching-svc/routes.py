@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from models.api_models import MatchRequest
 from service.redis_message_service import connect_to_redis_message_queue
 from service.redis_queue_service import connect_to_redis_queue
+from utils.logger import log
 from utils.utils import sever_connection
 
 @asynccontextmanager
@@ -13,8 +14,10 @@ async def lifespan(app: FastAPI):
     """
     app.state.redis_queue = connect_to_redis_queue()
     app.state.redis_message_queue = connect_to_redis_message_queue()
+    log.info("Matching service is Up.")
     yield
     # This is the shut down procedure when the matching service stops.
+    log.info("Matching service shutting down.")
     await sever_connection(app.state.redis_queue)
     await sever_connection(app.state.redis_message_queue)
     
