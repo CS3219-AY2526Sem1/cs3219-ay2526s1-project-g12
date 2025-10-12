@@ -119,8 +119,9 @@ export default function Register() {
         setError(registerRes.error);
       } else {
         // Registration successful
+        console.log("Registration successful:", registerRes.data);
         setSuccess(true);
-        setUser(registerRes.data as User);
+        setUser(registerRes.data.detail as User);
 
         // Clear form
         setFormData({
