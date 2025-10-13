@@ -9,10 +9,10 @@ from controllers.gateway_controller import GatewayController
 from utils.logger import log
 
 # Environment
-USER_SERVICE_URL = os.getenv("USER_SERVICE_URL", "http://localhost:8001")
+USER_SERVICE_URL = os.getenv("USER_SERVICE_URL")
 REDIS_URL = os.getenv("REDIS_URL")
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
-TOKEN_EXPIRE_HOURS = int(os.getenv("TOKEN_EXPIRE_HOURS", "24"))
+TOKEN_EXPIRE_HOURS = int(os.getenv("TOKEN_EXPIRE_HOURS"))
 TOKEN_EXPIRE_SECONDS = int(os.getenv("TOKEN_EXPIRE_SECONDS", TOKEN_EXPIRE_HOURS * 3600))
 
 # Singletons bound during app lifespan
