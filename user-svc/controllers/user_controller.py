@@ -1,3 +1,4 @@
+import asyncio
 import re
 import uuid
 from typing import Any, Dict, Optional, Union
@@ -7,6 +8,7 @@ from fastapi_users import BaseUserManager, InvalidPasswordException, UUIDIDMixin
 
 from models.api_models import UserCreate
 from models.db_models import User
+from service.mail_svc import send_verification_email, send_password_reset_email
 from utils.logger import log
 from utils.utils import AppConfig
 
@@ -65,6 +67,7 @@ class UserController(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
     async def on_after_register(self, user: User, request: Optional[Request] = None):
         log.info(f"User {user.id} has registered.")
+        await self.request_verify(user, request)
 
     async def on_after_update(
         self,
@@ -73,6 +76,8 @@ class UserController(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         request: Optional[Request] = None,
     ):
         log.info(f"User {user.id} has been updated with {update_dict}.")
+        if "email" in update_dict:
+            await self.request_verify(user, request)
 
     async def on_after_login(
         self,
@@ -86,14 +91,16 @@ class UserController(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         self, user: User, token: str, request: Optional[Request] = None
     ):
         log.info(f"Verification requested for user {user.id}. Verification token: {token}")
+        asyncio.create_task(send_verification_email(user, token))
 
     async def on_after_verify(self, user: User, request: Optional[Request] = None):
-        log.info(f"User {user.id} has been verified")
+        log.info(f"User {user.id} has been verified.")
 
     async def on_after_forgot_password(
         self, user: User, token: str, request: Optional[Request] = None
     ):
         log.info(f"User {user.id} has forgot their password. Reset token: {token}")
+        asyncio.create_task(send_password_reset_email(user, token))
 
     async def on_after_reset_password(
         self, user: User, request: Optional[Request] = None
@@ -101,7 +108,7 @@ class UserController(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         log.info(f"User {user.id} has reset their password.")
 
     async def on_before_delete(self, user: User, request: Optional[Request] = None):
-        log.info(f"User {user.id} is going to be deleted")
+        log.info(f"User {user.id} is going to be deleted.")
 
     async def on_after_delete(self, user: User, request: Optional[Request] = None):
-        log.info(f"User {user.id} is successfully deleted")
+        log.info(f"User {user.id} is successfully deleted.")
