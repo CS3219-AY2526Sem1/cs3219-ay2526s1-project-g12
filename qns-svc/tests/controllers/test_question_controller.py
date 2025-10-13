@@ -7,7 +7,9 @@ from controllers.question_controller import (
     _validate_categories,
     _validate_difficulty,
     _validate_question,
+    create_category,
     create_question_details,
+    delete_category,
     delete_question_details,
     fetch_all_questions,
     fetch_categories,
@@ -16,9 +18,15 @@ from controllers.question_controller import (
     fetch_question_bank_category_difficulty_levels,
     fetch_question_details,
     fetch_single_question_from_bank,
+    update_category,
     update_question_details,
 )
-from models.api_models import CreateQuestionModel, UpdateQuestionModel
+from models.api_models import (
+    CreateDeleteCategoryModel,
+    CreateQuestionModel,
+    UpdateCategoryModel,
+    UpdateQuestionModel,
+)
 from models.db_models import Category, Difficulty, Question, QuestionCategory
 from models.models import convert_question_orm_to_py_model
 
@@ -195,6 +203,76 @@ class TestCategoryRelatedMethods:
         res = await fetch_categories()
         assert res["categories"] == self.valid_categories
 
+    async def test_create_category_success(self):
+        cdcm = CreateDeleteCategoryModel(name="Test2")
+
+        try:
+            await create_category(cdcm)
+        except HTTPException:
+            pytest.fail()
+
+        assert await Category.filter(name="Test2").exists()
+
+    async def test_create_category_already_exist_failure(self):
+        cdcm = CreateDeleteCategoryModel(name="Test")
+
+        with pytest.raises(HTTPException):
+            await create_category(cdcm)
+
+    async def test_update_category_success(self):
+        ucm = UpdateCategoryModel(name="Test", new_name="Test2")
+
+        try:
+            await update_category(ucm)
+        except HTTPException:
+            pytest.fail()
+
+        assert await Category.filter(name="Test2").exists()
+        assert not await Category.filter(name="Test").exists()
+
+    async def test_update_category_not_found_failure(self):
+        ucm = UpdateCategoryModel(name="Test2", new_name="Test3")
+        with pytest.raises(HTTPException):
+            await update_category(ucm)
+
+    async def test_update_category_update_name_already_exists_failure(self):
+        await Category.create(name="Test2")
+        ucm = UpdateCategoryModel(name="Test", new_name="Test2")
+
+        with pytest.raises(HTTPException):
+            await update_category(ucm)
+
+    async def test_delete_category_success(self):
+        await Category.create(name="Test2")
+        cdcm = CreateDeleteCategoryModel(name="Test2")
+
+        try:
+            await delete_category(cdcm)
+        except HTTPException:
+            pytest.fail()
+
+        assert not await Category.filter(name="Test2").exists()
+
+    async def test_delete_category_not_found_failure(self):
+        cdcm = CreateDeleteCategoryModel(name="Test2")
+
+        with pytest.raises(HTTPException):
+            await delete_category(cdcm)
+
+    async def test_delete_category_in_use_failure(self):
+        diff = await Difficulty.create(level="Test")
+        qns = await Question.create(
+            title="Test Title",
+            description="Test Description",
+            difficulty=diff,
+        )
+        await QuestionCategory.create(category=self.cat, question=qns)
+
+        cdcm = CreateDeleteCategoryModel(name="Test")
+
+        with pytest.raises(HTTPException):
+            await delete_category(cdcm)
+
 
 class TestDifficultyRelatedMethods:
     @pytest.fixture(scope="function", autouse=True)
@@ -202,7 +280,7 @@ class TestDifficultyRelatedMethods:
         self.valid_difficulty = "Test"
         self.diff = await Difficulty.create(level=self.valid_difficulty)
 
-    async def test_ffetch_difficulty_levels_success(self):
+    async def test_fetch_difficulty_levels_success(self):
         res = await fetch_difficulty_levels()
         assert res["difficulties"] == [self.valid_difficulty]
 
