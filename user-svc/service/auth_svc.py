@@ -43,7 +43,8 @@ class UuidBearerTransport(BearerTransport):
     async def get_login_response(self, token: str, **kwargs) -> Response:
         """Overridden method to include user_id in the response."""
         user_id = kwargs.get("user_id")
-        bearer_response = UuidBearerResponse(access_token=token, token_type="bearer", user_id=user_id)
+        role = kwargs.get("role")
+        bearer_response = UuidBearerResponse(access_token=token, token_type="bearer", user_id=user_id, role=role)
         return JSONResponse(jsonable_encoder(bearer_response))
 
     @staticmethod
@@ -62,6 +63,7 @@ class UuidBearerTransport(BearerTransport):
                             "M10bjOe45I5Ncu_uXvOmVV8QxnL-nZfcH96U90JaocI",
                             "token_type": "bearer",
                             "user_id": "9e9b8b9f-98cd-4e0c-b8e1-8ef4fbc4e3b2",
+                            "role": {"id": 1, "role": "user"},
                         }
                     }
                 },
@@ -78,7 +80,7 @@ class UuidAuthenticationBackend(AuthenticationBackend[models.UP, models.ID]):
     ) -> Response:
         """Overridden login method to include user_id in the response."""
         token = await strategy.write_token(user)
-        return await self.transport.get_login_response(token, user_id=user.id)
+        return await self.transport.get_login_response(token, user_id=user.id, role=user.role)
 
 
 class UuidAuthenticator(Authenticator[models.UP, models.ID]):
