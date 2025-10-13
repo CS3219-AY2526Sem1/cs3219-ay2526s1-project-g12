@@ -2,8 +2,10 @@ from fastapi import FastAPI
 
 from controllers.question_controller import (
     create_category,
+    create_difficulty_level,
     create_question_details,
     delete_category,
+    delete_difficulty_level,
     delete_question_details,
     fetch_all_questions,
     fetch_categories,
@@ -13,12 +15,15 @@ from controllers.question_controller import (
     fetch_question_details,
     fetch_single_question_from_bank,
     update_category,
+    update_difficulty_level,
     update_question_details,
 )
 from models.api_models import (
     CreateDeleteCategoryModel,
+    CreateDeleteDifficultyModel,
     CreateQuestionModel,
     UpdateCategoryModel,
+    UpdateDifficultyModel,
     UpdateQuestionModel,
 )
 from service.database_svc import register_database
@@ -82,6 +87,21 @@ async def delete_delete_category(category: CreateDeleteCategoryModel):
 @app.get("/difficulty/")
 async def get_difficulty_levels():
     return await fetch_difficulty_levels()
+
+
+@app.post("/difficulty/")
+async def post_create_difficulty(difficulty: CreateDeleteDifficultyModel):
+    return await create_difficulty_level(difficulty)
+
+
+@app.put("/difficulty/")
+async def put_update_difficulty(difficulty: UpdateDifficultyModel):
+    return await update_difficulty_level(difficulty)
+
+
+@app.delete("/difficulty/")
+async def delete_delete_difficulty(difficulty: CreateDeleteDifficultyModel):
+    return await delete_difficulty_level(difficulty)
 
 
 @app.get("/pool/category/")

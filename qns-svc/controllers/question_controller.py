@@ -5,8 +5,10 @@ from tortoise.exceptions import DoesNotExist
 
 from models.api_models import (
     CreateDeleteCategoryModel,
+    CreateDeleteDifficultyModel,
     CreateQuestionModel,
     UpdateCategoryModel,
+    UpdateDifficultyModel,
     UpdateQuestionModel,
 )
 from models.db_models import (
@@ -148,7 +150,10 @@ async def update_category(update_category: UpdateCategoryModel) -> dict:
         name=update_category.new_name
     ).exists()
     if does_new_category_exist:
-        raise HTTPException(status_code=400, detail="Category already exists")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Category {update_category.new_name} already exists",
+        )
 
     await Category.create(name=update_category.new_name)
     await QuestionCategory.filter(category_id=update_category.name).update(
@@ -164,7 +169,9 @@ async def update_category(update_category: UpdateCategoryModel) -> dict:
 async def delete_category(category: CreateDeleteCategoryModel) -> dict:
     await _validate_categories([category.name])
 
-    is_category_in_use = await QuestionCategory.filter(category=category.name).exists()
+    is_category_in_use = await QuestionCategory.filter(
+        category_id=category.name
+    ).exists()
     if is_category_in_use:
         raise HTTPException(
             status_code=400,
@@ -182,6 +189,55 @@ async def fetch_difficulty_levels() -> dict:
 
     difficulties_list = [diff.level for diff in difficulty_db]
     return {"difficulties": difficulties_list}
+
+
+async def create_difficulty_level(difficulty: CreateDeleteDifficultyModel) -> dict:
+    does_difficulty_exist = await Difficulty.filter(level=difficulty.level).exists()
+    if does_difficulty_exist:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Difficulty level {difficulty.level} already exists",
+        )
+
+    await Difficulty.create(level=difficulty.level)
+
+    return {"message": f"Difficulty level {difficulty.level} created successfully"}
+
+
+async def update_difficulty_level(update_difficulty: UpdateDifficultyModel) -> dict:
+    await _validate_difficulty(update_difficulty.level)
+    does_new_difficulty_exist = await Difficulty.filter(
+        level=update_difficulty.new_level
+    ).exists()
+    if does_new_difficulty_exist:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Difficulty level {update_difficulty.new_level} already exists",
+        )
+
+    await Difficulty.create(level=update_difficulty.new_level)
+    await Question.filter(difficulty_id=update_difficulty.level).update(
+        difficulty_id=update_difficulty.new_level
+    )
+    await Difficulty.filter(level=update_difficulty.level).delete()
+    return {
+        "message": f"Difficulty {update_difficulty.level} updated to {update_difficulty.new_level} successfully"
+    }
+
+
+async def delete_difficulty_level(difficulty: CreateDeleteDifficultyModel) -> dict:
+    await _validate_difficulty(difficulty.level)
+
+    is_difficulty_in_use = await Question.filter(
+        difficulty_id=difficulty.level
+    ).exists()
+    if is_difficulty_in_use:
+        raise HTTPException(
+            status_code=400, detail=f"Difficulty level {difficulty.level} is in use"
+        )
+
+    await Difficulty.filter(level=difficulty.level).delete()
+    return {"message": f"Difficulty {difficulty.level} deleted successfully"}
 
 
 async def fetch_all_questions(start: int | None = None, end: int | None = None) -> dict:
