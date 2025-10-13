@@ -90,17 +90,17 @@ async def get_difficulty_levels():
 
 
 @app.post("/difficulty/")
-async def post_create_difficulty(difficulty: CreateDeleteDifficultyModel):
+async def post_create_difficulty_level(difficulty: CreateDeleteDifficultyModel):
     return await create_difficulty_level(difficulty)
 
 
 @app.put("/difficulty/")
-async def put_update_difficulty(difficulty: UpdateDifficultyModel):
+async def put_update_difficulty_level(difficulty: UpdateDifficultyModel):
     return await update_difficulty_level(difficulty)
 
 
 @app.delete("/difficulty/")
-async def delete_delete_difficulty(difficulty: CreateDeleteDifficultyModel):
+async def delete_delete_difficulty_level(difficulty: CreateDeleteDifficultyModel):
     return await delete_difficulty_level(difficulty)
 
 
