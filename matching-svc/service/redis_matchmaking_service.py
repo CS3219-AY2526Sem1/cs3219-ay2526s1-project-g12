@@ -1,14 +1,14 @@
 from redis.asyncio import Redis
 from redis.asyncio.lock import Lock
 from utils.logger import log
-from utils.utils import get_envvar
+from utils.utils import get_envvar, format_match_ley
 
 ENV_REDIS_HOST_KEY = "REDIS_HOST"
 ENV_REDIS_PORT_KEY = "REDIS_PORT"
 
 QUEUED_STATUS_SET_KEY = "queued-users"
 
-def connect_to_redis_queue() -> Redis:
+def connect_to_redis_matchmaking_service() -> Redis:
     """
     Establishes a connection with redis queue.
     """
@@ -92,3 +92,82 @@ async def find_partner(key:str, queue_connection: Redis) -> str:
     else:
         # Means there is no one in the queue
         return ""
+
+async def setup_match_comfirmation(match_id: str, user_one: str, user_two: str, difficulty: str, category: str, queue_connection: Redis) -> None:
+    """
+    Creates a match comfirmation table in redis to keep track on who has and has not comfirm their match.
+    """
+    mapping = {
+        "user_one_comfirmation": 0,
+        "user_two_comfirmation": 0,
+        "user_one": user_one,
+        "user_two": user_two,
+        difficulty: difficulty,
+        category: category,
+    }
+
+    match_key = format_match_ley(match_id)
+
+    await queue_connection.hset(match_key, mapping = mapping)
+
+async def check_match_exist(match_key: str, queue_connection: Redis) -> bool:
+    """
+    Checks if a match with the corrosponding match id exists.
+    """
+    return await queue_connection.exists(match_key)
+
+async def check_match_user(user_id: str, match_key: str, queue_connection: Redis) -> bool:
+    """
+    Checks if the user belongs to this corrosponding match.
+    """
+    is_user_one = await queue_connection.hget(match_key, "user_one") == user_id
+    is_user_two = await queue_connection.hget(match_key, "user_two") == user_id
+    if (is_user_one or is_user_two ):
+        return True
+    else:
+        return False
+
+async def get_match_details(match_key: str, queue_connection: Redis) -> dict:
+    """
+    Retrieves the information of the match.
+    """
+    return await queue_connection.hgetall(match_key)
+
+async def get_match_partner(user_id: str, match_key: str, queue_connection: Redis) -> bool:
+    """
+    Retrieves the user's partner user id for that match.
+    """
+    if (await queue_connection.hget(match_key, "user_one") == user_id):
+        return await queue_connection.hget(match_key, "user_two")
+    else:
+        return await queue_connection.hget(match_key, "user_one")
+
+async def update_user_comfirmation(match_key: str, user_id: str, queue_connection: Redis) -> None:
+    """
+    Updates the comfirmation status of the user based on the given match id.
+    """
+    
+    if (await queue_connection.hget(match_key, "user_one") == user_id):
+        await queue_connection.hset(match_key,  mapping={"user_one_comfirmation": 1})
+    else:
+        await queue_connection.hset(match_key,  mapping={"user_two_comfirmation": 1})
+
+    log.info(f"User id, {user_id} has comfirm match.")
+    
+async def delete_match_record(match_key: str, queue_connection: Redis) -> None:
+    """
+    Removes the match record from the redis server.
+    """    
+    await queue_connection.delete(match_key)
+
+async def is_match_comfirmed(match_key: str, queue_connection: Redis) -> bool:
+    """
+    Checks if both users have accepted the match.
+    """
+    has_user_one_comfirm = await queue_connection.hget(match_key, "user_one_comfirmation") == "1"
+    has_user_two_comfirm = await queue_connection.hget(match_key, "user_two_comfirmation") == "1"
+
+    if ( has_user_one_comfirm and has_user_two_comfirm):
+        return True
+    else:
+        return False

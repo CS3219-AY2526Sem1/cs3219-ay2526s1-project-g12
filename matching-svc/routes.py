@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
-from controllers.matching_controller import find_match, check_redis_connection
+from controllers.matching_controller import find_match, check_redis_connection, comfirm_match
 from fastapi import FastAPI
-from models.api_models import MatchRequest
+from models.api_models import MatchRequest, MatchComfirmRequest
 from service.redis_message_service import connect_to_redis_message_queue
 from service.redis_queue_service import connect_to_redis_queue
 from utils.logger import log
@@ -37,4 +37,8 @@ async def check_connection():
 
 @app.post("/find_match")
 async def match(match_request: MatchRequest):
-    return  await find_match(match_request, app.state.redis_queue, app.state.redis_message_queue )
+    return  await find_match(match_request, app.state.redis_queue, app.state.redis_message_queue)
+
+@app.post("/confirm_match/{match_id}")
+async def comfirm_user_match(match_id: str, comfirm_request: MatchComfirmRequest):
+    return await comfirm_match(match_id, comfirm_request, app.state.redis_queue, app.state.redis_message_queue)

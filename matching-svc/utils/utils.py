@@ -28,16 +28,30 @@ def format_queue_key(difficulty:str, category:str) -> str:
     key = f"queue:{difficulty}:{category}"
     return key
 
-def format_lock_key(difficulty:str, category:str) -> str:
+def format_lock_key(key: str) -> str:
     """
     Formats the difficulty and category into a key to be used as a lock.
     """
-    key = f"lock:{difficulty}:{category}"
+    key = f"lock:{key}"
+    return key
+
+def format_match_ley(match_id: str) -> str:
+    """
+    Formats the match key for the match details.
+    """
+    key = f"match:{match_id}"
     return key
 
 def format_match_found_key(user_id: str) -> str:
     """
     Formats the message key when a match is found.
     """
-    key = f"match:{user_id}"
+    key = f"match_found:{user_id}"
+    return key
+
+def format_match_accepted_key(user_id: str) -> str:
+    """
+    Formats the match comfirm key when both uers comfirm the match.
+    """
+    key = f"match_completed:{user_id}"
     return key
