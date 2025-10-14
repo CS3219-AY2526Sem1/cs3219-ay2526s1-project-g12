@@ -220,9 +220,11 @@ class TestCategoryRelatedMethods:
 
     async def test_create_category_already_exist_failure(self):
         cdcm = CreateDeleteCategoryModel(name="Test")
+        cdcm_diff_case = CreateDeleteCategoryModel(name="TEST")
 
         with pytest.raises(HTTPException):
             await create_category(cdcm)
+            await create_category(cdcm_diff_case)
 
     async def test_update_category_success(self):
         ucm = UpdateCategoryModel(name="Test", new_name="Test2")
@@ -243,9 +245,11 @@ class TestCategoryRelatedMethods:
     async def test_update_category_new_name_already_exist_failure(self):
         await Category.create(name="Test2")
         ucm = UpdateCategoryModel(name="Test", new_name="Test2")
+        ucm_diff_case = UpdateCategoryModel(name="Test", new_name="TEST2")
 
         with pytest.raises(HTTPException):
             await update_category(ucm)
+            await update_category(ucm_diff_case)
 
     async def test_delete_category_success(self):
         await Category.create(name="Test2")
@@ -301,9 +305,11 @@ class TestDifficultyRelatedMethods:
 
     async def test_create_difficulty_already_exist_failure(self):
         cddm = CreateDeleteDifficultyModel(level="Test")
+        cddm_diff_case = CreateDeleteDifficultyModel(level="TEST")
 
         with pytest.raises(HTTPException):
             await create_difficulty_level(cddm)
+            await create_difficulty_level(cddm_diff_case)
 
     async def test_update_difficulty_success(self):
         udm = UpdateDifficultyModel(level="Test", new_level="Test2")
@@ -324,9 +330,11 @@ class TestDifficultyRelatedMethods:
     async def test_update_difficulty_new_level_already_exist_failure(self):
         await Difficulty.create(level="Test2")
         udm = UpdateDifficultyModel(level="Test", new_level="Test2")
+        udm_diff_case = UpdateDifficultyModel(level="Test", new_level="TEST2")
 
         with pytest.raises(HTTPException):
             await update_difficulty_level(udm)
+            await update_difficulty_level(udm_diff_case)
 
     async def test_delete_difficulty_success(self):
         await Difficulty.create(level="Test2")

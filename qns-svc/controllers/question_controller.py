@@ -133,7 +133,7 @@ async def fetch_categories() -> dict:
 
 
 async def create_category(category: CreateDeleteCategoryModel) -> dict:
-    does_category_exist = await Category.filter(name=category.name).exists()
+    does_category_exist = await Category.filter(name__iexact=category.name).exists()
     if does_category_exist:
         raise HTTPException(
             status_code=400, detail=f"Category {category.name} already exists"
@@ -147,7 +147,7 @@ async def create_category(category: CreateDeleteCategoryModel) -> dict:
 async def update_category(update_category: UpdateCategoryModel) -> dict:
     await _validate_categories([update_category.name])
     does_new_category_exist = await Category.filter(
-        name=update_category.new_name
+        name__iexact=update_category.new_name
     ).exists()
     if does_new_category_exist:
         raise HTTPException(
@@ -192,7 +192,9 @@ async def fetch_difficulty_levels() -> dict:
 
 
 async def create_difficulty_level(difficulty: CreateDeleteDifficultyModel) -> dict:
-    does_difficulty_exist = await Difficulty.filter(level=difficulty.level).exists()
+    does_difficulty_exist = await Difficulty.filter(
+        level__iexact=difficulty.level
+    ).exists()
     if does_difficulty_exist:
         raise HTTPException(
             status_code=400,
@@ -207,7 +209,7 @@ async def create_difficulty_level(difficulty: CreateDeleteDifficultyModel) -> di
 async def update_difficulty_level(update_difficulty: UpdateDifficultyModel) -> dict:
     await _validate_difficulty(update_difficulty.level)
     does_new_difficulty_exist = await Difficulty.filter(
-        level=update_difficulty.new_level
+        level__iexact=update_difficulty.new_level
     ).exists()
     if does_new_difficulty_exist:
         raise HTTPException(
