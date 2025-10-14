@@ -70,8 +70,7 @@ async def find_match(match_request: MatchRequest, matchmaking_conn: Redis,  mess
             log.info(f"Could not find a partner for {user_id}. Adding user to the queue")
         else:
             # Create a unique match ID
-            match_id = "a"
-            # match_id = str(uuid5(NAMESPACE_DNS, user_id + partner))
+            match_id = str(uuid5(NAMESPACE_DNS, user_id + partner))
 
             # Create a table to store information on who has comfirm the match and who has not.
             match_key = format_match_key(match_id)
@@ -82,7 +81,6 @@ async def find_match(match_request: MatchRequest, matchmaking_conn: Redis,  mess
             await send_match_found_message(message_key, match_id, message_conn)
             log.info(f"Notified {partner} that a match has been found.")
 
-            # TODO: Start a mini process to check after 12 seconds
             asyncio.create_task(confirmation_lookout(match_key, matchmaking_conn, message_conn, confirmation_conn))
 
             log.info(f"A match has been made between {user_id} and {partner}.")
