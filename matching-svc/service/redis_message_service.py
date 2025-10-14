@@ -15,21 +15,22 @@ def connect_to_redis_message_service() -> Redis:
     log.info("Connected to redis messaging server.")
     return Redis(host=host, port=redis_port, decode_responses=True, db=1)
 
-async def send_match_found_message(user_id: str, match_id: str, message_queue_connection:Redis) -> None:
+async def send_match_found_message(message_key: str, match_id: str, message_conn:Redis) -> None:
     """
     Sends a message to the user that a match as been found with the corrosponding match id.
     """
-    message_key = format_match_found_key(user_id)
-    await message_queue_connection.rpush(message_key, match_id)
+    await message_conn.rpush(message_key, match_id)
 
-    log.info(f"Match found message has been sent for user id, {user_id}.")
-
-async def send_match_finalised_message(user_id: str, collab_svc_data: str, message_queue_connection:Redis) -> None:
+async def send_match_finalised_message(message_key: str, collab_svc_data: str, message_conn:Redis) -> None:
     """
     Sends a message to the user that both parties have accepted the match and it has been finalised.
     """
-    message_key = format_match_accepted_key(user_id)
-    await message_queue_connection.rpush(message_key, collab_svc_data)
-   
-    log.info(f"Match comfirm message has been sent for user id, {user_id}.")
-    
+    await message_conn.rpush(message_key, collab_svc_data)
+
+async def wait_for_message(message_key: str, message_conn: Redis, timeout: int = 180) -> str:
+    """
+    Waits for a message to be sent based on the key. If no message is sent after the timeout,
+    then return None
+    """
+    message =  await message_conn.blpop(message_key, timeout= timeout) # Timeout 3 Minutes
+    return message
