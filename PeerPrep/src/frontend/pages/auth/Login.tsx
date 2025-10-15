@@ -29,7 +29,7 @@ export default function Login() {
       try {
         const userRes = await apiClient.getCurrentUser();
         if (userRes.data && !userRes.error) {
-          setUser(userRes.data.user_data as User);
+          setUser(userRes.data as User);
         }
       } catch (err) {
         console.log("User not authenticated");
@@ -61,7 +61,7 @@ export default function Login() {
         console.log("Fetched user data:", userRes);
 
         if (userRes.data && !userRes.error) {
-          setUser(userRes.data.user_data as User);
+          setUser(userRes.data as User);
           // Route to new page
           setEmail(""); // Clear form
           setPassword("");
