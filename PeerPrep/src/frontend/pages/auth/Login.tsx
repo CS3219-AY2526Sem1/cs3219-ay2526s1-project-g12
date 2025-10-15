@@ -52,7 +52,8 @@ export default function Login() {
       const loginRes = await apiClient.login(email, password);
 
       if (loginRes.error) {
-        setError(loginRes.error);
+        console.error("Login failed:", loginRes.error);
+        setError(loginRes.error.detail || "Login failed");
       } else {
         // Login successful - FastAPI-Users typically returns 204 No Content
         // fetch the current user to confirm authentication

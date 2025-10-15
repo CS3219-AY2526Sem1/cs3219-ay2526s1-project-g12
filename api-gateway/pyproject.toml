@@ -9,7 +9,7 @@ dependencies = [
     "asyncpg>=0.30.0",
     "fastapi[standard]>=0.116.2",
     "python-dotenv>=1.1.1",
-    "tortoise-orm[asyncpg]>=0.25.1",
+    "redis>=6.4.0",
 ]
 
 [dependency-groups]
@@ -101,11 +101,6 @@ docstring-code-format = true
 # This only has an effect when the `docstring-code-format` setting is
 # enabled.
 docstring-code-line-length = "dynamic"
-
-[tool.aerich]
-tortoise_orm = "service.database_svc.ORM_CONFIG"
-location = "./migrations"
-src_folder = "./."
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
