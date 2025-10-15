@@ -8,8 +8,10 @@ from controllers.question_controller import (
     _validate_difficulty,
     _validate_question,
     create_category,
+    create_difficulty_level,
     create_question_details,
     delete_category,
+    delete_difficulty_level,
     delete_question_details,
     fetch_all_questions,
     fetch_categories,
@@ -19,12 +21,15 @@ from controllers.question_controller import (
     fetch_question_details,
     fetch_single_question_from_bank,
     update_category,
+    update_difficulty_level,
     update_question_details,
 )
 from models.api_models import (
     CreateDeleteCategoryModel,
+    CreateDeleteDifficultyModel,
     CreateQuestionModel,
     UpdateCategoryModel,
+    UpdateDifficultyModel,
     UpdateQuestionModel,
 )
 from models.db_models import Category, Difficulty, Question, QuestionCategory
@@ -215,9 +220,11 @@ class TestCategoryRelatedMethods:
 
     async def test_create_category_already_exist_failure(self):
         cdcm = CreateDeleteCategoryModel(name="Test")
+        cdcm_diff_case = CreateDeleteCategoryModel(name="TEST")
 
         with pytest.raises(HTTPException):
             await create_category(cdcm)
+            await create_category(cdcm_diff_case)
 
     async def test_update_category_success(self):
         ucm = UpdateCategoryModel(name="Test", new_name="Test2")
@@ -235,12 +242,14 @@ class TestCategoryRelatedMethods:
         with pytest.raises(HTTPException):
             await update_category(ucm)
 
-    async def test_update_category_update_name_already_exists_failure(self):
+    async def test_update_category_new_name_already_exist_failure(self):
         await Category.create(name="Test2")
         ucm = UpdateCategoryModel(name="Test", new_name="Test2")
+        ucm_diff_case = UpdateCategoryModel(name="Test", new_name="TEST2")
 
         with pytest.raises(HTTPException):
             await update_category(ucm)
+            await update_category(ucm_diff_case)
 
     async def test_delete_category_success(self):
         await Category.create(name="Test2")
@@ -283,6 +292,78 @@ class TestDifficultyRelatedMethods:
     async def test_fetch_difficulty_levels_success(self):
         res = await fetch_difficulty_levels()
         assert res["difficulties"] == [self.valid_difficulty]
+
+    async def test_create_difficulty_success(self):
+        cddm = CreateDeleteDifficultyModel(level="Test2")
+
+        try:
+            await create_difficulty_level(cddm)
+        except HTTPException:
+            pytest.fail()
+
+        assert await Difficulty.filter(level="Test2").exists()
+
+    async def test_create_difficulty_already_exist_failure(self):
+        cddm = CreateDeleteDifficultyModel(level="Test")
+        cddm_diff_case = CreateDeleteDifficultyModel(level="TEST")
+
+        with pytest.raises(HTTPException):
+            await create_difficulty_level(cddm)
+            await create_difficulty_level(cddm_diff_case)
+
+    async def test_update_difficulty_success(self):
+        udm = UpdateDifficultyModel(level="Test", new_level="Test2")
+
+        try:
+            await update_difficulty_level(udm)
+        except HTTPException:
+            pytest.fail()
+
+        assert await Difficulty.filter(level="Test2").exists()
+
+    async def test_update_difficulty_not_found_failure(self):
+        udm = UpdateDifficultyModel(level="Test2", new_level="Test3")
+
+        with pytest.raises(HTTPException):
+            await update_difficulty_level(udm)
+
+    async def test_update_difficulty_new_level_already_exist_failure(self):
+        await Difficulty.create(level="Test2")
+        udm = UpdateDifficultyModel(level="Test", new_level="Test2")
+        udm_diff_case = UpdateDifficultyModel(level="Test", new_level="TEST2")
+
+        with pytest.raises(HTTPException):
+            await update_difficulty_level(udm)
+            await update_difficulty_level(udm_diff_case)
+
+    async def test_delete_difficulty_success(self):
+        await Difficulty.create(level="Test2")
+        cddm = CreateDeleteDifficultyModel(level="Test2")
+
+        try:
+            await delete_difficulty_level(cddm)
+        except HTTPException:
+            pytest.fail()
+
+        assert not await Difficulty.filter(level="Test2").exists()
+
+    async def test_delete_difficulty_not_found_failure(self):
+        cddm = CreateDeleteDifficultyModel(level="Test2")
+
+        with pytest.raises(HTTPException):
+            await delete_difficulty_level(cddm)
+
+    async def test_delete_difficulty_in_use_failure(self):
+        await Question.create(
+            title="Test Question",
+            description="Test Description",
+            difficulty_id=self.valid_difficulty,
+        )
+
+        cddm = CreateDeleteDifficultyModel(level=self.valid_difficulty)
+
+        with pytest.raises(HTTPException):
+            await delete_difficulty_level(cddm)
 
 
 class TestQuestionBankRelatedMethods:

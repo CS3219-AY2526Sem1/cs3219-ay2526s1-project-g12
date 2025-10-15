@@ -109,5 +109,9 @@ src_folder = "./."
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-addopts = ["--import-mode=importlib"]
+addopts = ["--import-mode=importlib", "--cov", "--cov-report=term-missing"]
 pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+omit = ["tests/*", "migrations/*"]
