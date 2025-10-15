@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 
 from controllers.gateway_controller import GatewayController
 from service.settings import get_gateway, get_token_from_cookie
@@ -38,18 +38,10 @@ async def me(
         },
     )
 
-    if code != 200:
+    if not (200 <= code < 300):
         raise HTTPException(status_code=code, detail=data)
 
-    # Combine token info with user data
-    response_data = {
-        "token_info": {
-            "created_at": token_payload.get("created_at"),
-            "expires_at": token_payload.get("expires_at"),
-        },
-        "user_data": data if isinstance(data, dict) else {},
-    }
-    return response_data
+    return data
 
 
 @router.patch("/me")
@@ -75,7 +67,7 @@ async def me_patch(
         data=body,
     )
 
-    if code != 200:
+    if not (200 <= code < 300):
         raise HTTPException(status_code=code, detail=data)
 
     return data
@@ -104,8 +96,8 @@ async def forward_users(
         body = await request.body()
 
     code, data = await gateway.forward(
-        method, f"/auth/{path}", headers=headers, params=params, data=body
+        method, f"/users/{path}", headers=headers, params=params, data=body
     )
-    if code != 200:
+    if not (200 <= code < 300):
         raise HTTPException(status_code=code, detail=data)
-    return data
+    return Response(content=data, status_code=code)

@@ -16,7 +16,7 @@ class GatewayController:
         self,
         redis: aioredis.Redis,
         user_service_url: str,
-        token_ttl_seconds: int = DEFAULT_COOKIE_MAX_AGE,
+        token_ttl_seconds: int = int(DEFAULT_COOKIE_MAX_AGE),
     ):
         self.redis = redis
         self.user_service_url = user_service_url.rstrip("/")
@@ -75,6 +75,7 @@ class GatewayController:
 
         token_data = {
             "userID": user_id,
+            # "role": role,
             "create_time": create_time.isoformat(),
             "expiry_time": expiry_time.isoformat(),
         }
@@ -90,7 +91,8 @@ class GatewayController:
         log.info(f"Stored new session for user {user_id} with key: {redis_key}")
 
     async def revoke_token(self, token: str) -> bool:
-        return bool(await self.redis.delete(token))
+        redis_key = token if token.startswith("token:") else f"token:{token}"
+        return bool(await self.redis.delete(redis_key))
 
     async def forward(
         self,

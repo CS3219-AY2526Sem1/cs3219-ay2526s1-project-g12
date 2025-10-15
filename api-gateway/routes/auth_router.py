@@ -23,7 +23,7 @@ async def login(
 
     # Forward to user-service /auth/login
     status_code, resp = await gateway.forward("POST", "/auth/login", data=body)
-    if status_code != 200:
+    if not (200 <= status_code < 300):
         raise HTTPException(
             status_code=status_code,
             detail=resp,
@@ -31,6 +31,7 @@ async def login(
 
     # Expect user service to return a token and user info
     token = resp.get("access_token")
+    role = resp.get("role")
     if not token:
         raise HTTPException(
             status_code=502, detail="User service did not return a token"
@@ -51,7 +52,7 @@ async def login(
         httponly=True,  # Makes the cookie inaccessible to JavaScript
         secure=False,  # Set to True in production (requires HTTPS)
         samesite="lax",  # Or "strict" for better CSRF protection
-        expires=DEFAULT_COOKIE_MAX_AGE,  # Expiry in seconds
+        expires=int(DEFAULT_COOKIE_MAX_AGE),  # Expiry in seconds
     )
 
     return {
@@ -98,6 +99,6 @@ async def forward_auth(
     code, data = await gateway.forward(
         method, f"/auth/{path}", headers=headers, params=params, data=body
     )
-    if code != 200:
+    if not (200 <= code < 300):
         raise HTTPException(status_code=code, detail=data)
-    return data
+    return Response(content=data, status_code=code)
