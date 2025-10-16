@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8000';
+const API_URL = "http://localhost:8000";
 
 export interface ApiResponse<T> {
   data?: T;
@@ -14,13 +14,13 @@ class ApiClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<ApiResponse<T>> {
     try {
       const response = await fetch(`${this.baseURL}${endpoint}`, {
-        credentials: 'include', // for cookie-based auth
+        credentials: "include", // for cookie-based auth
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...options.headers,
         },
         ...options,
@@ -47,21 +47,22 @@ class ApiClient {
       const data = text ? JSON.parse(text) : null;
       return { data };
     } catch (err) {
-      return { error: err instanceof Error ? err.message : 'Unknown error' };
+      return { error: err instanceof Error ? err.message : "Unknown error" };
     }
   }
 
   // Auth
   async login(email: string, password: string): Promise<ApiResponse<any>> {
-    console.log('Attempting login with:', email);
-    
+    console.log("Attempting login with:", email);
+
     // FastAPI-Users expects form data, not JSON
     const formData = new FormData();
-    formData.append('username', email); 
-    formData.append('password', password);
+    // const body = new URLSearchParams();
+    formData.append("username", email);
+    formData.append("password", password);
 
-    return this.request('/auth/login', {
-      method: 'POST',
+    return this.request("/auth/login", {
+      method: "POST",
       headers: {
         // Don't set Content-Type - let browser set it for FormData
       },
@@ -75,24 +76,24 @@ class ApiClient {
     first_name: string;
     last_name: string;
   }): Promise<ApiResponse<any>> {
-    return this.request('/auth/register', {
-      method: 'POST',
+    return this.request("/auth/register", {
+      method: "POST",
       body: JSON.stringify(userData),
     });
   }
 
   async logout(): Promise<ApiResponse<any>> {
-    return this.request('/auth/logout', {
-      method: 'POST',
+    return this.request("/auth/logout", {
+      method: "POST",
     });
   }
 
   async getCurrentUser(): Promise<ApiResponse<any>> {
-    return this.request('/users/me');
+    return this.request("/users/me");
   }
 
   async getProtectedData(): Promise<ApiResponse<string>> {
-    return this.request('/protected-route');
+    return this.request("/protected-route");
   }
 
   // Helper method to check if user is authenticated

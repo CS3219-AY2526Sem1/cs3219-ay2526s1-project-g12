@@ -1,134 +1,47 @@
 import React, { useState, useEffect } from "react";
-import { apiClient } from "../../components/api";
 import GitHubLogo from "../../assets/Images/github-logo.png";
 import GoogleLogo from "../../assets/Images/google-logo.png";
-import { Link } from "react-router";
-
-interface User {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  role_id: number;
-  is_active: boolean;
-  is_superuser: boolean;
-  is_verified: boolean;
-}
+import { Link, useNavigate } from "react-router";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const { user, login, error, clearError, isLoading } = useAuth();
+  const navigate = useNavigate();
 
-  // Check if user is already authenticated on component mount
+  // Redirect authenticated user to dashboard
   useEffect(() => {
-    const checkAuthentication = async () => {
-      try {
-        const userRes = await apiClient.getCurrentUser();
-        if (userRes.data && !userRes.error) {
-          setUser(userRes.data as User);
-        }
-      } catch (err) {
-        console.log("User not authenticated");
-      } finally {
-        setCheckingAuth(false);
-      }
-    };
+    if (user) navigate("/dashboard");
+  }, [user]);
 
-    checkAuthentication();
-  }, []);
+  // Clear auth error when user starts typing again
+  useEffect(() => {
+    if (error) clearError();
+  }, [email, password]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
+    setSubmitting(true);
 
     console.log("Login attempt:", email);
 
-    try {
-      const loginRes = await apiClient.login(email, password);
-
-      if (loginRes.error) {
-        setError(loginRes.error);
-      } else {
-        // Login successful - FastAPI-Users typically returns 204 No Content
-        // fetch the current user to confirm authentication
-        const userRes = await apiClient.getCurrentUser();
-
-        if (userRes.data && !userRes.error) {
-          setUser(userRes.data as User);
-          setEmail(""); // Clear form
-          setPassword("");
-        } else {
-          setError("Login succeeded but failed to fetch user data");
-        }
-      }
-    } catch (err: any) {
-      console.error("Login error:", err);
-      setError(err.message || "Unexpected error during login");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await apiClient.logout();
-      setUser(null);
+    const success = await login(email, password);
+    if (success) {
       setEmail("");
       setPassword("");
-      setError(null);
-    } catch (err) {
-      console.error("Logout error:", err);
-      setError("Failed to logout");
+      navigate("/dashboard");
     }
+
+    setSubmitting(false);
   };
 
   // Show loading spinner while checking authentication
-  if (checkingAuth) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="loading loading-spinner loading-lg"></div>
-      </div>
-    );
-  }
-
-  // User is authenticated - show welcome screen [to be replaced with dashboard]
-  if (user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div className="text-center">
-            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-              Welcome back!
-            </h2>
-            <div className="mt-4 p-6 bg-white rounded-lg shadow-md">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {user.first_name} {user.last_name}
-              </h3>
-              <p className="text-gray-600 mb-2">
-                <strong>Email:</strong> {user.email}
-              </p>
-              <p className="text-gray-600 mb-2">
-                <strong>Status:</strong>{" "}
-                {user.is_active ? "Active" : "Inactive"}
-              </p>
-              <p className="text-gray-600 mb-4">
-                <strong>Verified:</strong> {user.is_verified ? "Yes" : "No"}
-              </p>
-
-              <button
-                onClick={handleLogout}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     );
   }
@@ -165,7 +78,7 @@ export default function Login() {
             placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            disabled={loading}
+            disabled={submitting}
           />
 
           <label htmlFor="password" className="fieldset-legend font-normal">
@@ -181,7 +94,7 @@ export default function Login() {
             placeholder="Enter your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            disabled={loading}
+            disabled={submitting}
           />
 
           <Link to="/auth/reset" className="font-light text-sm underline">
@@ -191,10 +104,10 @@ export default function Login() {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={submitting}
           className="btn btn-primary w-full font-normal"
         >
-          {loading ? (
+          {submitting ? (
             <>
               <span className="loading loading-spinner loading-sm mr-2"></span>
               Signing in...

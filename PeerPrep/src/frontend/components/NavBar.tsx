@@ -1,5 +1,6 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import "../assets/styles.css";
+import { useAuth } from "../context/AuthContext";
 
 interface NavBarProps {
   buttons: {
@@ -11,6 +12,14 @@ interface NavBarProps {
 }
 
 function NavBar({ buttons }: NavBarProps) {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/auth/login");
+  };
+
   return (
     <div className="navbar">
       <div className="flex-1">
@@ -18,11 +27,22 @@ function NavBar({ buttons }: NavBarProps) {
       </div>
 
       <div className="flex gap-2">
-        {buttons.map((btn) => (
-          <Link to={btn.route} className={`btn ${btn.style} font-normal`}>
-            {btn.label}
-          </Link>
-        ))}
+        {buttons.map((btn) =>
+          btn.route === "/auth/logout" ? (
+            <Link
+              key={btn.label}
+              to={btn.route}
+              onClick={handleLogout}
+              className={`btn ${btn.style} font-normal`}
+            >
+              {btn.label}
+            </Link>
+          ) : (
+            <Link key={btn.label} to={btn.route} className={`btn ${btn.style} font-normal`}>
+              {btn.label}
+            </Link>
+          ),
+        )}
       </div>
     </div>
   );
