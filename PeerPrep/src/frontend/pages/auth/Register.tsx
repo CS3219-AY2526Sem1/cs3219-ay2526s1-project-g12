@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { apiClient } from "../../components/api";
 import GitHubLogo from "../../assets/Images/github-logo.png";
 import GoogleLogo from "../../assets/Images/google-logo.png";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 
 interface RegisterForm {
