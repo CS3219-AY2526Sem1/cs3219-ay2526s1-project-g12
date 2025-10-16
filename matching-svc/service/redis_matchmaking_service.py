@@ -8,7 +8,7 @@ ENV_REDIS_PORT_KEY = "REDIS_PORT"
 
 QUEUED_STATUS_SET_KEY = "queued-users"
 
-def connect_to_redis_queue() -> Redis:
+def connect_to_redis_matchmaking_service() -> Redis:
     """
     Establishes a connection with redis queue.
     """
@@ -29,28 +29,7 @@ async def add_to_queued_users_set(user_id: str, queue_connection: Redis) -> bool
         log.info(f"User id, {user_id} queued status has been added.")
         return True
     else:
-        log.info(f"User id, {user_id} is already in the queue.")
         return False
-
-async def acquire_lock(user_id:str, key:str, queue_connection:Redis) -> Lock:
-    """
-    Attempts to acquire the lock and will be blocked it is being used by someone else.
-    """
-    # This lock will be sync accross all match-svc instances as long as the key used is the same
-    # timeout = safety fallback, given 2 mins
-    lock = Lock(queue_connection, key, timeout=120)
-    await  lock.acquire()
-    log.info(f"User id, {user_id} has acquired the lock with key: {key}. ")
-
-    return lock
-
-async def release_lock(user_id:str, lock:Lock) -> None:
-    """
-    Releases the acquired lock.
-    """
-    key = lock.name
-    await lock.release()
-    log.info(f"User id, {user_id} has released the lock with key: {key} .")
 
 async def remove_from_queued_users_set(user_id: str, queue_connection: Redis) -> None:
     """
@@ -58,6 +37,7 @@ async def remove_from_queued_users_set(user_id: str, queue_connection: Redis) ->
     """
     await queue_connection.srem(QUEUED_STATUS_SET_KEY, user_id)
     log.info(f"User id, {user_id} queue status has been removed.")
+
 
 async def enqueue_user(user_id: str, key:str,  queue_connection: Redis) -> None:
     """
