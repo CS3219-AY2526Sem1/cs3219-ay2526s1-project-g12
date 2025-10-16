@@ -15,7 +15,7 @@ from service.redis_confirmation_service import (
 from service.redis_message_service import (
     send_match_found_message,
     send_match_finalised_message,
-    send_match_cancelled_message,
+    send_match_terminated_message,
     wait_for_message,
 )
 from service.redis_matchmaking_service import (
@@ -125,15 +125,15 @@ async def wait_for_match(match_request: MatchRequest, matchmaking_conn: Redis, m
         log.info(f"User id, {user_id} has released the lock with key: {lock_key} .")
         log.info(f"Could not find a match for {user_id}, removing them from the queue")
         return {"message" : "could not find a match after 3 minutes"}
-    elif message[1]  == "cancelled":
-        return {"message" : "matchmaking has been cancelled"}
+    elif message[1]  == "terminate":
+        return {"message" : "matchmaking has been terminated"}
     else:
         match_id = message[1] # Index 0 is the key where the value is popped from
         return {"match_id" : match_id, "message" : "match has been found"}
 
-async def cancel_match(match_request: MatchRequest, matchmaking_conn: Redis, message_conn: Redis) -> None:
+async def terminate_match(match_request: MatchRequest, matchmaking_conn: Redis, message_conn: Redis) -> None:
     """
-    Cancels the match request for the user.
+    Terminates the match request for the user.
     """
     user_id = match_request.user_id
     difficulty = match_request.difficulty
@@ -159,9 +159,9 @@ async def cancel_match(match_request: MatchRequest, matchmaking_conn: Redis, mes
         await remove_from_queued_users_set(user_id, matchmaking_conn)
 
         message_key = format_match_found_key(user_id)
-        await send_match_cancelled_message(message_key, message_conn)
+        await send_match_terminated_message(message_key, message_conn)
 
-        log.info(f"{user_id} has cancled his matching.")
+        log.info(f"{user_id} has terminated his matching.")
     finally:
         await release_lock(lock)
         log.info(f"User id, {user_id} has released the lock with key: {lock_key} .")

@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from controllers.matching_controller import find_match, check_redis_connection, confirm_match, cancel_match
+from controllers.matching_controller import find_match, check_redis_connection, confirm_match, terminate_match
 from fastapi import FastAPI
 from models.api_models import MatchRequest, MatchConfirmRequest
 from service.redis_confirmation_service import connect_to_redis_confirmation_service
@@ -42,9 +42,9 @@ async def check_connection():
 async def match(match_request: MatchRequest):
     return  await find_match(match_request, app.state.redis_matchmaking_service, app.state.redis_message_service, app.state.redis_confirmation_service)
 
-@app.delete("/cancel_match")
-async def cancel(cancle_request: MatchRequest):
-    return await cancel_match(cancle_request, app.state.redis_matchmaking_service, app.state.redis_message_service)
+@app.delete("/terminate_match")
+async def terminate(cancle_request: MatchRequest):
+    return await terminate_match(cancle_request, app.state.redis_matchmaking_service, app.state.redis_message_service)
 
 @app.post("/confirm_match/{match_id}")
 async def confirm_user_match(match_id: str, confirm_request: MatchConfirmRequest):
