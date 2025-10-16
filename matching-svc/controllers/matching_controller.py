@@ -12,12 +12,20 @@ from service.redis_confirmation_service import (
     get_match_details,
     delete_match_record
 )
-from service.redis_message_service import send_match_found_message, send_match_finalised_message, wait_for_message
+from service.redis_message_service import (
+    send_match_found_message,
+    send_match_finalised_message,
+    send_match_cancelled_message,
+    wait_for_message,
+)
 from service.redis_matchmaking_service import (
     add_to_queued_users_set,
-    find_partner, enqueue_user,
+    find_partner,
+    enqueue_user,
     remove_from_queued_users_set, 
-    dequeue_user
+    dequeue_user,
+    check_in_queued_users_set,
+    find_user_in_queue
 )
 from utils.logger import log
 from utils.utils import (
@@ -105,7 +113,6 @@ async def wait_for_match(match_request: MatchRequest, matchmaking_conn: Redis, m
     message_key = format_match_found_key(user_id)
     message =  await wait_for_message(message_key, message_conn)
 
-
     if message is None:
         queue_key = format_queue_key(difficulty, category)
         lock_key = format_lock_key(queue_key)
@@ -118,9 +125,47 @@ async def wait_for_match(match_request: MatchRequest, matchmaking_conn: Redis, m
         log.info(f"User id, {user_id} has released the lock with key: {lock_key} .")
         log.info(f"Could not find a match for {user_id}, removing them from the queue")
         return {"message" : "could not find a match after 3 minutes"}
+    elif message[1]  == "cancelled":
+        return {"message" : "matchmaking has been cancelled"}
     else:
         match_id = message[1] # Index 0 is the key where the value is popped from
         return {"match_id" : match_id, "message" : "match has been found"}
+
+async def cancel_match(match_request: MatchRequest, matchmaking_conn: Redis, message_conn: Redis) -> None:
+    """
+    Cancels the match request for the user.
+    """
+    user_id = match_request.user_id
+    difficulty = match_request.difficulty
+    category = match_request.category
+
+    # Check if the user is in the queue in the first place
+    if (not await check_in_queued_users_set(user_id, matchmaking_conn)):
+        raise HTTPException(status_code=400, detail="User is not currently matchmaking")
+
+    queue_key = format_queue_key(difficulty, category)
+
+    if (await find_user_in_queue(user_id, queue_key, matchmaking_conn) is None):
+        raise HTTPException(status_code=400, detail=f"User is not queuing for {difficulty} and {category}")
+
+    
+    lock_key = format_lock_key(queue_key)
+
+    lock = await acquire_lock(lock_key, matchmaking_conn)
+    log.info(f"User id, {user_id} has acquired the lock with key: {lock_key}.")
+
+    try:
+        await dequeue_user(user_id, queue_key, matchmaking_conn)
+        await remove_from_queued_users_set(user_id, matchmaking_conn)
+
+        message_key = format_match_found_key(user_id)
+        await send_match_cancelled_message(message_key, message_conn)
+
+        log.info(f"{user_id} has cancled his matching.")
+    finally:
+        await release_lock(lock)
+        log.info(f"User id, {user_id} has released the lock with key: {lock_key} .")
+
 
 async def confirm_match(match_id: str, confirm_request: MatchConfirmRequest, matchmaking_conn: Redis, message_conn: Redis, confirmation_conn: Redis) -> dict:
     """
@@ -217,3 +262,4 @@ async def cleanup(match_key: str, matchmaking_conn: Redis, confirmation_conn: Re
 
     await release_lock(lock)
     log.info(f"Backend matching service has release the lock with key: {lock_key} ")
+

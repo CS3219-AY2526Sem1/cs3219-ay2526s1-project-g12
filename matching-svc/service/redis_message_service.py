@@ -27,6 +27,12 @@ async def send_match_finalised_message(message_key: str, collab_svc_data: str, m
     """
     await message_conn.rpush(message_key, collab_svc_data)
 
+async def send_match_cancelled_message(message_key: str, message_conn:Redis) -> None:
+    """
+    Sends a message to the user that both parties have accepted the match and it has been finalised.
+    """
+    await message_conn.rpush(message_key, "cancelled")
+
 async def wait_for_message(message_key: str, message_conn: Redis, timeout: int = 180) -> str:
     """
     Waits for a message to be sent based on the key. If no message is sent after the timeout,
