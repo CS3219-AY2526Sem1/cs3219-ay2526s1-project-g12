@@ -1,5 +1,6 @@
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import JSONResponse
 
 from controllers.gateway_controller import GatewayController
 from service.settings import get_gateway, get_token_from_cookie
@@ -100,4 +101,4 @@ async def forward_users(
     )
     if not (200 <= code < 300):
         raise HTTPException(status_code=code, detail=data)
-    return Response(content=data, status_code=code)
+    return JSONResponse(content=data, status_code=code)

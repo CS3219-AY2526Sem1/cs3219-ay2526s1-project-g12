@@ -1,6 +1,7 @@
 import os
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer
 
 from controllers.gateway_controller import GatewayController
@@ -31,7 +32,7 @@ async def login(
 
     # Expect user service to return a token and user info
     token = resp.get("access_token")
-    role = resp.get("role")
+    # role = resp.get("role")
     if not token:
         raise HTTPException(
             status_code=502, detail="User service did not return a token"
@@ -101,4 +102,4 @@ async def forward_auth(
     )
     if not (200 <= code < 300):
         raise HTTPException(status_code=code, detail=data)
-    return Response(content=data, status_code=code)
+    return JSONResponse(content=data, status_code=code)
