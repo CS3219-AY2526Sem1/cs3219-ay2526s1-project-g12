@@ -5,3 +5,6 @@ class MatchRequest(BaseModel):
     user_id: Annotated[str, Field(min_length=1)]
     difficulty: Annotated[str, Field(min_length=1)]
     category: Annotated[str, Field(min_length=1)]
+
+class MatchConfirmRequest(BaseModel):
+    user_id: Annotated[str, Field(min_length=1)]

@@ -7,17 +7,17 @@ export const userApi = {
     console.log("Attempting login with:", email);
 
     // FastAPI-Users expects form data, not JSON
-    const formData = new FormData();
+    // const formData = new FormData();
     // const body = new URLSearchParams();
-    formData.append("username", email);
-    formData.append("password", password);
+    // formData.append("username", email);
+    // formData.append("password", password);
 
     return apiClient.request("/auth/login", {
       method: "POST",
-      headers: {
-        // Don't set Content-Type - let browser set it for FormData
-      },
-      body: formData,
+      body: JSON.stringify({
+        username: email,
+        password: password,
+      }),
     });
   },
 

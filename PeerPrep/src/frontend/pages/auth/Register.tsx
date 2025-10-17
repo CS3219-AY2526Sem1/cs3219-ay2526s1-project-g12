@@ -101,7 +101,6 @@ export default function Register() {
     const success = await register({
       email: formData.email,
       password: formData.password,
-      confirm_password: formData.confirmPassword,
       first_name: formData.first_name,
       last_name: formData.last_name,
     });
