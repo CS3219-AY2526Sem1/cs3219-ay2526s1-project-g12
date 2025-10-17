@@ -1,5 +1,3 @@
-import os
-
 import redis.asyncio as aioredis
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,8 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes.auth_router import router as auth_router
 from routes.user_router import router as user_router
 from service.settings import get_redis, lifespan
+from utils.utils import get_envvar
 
-FRONT_END_URL = os.getenv("FRONT_END_URL")
+FRONT_END_URL =get_envvar("FRONT_END_URL")
 app = FastAPI(title="API Gateway", lifespan=lifespan)
 
 app.include_router(auth_router)
@@ -24,7 +23,7 @@ app.add_middleware(
 )
 
 
-# --- Redis Debugging Endpoints ---
+# --- Redis Debugging Endpoints (TODO remove in production) ---
 @app.get("/print-all")
 async def print_all_from_redis_aioredis(r: aioredis = Depends(get_redis)):
     """

@@ -30,21 +30,13 @@ async def login(
             detail=resp,
         )
 
-    # Expect user service to return a token and user info
-    token = resp.get("access_token")
-    # role = resp.get("role")
-    if not token:
+    if not resp:
         raise HTTPException(
-            status_code=502, detail="User service did not return a token"
+            status_code=502, detail="User service did not return a respesponse"
         )
-    user_id = str(resp.get("user_id"))
-    log.info(f"Received token for user={user_id}")
-
-    await gateway.store_token(
-        token,
-        user_id,
-    )
-    log.info(f"Login succeeded for user={user_id}")
+    
+    token = await gateway.store_token(resp)
+    log.info(f"Login succeeded for user={username}")
 
     # --- Set the access token in an HttpOnly cookie ---
     response.set_cookie(
@@ -58,8 +50,6 @@ async def login(
 
     return {
         "access_token": token,
-        "token_type": "bearer",
-        "user_id": user_id,
     }
 
 
@@ -69,7 +59,7 @@ async def logout(
     token: str = Depends(get_token_from_cookie),
     gateway: GatewayController = Depends(get_gateway),
 ):
-    await gateway.revoke_token(token)
+    await gateway.logout_user(token)
     log.info("Logout succeeded")
 
     response.delete_cookie(key="access_token")
