@@ -28,7 +28,7 @@ async def me(
     """
     Get the current user's details. The `auth_user` dependency protects this route.
     """
-    user_id = token_payload.get("userID")
+    user_id = token_payload.get("user_id")
     log.info(f"Fetching details for user={user_id}")
 
     code, data = await gateway.forward(
@@ -55,7 +55,7 @@ async def me_patch(
     """
     Update the current user's details. Also protected by `auth_user`.
     """
-    user_id = token_payload.get("userID")
+    user_id = token_payload.get("user_id")
     body = await request.json()
 
     code, data = await gateway.forward(

@@ -27,38 +27,52 @@ class GatewayController:
         Scans for an existing access token key associated with a user ID.
 
         Args:
-            redis: The asynchronous Redis connection instance.
             user_id: The ID of the user to search for.
 
         Returns:
             The Redis key of the existing token if found, otherwise None.
         """
         # Iterate through keys matching the 'token:*' pattern
-        async for key in self.redis.scan_iter("token:*"):
-            # Check the 'userID' field in the hash stored at the key
-            stored_user_id = await self.redis.hget(key, "userID")
-            log.info(f"Checking key {key} for userID {stored_user_id}")
-            if stored_user_id == user_id:
-                return key
-        return None
+        token = await self.redis.get(f"user:{user_id}")
+        if token:
+            return f"token:{token}"
 
     async def validate_token(self, token: str) -> Dict[str, Any]:
+        """
+        Validates a token atomically and returns the associated user data.
+        """
         log.info(f"Validating token: {token}")
-        data = await self.redis.hgetall(f"token:{token}")
-        if not data:
+
+        # Get userID from token
+        user_id = await self.redis.get(f"token:{token}")
+        if not user_id:
+            log.warning(f"Token not found: {token}")
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
+                status_code=401,
                 detail="Invalid or expired token",
             )
-        log.info(f"Token data from Redis: {data}")
-        await self.redis.expire(f"token:{token}", self.ttl)  # extend expiration
-        return data
 
-    async def store_token(self, token: str, user_id: str):
+        # Atomically extend expiration for all three keys
+        async with self.redis.pipeline(transaction=True) as pipe:
+            await pipe.expire(f"token:{token}", self.ttl)
+            await pipe.expire(f"user:{user_id}", self.ttl)
+            await pipe.expire(f"userdata:{user_id}", self.ttl)
+            await pipe.hgetall(f"userdata:{user_id}")
+            _,_,_,user_data=await pipe.execute()
+
+        log.info(f"Token validation successful for user: {user_id}")
+
+        return user_data
+
+    async def store_token(self, resp: Dict[str, Any]):
         """
         Stores an access token in Redis. If the user already has a session,
         the old session is deleted before the new one is created.
         """
+        # Expect user service to return a token and user info
+        token = resp.get("access_token")
+        role = resp.get("role")
+        user_id = str(resp.get("user_id"))
         # 1. Check for and delete any existing session for the user
         existing_key = await self._find_existing_token_key(user_id)
         if existing_key:
@@ -70,29 +84,70 @@ class GatewayController:
         # 2. Proceed to store the new token
         redis_key = f"token:{token}"
         create_time = datetime.now(timezone.utc)
-        expire_in_minutes = self.ttl / 60
-        expiry_time = create_time + timedelta(minutes=expire_in_minutes)
 
-        token_data = {
-            "userID": user_id,
-            # "role": role,
-            "create_time": create_time.isoformat(),
-            "expiry_time": expiry_time.isoformat(),
-        }
+        del resp["access_token"]  # Remove token from user data
+        role = resp.get("role").get("role")
+        del resp["role"]  # Remove role from user data
+        resp["role"] = role
+        user_data = resp  # Remaining user data to store
+        user_data["create_time"] = create_time.isoformat()
 
         # Use a Redis pipeline for atomic execution
         async with self.redis.pipeline(transaction=True) as pipe:
-            await pipe.hset(redis_key, mapping=token_data)
-            await pipe.expire(
-                redis_key, int(timedelta(minutes=expire_in_minutes).total_seconds())
-            )
+            # Table 1: user:{userID} -> token
+            await pipe.set(f"user:{user_id}", token, ex=self.ttl)
+
+            # Table 2: token:{token} -> userID
+            await pipe.set(f"token:{token}", user_id, ex=self.ttl)
+
+            # Table 3: userdata:{userID} -> user data hash
+            await pipe.hset(f"userdata:{user_id}", mapping=user_data)
+            await pipe.expire(f"userdata:{user_id}", self.ttl)
+
             await pipe.execute()
 
         log.info(f"Stored new session for user {user_id} with key: {redis_key}")
+        return token
 
     async def revoke_token(self, token: str) -> bool:
         redis_key = token if token.startswith("token:") else f"token:{token}"
         return bool(await self.redis.delete(redis_key))
+
+    async def logout_user(self, token: str) -> Dict[str, Any]:
+        """
+        Logs out a user by completely removing their session from all three Redis tables.
+
+        Args:
+            token: The authentication token to logout
+        Raises:
+            HTTPException: If token is invalid or already expired
+        """
+        log.info(f"Processing logout for token: {token}")
+
+        # Step 1: Get user ID from token table
+        user_id = await self.redis.get(f"token:{token}")
+
+        if not user_id:
+            log.error(f"Logout attempted with invalid token: {token}")
+            raise HTTPException(
+                status_code=401, detail="Invalid or already expired token"
+            )
+
+        # Step 3: Delete from all three tables atomically
+        async with self.redis.pipeline(transaction=True) as pipe:
+            # Delete from Table 1: user:{userID} -> token
+            await pipe.delete(f"user:{user_id}")
+
+            # Delete from Table 2: token:{token} -> userID
+            await pipe.delete(f"token:{token}")
+
+            # Delete from Table 3: userdata:{userID} -> user data
+            await pipe.delete(f"userdata:{user_id}")
+
+            # Execute all deletions
+            await pipe.execute()
+
+        log.info(f"Successfully logged out user {user_id} ")
 
     async def forward(
         self,
