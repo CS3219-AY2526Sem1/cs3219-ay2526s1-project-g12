@@ -79,7 +79,7 @@ class ApiClient {
 
   async logout(): Promise<ApiResponse<any>> {
     return this.request('/auth/logout', {
-      method: 'GET',
+      method: 'POST',
     });
   }
 

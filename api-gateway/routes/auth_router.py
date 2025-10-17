@@ -63,7 +63,7 @@ async def login(
     }
 
 
-@router.get("/logout")
+@router.post("/logout")
 async def logout(
     response: Response,
     token: str = Depends(get_token_from_cookie),
