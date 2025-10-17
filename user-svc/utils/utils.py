@@ -1,29 +1,39 @@
-from pydantic import Field, PostgresDsn, RedisDsn, EmailStr, SecretStr
+from pydantic import Field, PostgresDsn, EmailStr, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class AppConfig(BaseSettings):
-    """Application configuration settings.
+    """Application configuration settings loaded from environment variables.
 
     Attributes:
-        database_url (PostgresDsn): Connection string for this service's database.
-        redis_url (RedisDsn): Redis connection string for caching or queues.
+        database_url (PostgresDsn): PostgreSQL connection string for the service database.
 
-        jwt_secret (str): Secret key for signing JWT access tokens.
-        verify_token_secret (str): Secret key for email verification tokens.
-        reset_token_secret (str): Secret key for password reset tokens.
-        verify_token_expire_seconds (int): Token lifetime (seconds) for verification links.
-        reset_token_expire_seconds (int): Token lifetime (seconds) for password resets.
+        jwt_secret (str): Secret for JWT access tokens (min length 32).
+        verify_token_secret (str): Secret for email verification tokens (min length 32).
+        reset_token_secret (str): Secret for password reset tokens (min length 32).
 
-        default_role_id (int): Default role assigned to newly registered users.
+        verify_token_expire_seconds (int): Token lifetime in seconds for verification links. Default: 3600.
+        reset_token_expire_seconds (int): Token lifetime in seconds for password resets. Default: 3600.
 
-        log_name (str): Identifier name for the log file or log source.
-        log_level (str): Logging verbosity level.
-        log_dir (str): Directory where log files are stored.
+        default_role_id (int): Default role ID for newly registered users. Default: 1.
+        verify_email_base (str): Base URL for email verification links. Default: http://localhost:8000/verify.
+        password_reset_base (str): Base URL for password reset links. Default: http://localhost:8000/reset\-password.
+
+        mail_from_address (EmailStr): Sender email address used in outbound emails.
+        mail_from_name (str): Sender display name used in outbound emails.
+        mail_host (str): SMTP server host.
+        mail_port (int): SMTP server port. Default: 587.
+        mail_username (str): SMTP username.
+        mail_password (SecretStr): SMTP password.
+        mail_starttls (bool): Whether to use STARTTLS. Default: True.
+        mail_ssl_tls (bool): Whether to use SSL/TLS. Default: False.
+
+        log_name (str): Service log identifier for logs.
+        log_level (str): Logging verbosity level. Default: INFO.
+        log_dir (str): Directory where logs are stored. Default: ./logs.
     """
     # Database & Redis Configuration
     database_url: PostgresDsn
-    redis_url: RedisDsn
 
     # Authentication & Token Configuration
     jwt_secret: str = Field(min_length=32, description="Secret for JWT access tokens")
