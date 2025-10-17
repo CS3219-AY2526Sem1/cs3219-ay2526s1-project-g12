@@ -6,6 +6,7 @@ import type { LazyExoticComponent, ReactNode } from "react";
 import { getLayout, isProtectedRoute } from "./config/RouteConfig";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
+import NotFoundRedirect from "./components/NotFoundRedirect";
 
 // Type for our route object
 type RouteType = {
@@ -60,6 +61,8 @@ export default function AppRouter() {
 
               return <Route key={path} path={path} element={element} />;
             })}
+            {/* 👇 Add this fallback route at the end */}
+            <Route path="*" element={<NotFoundRedirect />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

@@ -21,6 +21,6 @@ export const NAV_BUTTONS = [
     label: "🚪 Logout",
     role: "user",
     route: "/auth/logout",
-    style: "btn-success",
+    style: "btn-error",
   },
 ];
