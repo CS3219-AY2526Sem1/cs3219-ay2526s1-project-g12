@@ -11,7 +11,6 @@ from utils.logger import log
 # Environment
 USER_SERVICE_URL = os.getenv("USER_SERVICE_URL")
 REDIS_URL = os.getenv("REDIS_URL")
-REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
 TOKEN_EXPIRE_HOURS = int(os.getenv("TOKEN_EXPIRE_HOURS"))
 TOKEN_EXPIRE_SECONDS = int(os.getenv("TOKEN_EXPIRE_SECONDS", TOKEN_EXPIRE_HOURS * 3600))
 
@@ -24,7 +23,6 @@ async def lifespan(app: FastAPI):
     global _redis
     _redis = await aioredis.from_url(
         f"{REDIS_URL}",
-        # password=REDIS_PASSWORD,
         decode_responses=True,
         encoding="utf-8",
         health_check_interval=5,
