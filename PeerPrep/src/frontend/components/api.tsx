@@ -54,20 +54,16 @@ class ApiClient {
   // Auth
   async login(email: string, password: string): Promise<ApiResponse<any>> {
     console.log('Attempting login with:', email);
-    
-    // FastAPI-Users expects form data, not JSON
-    const formData = new FormData();
-    formData.append('username', email); 
-    formData.append('password', password);
 
     return this.request('/auth/login', {
       method: 'POST',
-      headers: {
-        // Don't set Content-Type - let browser set it for FormData
-      },
-      body: formData,
+      body: JSON.stringify({
+        username: email,
+        password: password,
+      }),
     });
   }
+
 
   async register(userData: {
     email: string;
