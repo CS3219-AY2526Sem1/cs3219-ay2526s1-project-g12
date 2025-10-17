@@ -25,3 +25,12 @@ class CreateDeleteCategoryModel(BaseModel):
 class UpdateCategoryModel(BaseModel):
     name: Annotated[str, Field(min_length=1)]
     new_name: Annotated[str, Field(min_length=1)]
+
+
+class CreateDeleteDifficultyModel(BaseModel):
+    level: Annotated[str, Field(min_length=1)]
+
+
+class UpdateDifficultyModel(BaseModel):
+    level: Annotated[str, Field(min_length=1)]
+    new_level: Annotated[str, Field(min_length=1)]

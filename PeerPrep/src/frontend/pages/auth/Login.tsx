@@ -52,14 +52,17 @@ export default function Login() {
       const loginRes = await apiClient.login(email, password);
 
       if (loginRes.error) {
-        setError(loginRes.error);
+        console.error("Login failed:", loginRes.error);
+        setError(loginRes.error.detail || "Login failed");
       } else {
         // Login successful - FastAPI-Users typically returns 204 No Content
         // fetch the current user to confirm authentication
         const userRes = await apiClient.getCurrentUser();
+        console.log("Fetched user data:", userRes);
 
         if (userRes.data && !userRes.error) {
           setUser(userRes.data as User);
+          // Route to new page
           setEmail(""); // Clear form
           setPassword("");
         } else {
@@ -98,6 +101,7 @@ export default function Login() {
 
   // User is authenticated - show welcome screen [to be replaced with dashboard]
   if (user) {
+    console.log("User is authenticated:", user);
     return (
       <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">

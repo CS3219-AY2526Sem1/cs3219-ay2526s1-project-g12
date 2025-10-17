@@ -1,7 +1,7 @@
 [project]
-name = "qns-svc"
+name = "api-gateway"
 version = "0.1.0"
-description = "Question Service for PeerPrep"
+description = "API Gateway for PeerPrep"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -9,7 +9,7 @@ dependencies = [
     "asyncpg>=0.30.0",
     "fastapi[standard]>=0.116.2",
     "python-dotenv>=1.1.1",
-    "tortoise-orm[asyncpg]>=0.25.1",
+    "redis>=6.4.0",
 ]
 
 [dependency-groups]
@@ -102,16 +102,7 @@ docstring-code-format = true
 # enabled.
 docstring-code-line-length = "dynamic"
 
-[tool.aerich]
-tortoise_orm = "service.database_svc.ORM_CONFIG"
-location = "./migrations"
-src_folder = "./."
-
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-addopts = ["--import-mode=importlib", "--cov", "--cov-report=term-missing"]
+addopts = ["--import-mode=importlib"]
 pythonpath = ["."]
-testpaths = ["tests"]
-
-[tool.coverage.run]
-omit = ["tests/*", "migrations/*"]
