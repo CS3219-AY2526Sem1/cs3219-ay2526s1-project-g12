@@ -1,4 +1,3 @@
-import os
 from contextlib import asynccontextmanager
 from typing import Optional
 
@@ -7,12 +6,15 @@ from fastapi import Cookie, Depends, FastAPI, HTTPException
 
 from controllers.gateway_controller import GatewayController
 from utils.logger import log
+from utils.utils import get_envvar
 
 # Environment
-USER_SERVICE_URL = os.getenv("USER_SERVICE_URL")
-REDIS_URL = os.getenv("REDIS_URL")
-TOKEN_EXPIRE_HOURS = int(os.getenv("TOKEN_EXPIRE_HOURS"))
-TOKEN_EXPIRE_SECONDS = int(os.getenv("TOKEN_EXPIRE_SECONDS", TOKEN_EXPIRE_HOURS * 3600))
+USER_SERVICE_URL = get_envvar("USER_SERVICE_URL")
+REDIS_URL = get_envvar("REDIS_URL")
+TOKEN_EXPIRE_HOURS = int(get_envvar("TOKEN_EXPIRE_HOURS"))
+TOKEN_EXPIRE_SECONDS = int(
+    get_envvar("TOKEN_EXPIRE_SECONDS", TOKEN_EXPIRE_HOURS * 3600)
+)
 
 # Singletons bound during app lifespan
 _redis: aioredis.Redis
