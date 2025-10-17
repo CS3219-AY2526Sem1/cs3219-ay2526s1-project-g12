@@ -73,3 +73,4 @@ class UuidBearerResponse(BearerResponse):
         user_id (uuid): The unique identifier of the user associated with the token.
     """
     user_id: uuid.UUID
+    role: Role
