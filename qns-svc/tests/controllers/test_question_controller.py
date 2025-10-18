@@ -42,6 +42,8 @@ class TestValidateMethods:
         self.valid_title = "Test Question"
         self.valid_description = "Test Description"
         self.valid_difficulty = "Test"
+        self.valid_code_template = "Code"
+        self.valid_solution_sample = "Soln"
         self.valid_categories = ["Test"]
         cat = await Category.create(name=self.valid_categories[0])
         diff = await Difficulty.create(level=self.valid_difficulty)
@@ -49,6 +51,8 @@ class TestValidateMethods:
             title=self.valid_title,
             description=self.valid_description,
             difficulty=diff,
+            code_template=self.valid_code_template,
+            solution_sample=self.valid_solution_sample,
         )
         self.valid_id = qns.id
         await QuestionCategory.create(question=qns, category=cat)
@@ -90,6 +94,8 @@ class TestQuestionRelatedMethods:
         self.valid_title = "Test Question"
         self.valid_description = "Test Description"
         self.valid_difficulty = "Test"
+        self.valid_code_template = "Code"
+        self.valid_solution_sample = "Soln"
         self.valid_categories = ["Test"]
         self.cat = await Category.create(name=self.valid_categories[0])
         self.diff = await Difficulty.create(level=self.valid_difficulty)
@@ -97,6 +103,8 @@ class TestQuestionRelatedMethods:
             title=self.valid_title,
             description=self.valid_description,
             difficulty=self.diff,
+            code_template=self.valid_code_template,
+            solution_sample=self.valid_solution_sample,
         )
         self.valid_id = self.qns.id
         self.qns_cat = await QuestionCategory.create(
@@ -120,11 +128,15 @@ class TestQuestionRelatedMethods:
     async def test_create_question_details_success(self):
         title = "Test Question New"
         description = "Test Description New"
+        code_template = "Test Code New"
+        solution_sample = "Test Soln New"
 
         cqm = CreateQuestionModel(
             title=title,
             description=description,
             difficulty=self.valid_difficulty,
+            code_template=code_template,
+            solution_sample=solution_sample,
             categories=self.valid_categories,
         )
 
@@ -137,6 +149,8 @@ class TestQuestionRelatedMethods:
         title = "Test Question 2"
         description = "Test Description 2"
         difficulty = "Second"
+        code_template = "Test Code 2"
+        solution_sample = "Test Soln 2"
         categories = ["Second"]
         categories.extend(self.valid_categories)
         await Difficulty.create(level=difficulty)
@@ -146,6 +160,8 @@ class TestQuestionRelatedMethods:
             title=title,
             description=description,
             difficulty=difficulty,
+            code_template=code_template,
+            solution_sample=solution_sample,
             categories=categories,
         )
 
@@ -158,6 +174,8 @@ class TestQuestionRelatedMethods:
         assert qns_db.title == title
         assert qns_db.description == description
         assert qns_db.difficulty.level == difficulty
+        assert qns_db.code_template == code_template
+        assert qns_db.solution_sample == solution_sample
         qns_cat_db = await QuestionCategory.filter(
             question_id=self.valid_id
         ).prefetch_related("category")
@@ -273,6 +291,8 @@ class TestCategoryRelatedMethods:
         qns = await Question.create(
             title="Test Title",
             description="Test Description",
+            code_template="Test Code",
+            solution_sample="Test Soln",
             difficulty=diff,
         )
         await QuestionCategory.create(category=self.cat, question=qns)
@@ -357,6 +377,8 @@ class TestDifficultyRelatedMethods:
         await Question.create(
             title="Test Question",
             description="Test Description",
+            code_template="Test Code",
+            solution_sample="Test Soln",
             difficulty_id=self.valid_difficulty,
         )
 
@@ -376,6 +398,8 @@ class TestQuestionBankRelatedMethods:
         qns = await Question.create(
             title="Test Question",
             description="Test Description",
+            code_template="Test Code",
+            solution_sample="Test Soln",
             difficulty=diff,
         )
         self.valid_id = qns.id

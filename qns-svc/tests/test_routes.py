@@ -20,6 +20,8 @@ class TestRoutes:
         cls.valid_title = "Test Question"
         cls.valid_description = "Test Description"
         cls.valid_difficulty = "Test"
+        cls.valid_code_template = "Code"
+        cls.valid_solution_sample = "Soln"
         cls.valid_categories = ["Test"]
 
     @patch("routes.fetch_all_questions", new_callable=AsyncMock)
@@ -68,6 +70,8 @@ class TestRoutes:
             "description": self.valid_description,
             "categories": self.valid_categories,
             "difficulty": self.valid_difficulty,
+            "code_template": self.valid_code_template,
+            "solution_sample": self.valid_solution_sample,
         }
         expected_qns = CreateQuestionModel(**json_payload)
         async with AsyncClient(

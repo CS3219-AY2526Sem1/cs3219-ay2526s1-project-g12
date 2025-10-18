@@ -10,6 +10,8 @@ class TestCreateQuestionModel:
         cls.valid_title = "Test Question"
         cls.valid_description = "Test Description"
         cls.valid_difficulty = "Test"
+        cls.valid_code_template = "Code"
+        cls.valid_solution_sample = "Soln"
         cls.valid_categories = ["Test"]
 
     def test_valid_question_success(self):
@@ -18,6 +20,8 @@ class TestCreateQuestionModel:
                 title=self.valid_title,
                 description=self.valid_description,
                 difficulty=self.valid_difficulty,
+                code_template=self.valid_code_template,
+                solution_sample=self.valid_solution_sample,
                 categories=self.valid_categories,
             )
         except ValidationError:
@@ -29,6 +33,8 @@ class TestCreateQuestionModel:
                 title="",
                 description=self.valid_description,
                 difficulty=self.valid_difficulty,
+                code_template=self.valid_code_template,
+                solution_sample=self.valid_solution_sample,
                 categories=self.valid_categories,
             )
 
@@ -38,6 +44,8 @@ class TestCreateQuestionModel:
                 title=self.valid_title,
                 description="",
                 difficulty=self.valid_difficulty,
+                code_template=self.valid_code_template,
+                solution_sample=self.valid_solution_sample,
                 categories=self.valid_categories,
             )
 
@@ -47,6 +55,30 @@ class TestCreateQuestionModel:
                 title=self.valid_title,
                 description=self.valid_description,
                 difficulty="",
+                code_template=self.valid_code_template,
+                solution_sample=self.valid_solution_sample,
+                categories=self.valid_categories,
+            )
+
+    def test_empty_code_template_failure(self):
+        with pytest.raises(ValidationError):
+            CreateQuestionModel(
+                title=self.valid_title,
+                description=self.valid_description,
+                difficulty=self.valid_difficulty,
+                code_template="",
+                solution_sample=self.valid_solution_sample,
+                categories=self.valid_categories,
+            )
+
+    def test_empty_solution_sample_failure(self):
+        with pytest.raises(ValidationError):
+            CreateQuestionModel(
+                title=self.valid_title,
+                description=self.valid_description,
+                difficulty=self.valid_difficulty,
+                code_template=self.valid_code_template,
+                solution_sample="",
                 categories=self.valid_categories,
             )
 
@@ -56,6 +88,8 @@ class TestCreateQuestionModel:
                 title=self.valid_title,
                 description=self.valid_description,
                 difficulty=self.valid_difficulty,
+                code_template=self.valid_code_template,
+                solution_sample=self.valid_solution_sample,
                 categories=[],
             )
 
@@ -66,6 +100,8 @@ class TestUpdateQuestionModel:
         cls.valid_title = "Test Question"
         cls.valid_description = "Test Description"
         cls.valid_difficulty = "Test"
+        cls.valid_code_template = "Code"
+        cls.valid_solution_sample = "Soln"
         cls.valid_categories = ["Test"]
 
     def test_valid_filled_success(self):
@@ -74,6 +110,8 @@ class TestUpdateQuestionModel:
                 title=self.valid_title,
                 description=self.valid_description,
                 difficulty=self.valid_difficulty,
+                code_template=self.valid_code_template,
+                solution_sample=self.valid_solution_sample,
                 categories=self.valid_categories,
             )
         except ValidationError:
@@ -85,6 +123,8 @@ class TestUpdateQuestionModel:
                 title=None,
                 description=None,
                 difficulty=None,
+                code_template=None,
+                solution_sample=None,
                 categories=None,
             )
         except ValidationError:
@@ -101,6 +141,14 @@ class TestUpdateQuestionModel:
     def test_empty_difficulty_failure(self):
         with pytest.raises(ValidationError):
             UpdateQuestionModel(difficulty="")
+
+    def test_empty_code_template_failure(self):
+        with pytest.raises(ValidationError):
+            UpdateQuestionModel(code_template="")
+
+    def test_empty_solution_sample_failure(self):
+        with pytest.raises(ValidationError):
+            UpdateQuestionModel(solution_sample="")
 
     def test_empty_categories_failure(self):
         with pytest.raises(ValidationError):
