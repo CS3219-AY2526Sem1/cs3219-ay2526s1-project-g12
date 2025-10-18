@@ -1,10 +1,12 @@
 import { lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import AuthLayout from "./layouts/AuthLayout";
-import MainLayout from "./layouts/MainLayout";
 import "./assets/styles.css";
 import type { LazyExoticComponent, ReactNode } from "react";
+import { getLayout, isProtectedRoute } from "./config/RouteConfig";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
+import NotFoundRedirect from "./components/NotFoundRedirect";
 
 // Type for our route object
 type RouteType = {
@@ -28,14 +30,11 @@ const routes: RouteType[] = Object.keys(modules).map((path) => {
     .replace(".tsx", "")
     .toLowerCase();
 
-  // Choose layout based on folder
-  let Layout = MainLayout;
-  if (routePath.startsWith("/auth")) {
-    Layout = AuthLayout;
-  }
+  const formattedPath = routePath === "/landingpage" ? "/" : routePath;
+  const Layout = getLayout(formattedPath);
 
   return {
-    path: routePath === "/landingpage" ? "/" : routePath,
+    path: formattedPath,
     Component,
     Layout,
   };
@@ -43,23 +42,31 @@ const routes: RouteType[] = Object.keys(modules).map((path) => {
 
 export default function AppRouter() {
   return (
-    <BrowserRouter>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Routes>
-          {routes.map(({ path, Component, Layout }) => (
-            <Route
-              key={path}
-              path={path}
-              element={
+    <AuthProvider>
+      <BrowserRouter>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Routes>
+            {routes.map(({ path, Component, Layout }) => {
+              const element = (
                 <Layout>
-                  <Component />
+                  {isProtectedRoute(path) ? (
+                    <ProtectedRoute>
+                      <Component />
+                    </ProtectedRoute>
+                  ) : (
+                    <Component />
+                  )}
                 </Layout>
-              }
-            />
-          ))}
-        </Routes>
-      </Suspense>
-    </BrowserRouter>
+              );
+
+              return <Route key={path} path={path} element={element} />;
+            })}
+            {/* 👇 Add this fallback route at the end */}
+            <Route path="*" element={<NotFoundRedirect />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

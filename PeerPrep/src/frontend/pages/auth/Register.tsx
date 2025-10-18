@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { apiClient } from "../../components/api";
 import GitHubLogo from "../../assets/Images/github-logo.png";
 import GoogleLogo from "../../assets/Images/google-logo.png";
 import { Link } from "react-router";
+import { useAuth } from "../../context/AuthContext";
 
 interface RegisterForm {
   email: string;
@@ -10,17 +10,6 @@ interface RegisterForm {
   confirmPassword: string;
   first_name: string;
   last_name: string;
-}
-
-interface User {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  role_id: number;
-  is_active: boolean;
-  is_superuser: boolean;
-  is_verified: boolean;
 }
 
 export default function Register() {
@@ -31,16 +20,16 @@ export default function Register() {
     first_name: "",
     last_name: "",
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
   const [passwordValidation, setPasswordValidation] = useState({
     length: false,
     uppercase: false,
     lowercase: false,
     numberOrSymbol: false,
   });
+  const { user, register, error, clearError } = useAuth();
 
   // Password validation
   const validatePassword = (password: string) => {
@@ -67,13 +56,15 @@ export default function Register() {
     }
 
     // Clear error when user starts typing
-    if (error) setError(null);
+    if (validationError) setValidationError(null);
+    if (error) clearError();
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
+    setSubmitting(true);
+    clearError();
+    setValidationError(null);
 
     // Client-side validation
     if (
@@ -82,62 +73,50 @@ export default function Register() {
       !formData.first_name ||
       !formData.last_name
     ) {
-      setError("All fields are required");
-      setLoading(false);
+      setValidationError("All fields are required");
+      setSubmitting(false);
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      setLoading(false);
+      setValidationError("Passwords do not match");
+      setSubmitting(false);
       return;
     }
 
     if (!validatePassword(formData.password)) {
-      setError("Password does not meet requirements");
-      setLoading(false);
+      setValidationError("Password does not meet requirements");
+      setSubmitting(false);
       return;
     }
 
     if (formData.email.includes(formData.password)) {
-      setError("Password should not contain your email address");
-      setLoading(false);
+      setValidationError("Password should not contain your email address");
+      setSubmitting(false);
       return;
     }
 
     console.log("Registration attempt:", formData.email);
 
-    try {
-      const registerRes = await apiClient.register({
-        email: formData.email,
-        password: formData.password,
-        first_name: formData.first_name,
-        last_name: formData.last_name,
+    const success = await register({
+      email: formData.email,
+      password: formData.password,
+      first_name: formData.first_name,
+      last_name: formData.last_name,
+    });
+
+    if (success) {
+      setSuccess(true);
+      setFormData({
+        email: "",
+        password: "",
+        confirmPassword: "",
+        first_name: "",
+        last_name: "",
       });
-
-      if (registerRes.error) {
-        setError(registerRes.error.detail || "Registration failed");
-      } else {
-        // Registration successful
-        console.log("Registration successful:", registerRes.data);
-        setSuccess(true);
-        setUser(registerRes.data as User);
-
-        // Clear form
-        setFormData({
-          email: "",
-          password: "",
-          confirmPassword: "",
-          first_name: "",
-          last_name: "",
-        });
-      }
-    } catch (err: any) {
-      console.error("Registration error:", err);
-      setError(err.message || "Unexpected error during registration");
-    } finally {
-      setLoading(false);
     }
+
+    setSubmitting(false);
   };
 
   // Success state - show registration confirmation
@@ -197,9 +176,10 @@ export default function Register() {
           <span className="peerprep-logo">PeerPrep</span>
         </div>
 
-        {error && (
+        {/* Shared error display for both validation & API errors */}
+        {(validationError || error) && (
           <div className="alert alert-error">
-            <span>{error}</span>
+            <span>{validationError || error}</span>
           </div>
         )}
 
@@ -223,7 +203,7 @@ export default function Register() {
                 placeholder="First name"
                 value={formData.first_name}
                 onChange={handleInputChange}
-                disabled={loading}
+                disabled={submitting}
               />
             </div>
 
@@ -244,7 +224,7 @@ export default function Register() {
                 placeholder="Last name"
                 value={formData.last_name}
                 onChange={handleInputChange}
-                disabled={loading}
+                disabled={submitting}
               />
             </div>
           </div>
@@ -263,7 +243,7 @@ export default function Register() {
             placeholder="Enter your email"
             value={formData.email}
             onChange={handleInputChange}
-            disabled={loading}
+            disabled={submitting}
           />
 
           {/* Password Field */}
@@ -280,7 +260,7 @@ export default function Register() {
             placeholder="Create a password"
             value={formData.password}
             onChange={handleInputChange}
-            disabled={loading}
+            disabled={submitting}
           />
 
           {/* Password Requirements */}
@@ -346,7 +326,7 @@ export default function Register() {
             placeholder="Confirm your password"
             value={formData.confirmPassword}
             onChange={handleInputChange}
-            disabled={loading}
+            disabled={submitting}
           />
           {formData.confirmPassword &&
             formData.password !== formData.confirmPassword && (
@@ -357,13 +337,13 @@ export default function Register() {
         <button
           type="submit"
           disabled={
-            loading ||
+            submitting ||
             !Object.values(passwordValidation).every(Boolean) ||
             formData.password !== formData.confirmPassword
           }
           className="btn btn-primary w-full font-normal"
         >
-          {loading ? (
+          {submitting ? (
             <>
               <span className="loading loading-spinner loading-sm mr-2"></span>
               Creating account...
