@@ -3,21 +3,23 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from controllers.gateway_controller import GatewayController
-from service.settings import get_gateway, get_token_from_cookie
+from service.cookie_management import extend_access_token_cookie, get_token_from_cookie
+from service.redis_settings import get_gateway
 from utils.logger import log
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
 async def auth_user(
-    token_str: str = Depends(get_token_from_cookie),
+    access_token: str = Depends(extend_access_token_cookie),
     gateway: GatewayController = Depends(get_gateway),
 ) -> dict:
     """
-    Validates the token from the cookie and returns its payload.
+    Validates and extends TTL of the token from the cookie and returns its payload.
     This function now orchestrates token retrieval and validation.
     """
-    return await gateway.validate_token(token_str)
+    
+    return await gateway.validate_token(access_token)
 
 
 @router.get("/me")
