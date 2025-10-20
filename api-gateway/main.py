@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routes.auth_router import router as auth_router
 from routes.user_router import router as user_router
-from service.settings import get_redis, lifespan
+from service.redis_settings import get_redis, lifespan
 from utils.utils import get_envvar
 
 FRONT_END_URL =get_envvar("FRONT_END_URL")

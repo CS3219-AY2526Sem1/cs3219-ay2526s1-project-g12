@@ -1,14 +1,13 @@
-import os
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer
 
 from controllers.gateway_controller import GatewayController
-from service.settings import get_gateway, get_token_from_cookie
+from service.cookie_management import get_token_from_cookie, set_access_token_cookie
+from service.redis_settings import get_gateway
 from utils.logger import log
 
-DEFAULT_COOKIE_MAX_AGE = os.getenv("DEFAULT_COOKIE_MAX_AGE")
 router = APIRouter(prefix="/auth", tags=["auth"])
 security = HTTPBearer(auto_error=False)
 
@@ -38,16 +37,12 @@ async def login(
     token = await gateway.store_token(resp)
     log.info(f"Login succeeded for user={username}")
 
-    # --- Set the access token in an HttpOnly cookie ---
-    response.set_cookie(
-        key="access_token",
-        value=token,
-        httponly=True,  # Makes the cookie inaccessible to JavaScript
-        secure=False,  # Set to True in production (requires HTTPS)
-        samesite="lax",  # Or "strict" for better CSRF protection
-        expires=int(DEFAULT_COOKIE_MAX_AGE),  # Expiry in seconds
+    # --- Set the access token in an cookie ---
+    await set_access_token_cookie(
+        response=response,
+        token=token
     )
-
+   
     return {
         "access_token": token,
     }

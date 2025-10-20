@@ -1,8 +1,7 @@
 from contextlib import asynccontextmanager
-from typing import Optional
 
 import redis.asyncio as aioredis
-from fastapi import Cookie, Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI
 
 from controllers.gateway_controller import GatewayController
 from utils.logger import log
@@ -49,15 +48,3 @@ async def get_gateway(
         token_ttl_seconds=TOKEN_EXPIRE_SECONDS,
     )
 
-
-async def get_token_from_cookie(access_token: Optional[str] = Cookie(None)) -> str:
-    """
-    Dependency to extract the access token from the browser cookie.
-    Raises a 401 error if the cookie is not found.
-    """
-    if access_token is None:
-        raise HTTPException(
-            status_code=401,
-            detail="Not authenticated: Access token cookie not found.",
-        )
-    return access_token
