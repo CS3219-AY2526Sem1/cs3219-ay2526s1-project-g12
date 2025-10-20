@@ -75,6 +75,8 @@ async def create_question_details(question: CreateQuestionModel) -> dict:
     qns = await Question.create(
         title=question.title,
         description=question.description,
+        code_template=question.code_template,
+        solution_sample=question.solution_sample,
         difficulty_id=question.difficulty,
     )
     for category in question.categories:
@@ -93,6 +95,10 @@ async def update_question_details(
         qns_update_dict["title"] = updated_qns_details.title
     if updated_qns_details.description:
         qns_update_dict["description"] = updated_qns_details.description
+    if updated_qns_details.code_template:
+        qns_update_dict["code_template"] = updated_qns_details.code_template
+    if updated_qns_details.solution_sample:
+        qns_update_dict["solution_sample"] = updated_qns_details.solution_sample
     if updated_qns_details.difficulty:
         await _validate_difficulty(updated_qns_details.difficulty)
         qns_update_dict["difficulty_id"] = updated_qns_details.difficulty

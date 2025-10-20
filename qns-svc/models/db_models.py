@@ -27,8 +27,10 @@ class Difficulty(Model):
 
 class Question(Model):
     id = fields.IntField(primary_key=True)
-    title = fields.CharField(max_length=255)
+    title = fields.CharField(max_length=255, unique=True)
     description = fields.TextField()
+    code_template = fields.TextField()
+    solution_sample = fields.TextField()
     difficulty = fields.ForeignKeyField("models.Difficulty", related_name="difficulty")
 
     def __str__(self):
