@@ -1,10 +1,10 @@
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Any, Dict
 
 import httpx
 import redis.asyncio as aioredis
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 
 from utils.logger import log
 
@@ -35,11 +35,11 @@ class GatewayController:
         # Iterate through keys matching the 'token:*' pattern
         token = await self.redis.get(f"user:{user_id}")
         if token:
-            return f"token:{token}"
+            return token
 
     async def validate_token(self, token: str) -> Dict[str, Any]:
         """
-        Validates a token atomically and returns the associated user data.
+        Validates a token atomically, extends TTL in redis and returns the associated user data.
         """
         log.info(f"Validating token: {token}")
 
@@ -61,6 +61,7 @@ class GatewayController:
             _,_,_,user_data=await pipe.execute()
 
         log.info(f"Token validation successful for user: {user_id}")
+        
 
         return user_data
 
@@ -71,26 +72,24 @@ class GatewayController:
         """
         # Expect user service to return a token and user info
         token = resp.get("access_token")
-        role = resp.get("role")
+
         user_id = str(resp.get("user_id"))
         # 1. Check for and delete any existing session for the user
         existing_key = await self._find_existing_token_key(user_id)
         if existing_key:
             log.info(
-                f"User {user_id} already has an active session. Deleting old key: {existing_key}"
+                f"{user_id} has an active session. Logging out from old session: {existing_key}"
             )
-            await self.revoke_token(existing_key)
+            await self.logout_user(existing_key)
 
         # 2. Proceed to store the new token
         redis_key = f"token:{token}"
-        create_time = datetime.now(timezone.utc)
 
-        del resp["access_token"]  # Remove token from user data
         role = resp.get("role").get("role")
-        del resp["role"]  # Remove role from user data
+        del resp["access_token"],resp["role"]  # Remove token & role from user data
         resp["role"] = role
         user_data = resp  # Remaining user data to store
-        user_data["create_time"] = create_time.isoformat()
+        user_data["create_time"] = datetime.now(timezone.utc).isoformat()
 
         # Use a Redis pipeline for atomic execution
         async with self.redis.pipeline(transaction=True) as pipe:
@@ -109,10 +108,6 @@ class GatewayController:
         log.info(f"Stored new session for user {user_id} with key: {redis_key}")
         return token
 
-    async def revoke_token(self, token: str) -> bool:
-        redis_key = token if token.startswith("token:") else f"token:{token}"
-        return bool(await self.redis.delete(redis_key))
-
     async def logout_user(self, token: str) -> Dict[str, Any]:
         """
         Logs out a user by completely removing their session from all three Redis tables.
@@ -126,7 +121,7 @@ class GatewayController:
 
         # Step 1: Get user ID from token table
         user_id = await self.redis.get(f"token:{token}")
-
+        log.info(f"Processing logout: {user_id}")
         if not user_id:
             log.error(f"Logout attempted with invalid token: {token}")
             raise HTTPException(
