@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-import time
 
 from controllers.question_controller import (
     create_category,
