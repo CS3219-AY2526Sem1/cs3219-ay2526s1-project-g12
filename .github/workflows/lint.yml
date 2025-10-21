@@ -1,0 +1,32 @@
+name: Lint check with Ruff
+
+on:
+  pull_request:
+    branches:
+    - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux]
+    strategy:
+      matrix:
+        python-version:
+        - "3.12"
+        - "3.13"
+        
+    steps:
+    - uses: actions/checkout@v5
+    
+    - name: Install uv and set the Python versions ${{ matrix.python-version }}
+      uses: astral-sh/setup-uv@v6
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: (QS) Run uv sync to install dependencies
+      working-directory: ./qns-svc
+      run: uv sync --locked --all-extras --dev
+
+    - name: (QS) Run ruff lint check
+      working-directory: ./qns-svc
+      run: uv run ruff check
