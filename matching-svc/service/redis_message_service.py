@@ -1,6 +1,6 @@
 from redis.asyncio import Redis
 from utils.logger import log
-from utils.utils import get_envvar, format_match_found_key, format_match_accepted_key
+from utils.utils import get_envvar
 
 ENV_REDIS_HOST_KEY = "REDIS_HOST"
 ENV_REDIS_PORT_KEY = "REDIS_PORT"

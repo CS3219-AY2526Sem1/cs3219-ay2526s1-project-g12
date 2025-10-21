@@ -74,7 +74,7 @@ async def get_next_user(key:str, matchmaking_conn: Redis) -> str:
     """
     Retrieves the next person in the queue based on the key.
     """
-    user_id = await matchmaking_conn.lpop(key);
+    user_id = await matchmaking_conn.lpop(key)
     log.info(f"User id, {user_id} has been removed from the queue: {key}.")
     return user_id
 

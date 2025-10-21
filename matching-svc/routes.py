@@ -31,11 +31,11 @@ async def root():
     return {"status": "success"}
 
 @app.get("/check_connection/queue")
-async def check_connection():
+async def check_queue_connection():
     return check_redis_connection(app.state.redis_queue)
 
 @app.get("/check_connection/message_queue")
-async def check_connection():
+async def check_message_connection():
     return check_redis_connection(app.state.redis_message_queue)
 
 @app.post("/find_match")
