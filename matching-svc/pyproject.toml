@@ -10,3 +10,8 @@ dependencies = [
     "redis>=6.4.0",
     "uuid>=1.30",
 ]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.1",
+]
