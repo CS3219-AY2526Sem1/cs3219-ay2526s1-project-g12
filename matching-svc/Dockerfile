@@ -11,5 +11,5 @@ WORKDIR /app
 RUN uv sync --frozen --no-cache
 
 # Run the application.
-ENTRYPOINT [ "/bin/bash", "/app/entrypoint.sh" ]
+ENTRYPOINT ["/app/.venv/bin/fastapi", "run", "/app/routes.py"]
 CMD ["--port", "80", "--host", "0.0.0.0"]
