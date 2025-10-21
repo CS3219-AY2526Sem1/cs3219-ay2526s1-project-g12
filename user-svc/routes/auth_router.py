@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from models.api_models import UserCreate, UserRead
-from service.auth_svc import fastapi_users, auth_backend
+from service.auth_svc import auth_backend, fastapi_users
 
 router = APIRouter()
 router.include_router(

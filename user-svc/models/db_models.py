@@ -1,5 +1,4 @@
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID
-from fastapi_users_db_sqlalchemy.access_token import SQLAlchemyBaseAccessTokenTableUUID
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -10,6 +9,7 @@ config = AppConfig()
 
 class Base(DeclarativeBase):
     """Base class for all database models."""
+
     pass
 
 
@@ -21,6 +21,7 @@ class Role(Base):
         role (str): The name of the role.
         users (list[User]): The list of users associated with the role.
     """
+
     __tablename__ = "roles"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -44,6 +45,7 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
         role_id (str): The foreign key to the roles table.
         role (Role): The role of the user.
     """
+
     first_name: Mapped[str] = mapped_column(String(50))
     last_name: Mapped[str] = mapped_column(String(50))
     role_id: Mapped[int] = mapped_column(
