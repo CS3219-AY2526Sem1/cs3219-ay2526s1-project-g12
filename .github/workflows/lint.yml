@@ -37,3 +37,11 @@ jobs:
     - name: (MS) Run ruff lint check
       working-directory: ./matching-svc
       run: uv run ruff check
+
+    - name: (US) Run uv sync to install dependencies
+      working-directory: ./user-svc
+      run: uv sync --locked --all-extras --dev
+
+    - name: (US) Run ruff lint check
+      working-directory: ./user-svc
+      run: uv run ruff check
