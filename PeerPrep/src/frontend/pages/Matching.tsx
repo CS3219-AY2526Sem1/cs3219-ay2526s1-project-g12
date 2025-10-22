@@ -65,15 +65,6 @@ function Matching() {
     fetchDifficulties();
   }, [topic, user?.id]);
 
-  const handleMatch = () => {
-    if (!topic || !difficulty) {
-      alert("Please select both topic and difficulty!");
-      return;
-    }
-    console.log(`Matching with: ${topic} - ${difficulty}`);
-    // Add navigation or API call to initiate match here
-  };
-
   return (
     <div className="min-h-screen flex flex-col px-20 py-10">
       <NavBar buttons={[]} />
