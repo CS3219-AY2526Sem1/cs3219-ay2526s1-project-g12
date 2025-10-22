@@ -51,8 +51,8 @@ async def match(match_request: MatchRequest):
     return  await find_match(match_request, app.state.redis_matchmaking_service, app.state.redis_message_service, app.state.redis_confirmation_service)
 
 @app.delete("/terminate_match")
-async def terminate(cancle_request: MatchRequest):
-    return await terminate_match(cancle_request, app.state.redis_matchmaking_service, app.state.redis_message_service)
+async def terminate(cancel_request: MatchRequest):
+    return await terminate_match(cancel_request, app.state.redis_matchmaking_service, app.state.redis_message_service)
 
 @app.post("/confirm_match/{match_id}")
 async def confirm_user_match(match_id: str, confirm_request: MatchConfirmRequest):

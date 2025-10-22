@@ -17,6 +17,7 @@ from service.redis_message_service import (
     send_match_finalised_message,
     send_match_terminated_message,
     wait_for_message,
+    send_new_request_message
 )
 from service.redis_matchmaking_service import (
     add_to_queued_users_set,
@@ -25,12 +26,14 @@ from service.redis_matchmaking_service import (
     remove_from_queued_users_set, 
     dequeue_user,
     check_in_queued_users_set,
-    find_user_in_queue
+    find_user_in_queue,
+    get_user_queue_details
 )
 from utils.logger import log
 from utils.utils import (
     format_lock_key,
     format_queue_key,
+    format_in_queue_key,
     ping_redis_server,
     format_match_found_key,
     format_match_accepted_key,
@@ -59,18 +62,37 @@ async def find_match(match_request: MatchRequest, matchmaking_conn: Redis,  mess
     difficulty = match_request.difficulty
     category = match_request.category
 
-    # Check if the user is already in the queue.
-    if (not await add_to_queued_users_set(user_id, matchmaking_conn)):
-        raise HTTPException(status_code=400, detail="User is already in the queue.")
-
+    in_queue_key = format_in_queue_key(user_id)
     queue_key = format_queue_key(difficulty, category)
     lock_key = format_lock_key(queue_key)
+
+    # Check if the user is already in the queue, if they are means we need to cancel the old queue request
+    if (await check_in_queued_users_set(in_queue_key, matchmaking_conn)):
+        old_queue_details = get_user_queue_details(in_queue_key, matchmaking_conn)
+        old_queue_key = format_queue_key(old_queue_details["difficulty"], old_queue_details["category"])
+        old_lock_key = format_lock_key(queue_key)
+
+        # Check if the user has found a match
+
+        old_lock = await acquire_lock(old_lock_key, matchmaking_conn)
+
+        log.info(f"User id, {user_id} has acquired the lock with key: {lock_key}.")
+        remove_from_queued_users_set(in_queue_key, matchmaking_conn)
+        dequeue_user(user_id, old_queue_key)
+        await release_lock(old_lock)
+
+        # Finally send a message to the old connection that a new request came in
+        new_request_message_key = format_match_found_key(user_id)
+        await send_new_request_message(new_request_message_key, match_id, message_conn)
 
     # Ensure that at any time only 1 request is updating the redis queue
     lock = await acquire_lock(lock_key, matchmaking_conn)
     log.info(f"User id, {user_id} has acquired the lock with key: {lock_key}.")
 
     try:
+
+        add_to_queued_users_set(in_queue_key, difficulty, category, matchmaking_conn)
+
         partner = await find_partner(queue_key, matchmaking_conn)
 
         if (partner == ""): # No partner found then add the user to the queue
@@ -127,6 +149,8 @@ async def wait_for_match(match_request: MatchRequest, matchmaking_conn: Redis, m
         return {"message" : "could not find a match after 3 minutes"}
     elif message[1]  == "terminate":
         return {"message" : "matchmaking has been terminated"}
+    elif message[1]  == "new request made":
+        return {"message" : "The match request has been cancled as a new reuest has been made"}
     else:
         match_id = message[1] # Index 0 is the key where the value is popped from
         return {"match_id" : match_id, "message" : "match has been found"}
