@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import GitHubLogo from "../../assets/Images/github-logo.png";
-import GoogleLogo from "../../assets/Images/google-logo.png";
 import { Link } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 
