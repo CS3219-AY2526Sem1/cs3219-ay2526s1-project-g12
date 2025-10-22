@@ -8,11 +8,12 @@ from fastapi_users import BaseUserManager, InvalidPasswordException, UUIDIDMixin
 
 from models.api_models import UserCreate
 from models.db_models import User
-from service.mail_svc import send_verification_email, send_password_reset_email
+from service.mail_svc import send_password_reset_email, send_verification_email
 from utils.logger import log
 from utils.utils import AppConfig
 
 config = AppConfig()
+
 
 class UserController(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_secret = config.reset_token_secret
@@ -90,7 +91,9 @@ class UserController(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     async def on_after_request_verify(
         self, user: User, token: str, request: Optional[Request] = None
     ):
-        log.info(f"Verification requested for user {user.id}. Verification token: {token}")
+        log.info(
+            f"Verification requested for user {user.id}. Verification token: {token}"
+        )
         asyncio.create_task(send_verification_email(user, token))
 
     async def on_after_verify(self, user: User, request: Optional[Request] = None):
