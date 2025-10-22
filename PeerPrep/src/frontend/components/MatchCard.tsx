@@ -12,7 +12,7 @@ const MatchCard = ({ userId, category, difficulty }: MatchCardProps) => {
   const [matchFound, setMatchFound] = useState(false);
   const [matchId, setMatchId] = useState<string | null>(null);
   const [partnerName, setPartnerName] = useState<string | null>(null);
-  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes = 600 seconds
+  const [timeLeft, setTimeLeft] = useState(180); // 3 minutes = 180 seconds
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isAccepting, setIsAccepting] = useState(false);
 
@@ -52,7 +52,7 @@ const MatchCard = ({ userId, category, difficulty }: MatchCardProps) => {
   const handleStartMatch = async () => {
     setIsMatching(true);
     setMatchFound(false);
-    setTimeLeft(600);
+    setTimeLeft(180);
     setPartnerName(null);
     setMatchId(null);
 
@@ -89,7 +89,7 @@ const MatchCard = ({ userId, category, difficulty }: MatchCardProps) => {
     } finally {
       setIsMatching(false);
       setMatchFound(false);
-      setTimeLeft(600);
+      setTimeLeft(180);
       setMatchId(null);
       setPartnerName(null);
       if (timerRef.current) clearInterval(timerRef.current);
