@@ -6,12 +6,6 @@ export const userApi = {
   async login(email: string, password: string): Promise<ApiResponse<any>> {
     console.log("Attempting login with:", email);
 
-    // FastAPI-Users expects form data, not JSON
-    // const formData = new FormData();
-    // const body = new URLSearchParams();
-    // formData.append("username", email);
-    // formData.append("password", password);
-
     return apiClient.request("/auth/login", {
       method: "POST",
       body: JSON.stringify({
