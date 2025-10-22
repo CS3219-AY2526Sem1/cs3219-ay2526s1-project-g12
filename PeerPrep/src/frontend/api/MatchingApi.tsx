@@ -14,6 +14,11 @@ export interface MatchConfirmRequest {
   user_id: string;
 }
 
+export interface ConfirmMatchSuccess {
+  message: string;
+  match_details?: string;
+}
+
 export const matchingApi = {
   async getRootStatus(): Promise<ApiResponse<{ status: string }>> {
     return matchingApiClient.request("/", { method: "GET" });
@@ -50,7 +55,7 @@ export const matchingApi = {
   async confirmMatch(
     matchId: string,
     confirmRequest: MatchConfirmRequest,
-  ): Promise<ApiResponse<any>> {
+  ): Promise<ApiResponse<ConfirmMatchSuccess>> {
     return matchingApiClient.request(`/confirm_match/${matchId}`, {
       method: "POST",
       body: JSON.stringify(confirmRequest),

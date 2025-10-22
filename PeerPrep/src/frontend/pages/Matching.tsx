@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import NavBar from "../components/NavBar";
 import { useAuth } from "../context/AuthContext";
 import { questionApi } from "../api/QuestionApi";
+import MatchCard from "../components/MatchCard";
 
 function Matching() {
   const [topics, setTopics] = useState<string[]>([]);
@@ -144,20 +145,11 @@ function Matching() {
           </div>
 
           {/* Match Button */}
-          <div className="card shadow-sm border-1 border-base-200 p-10">
-            <p className="text-lg font-normal text-left mb-6">
-              Let's begin matching!
-            </p>
-            <button
-              onClick={handleMatch}
-              disabled={!topic || !difficulty}
-              className={`btn font-normal ${
-                topic && difficulty ? "btn-primary" : "btn-disabled btn-outline"
-              }`}
-            >
-              🔍 Match
-            </button>
-          </div>
+          <MatchCard
+            userId={user!.id}
+            category={topic!}
+            difficulty={difficulty!}
+          />
         </div>
       </div>
     </div>
