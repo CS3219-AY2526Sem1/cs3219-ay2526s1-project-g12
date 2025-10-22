@@ -31,6 +31,10 @@ jobs:
       working-directory: ./qns-svc
       run: uv sync --locked --all-extras --dev
 
+    - name: (QS) Setup environment
+      working-directory: ./qns-svc
+      run: cp .env.template .env
+
     - name: (QS) Run pytest
       working-directory: ./qns-svc
       run: uv run pytest --cov-branch --cov-report=xml
