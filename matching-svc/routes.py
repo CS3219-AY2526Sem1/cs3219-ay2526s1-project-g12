@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from controllers.matching_controller import find_match, check_redis_connection, confirm_match, terminate_match
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from models.api_models import MatchRequest, MatchConfirmRequest
 from service.redis_confirmation_service import connect_to_redis_confirmation_service
 from service.redis_message_service import connect_to_redis_message_service
@@ -25,6 +26,13 @@ async def lifespan(app: FastAPI):
     await sever_connection(app.state.redis_confirmation_service)
     
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 async def root():
