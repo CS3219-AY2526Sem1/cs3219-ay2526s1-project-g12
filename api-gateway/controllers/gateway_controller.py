@@ -168,6 +168,7 @@ class GatewayController:
         headers: Dict[str, str] | None = None,
         params: Dict[str, Any] | None = None,
         data: Any = None,
+        user_data: Dict[str, Any],
     ) -> tuple[int, Any]:
         # TODO update to use service registry to find appropriate service
         log.info(f"Forwarding {method} request to {path}")
