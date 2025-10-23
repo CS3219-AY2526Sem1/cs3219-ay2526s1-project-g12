@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import NavBar from "../components/NavBar";
 import { useAuth } from "../context/AuthContext";
 import { questionApi } from "../api/QuestionApi";
-import MatchCard from "../components/MatchCard";
+import { MatchCard } from "../components/Match/MatchCard";
 
 function Matching() {
   const [topics, setTopics] = useState<string[]>([]);
@@ -14,6 +14,9 @@ function Matching() {
   const [loadingTopics, setLoadingTopics] = useState(false);
   const [loadingDifficulties, setLoadingDifficulties] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [isMatchingActive, setIsMatchingActive] = useState(false);
+  const difficultyOrder = ["Easy", "Medium", "Hard"];
 
   const { user } = useAuth();
 
@@ -95,6 +98,7 @@ function Matching() {
                   setTopic(e.target.value || null);
                   setDifficulty(null);
                 }}
+                disabled={isMatchingActive}
               >
                 <option value="" disabled>
                   Select a topic
@@ -117,20 +121,30 @@ function Matching() {
               <p>Loading difficulties...</p>
             ) : (
               <div className="flex flex-col gap-3">
-                {difficulties.map((level) => (
-                  <button
-                    key={level}
-                    onClick={() => setDifficulty(level)}
-                    disabled={!level}
-                    className={`btn ${
-                      difficulty === level
-                        ? "btn-primary"
-                        : "btn-outline btn-primary"
-                    } font-normal`}
-                  >
-                    {level}
-                  </button>
-                ))}
+                {difficulties
+                  .slice() // copy to avoid mutating state
+                  .sort((a, b) => {
+                    const ai = difficultyOrder.indexOf(a);
+                    const bi = difficultyOrder.indexOf(b);
+                    if (ai === -1 && bi === -1) return a.localeCompare(b); // both unknown
+                    if (ai === -1) return 1; // a unknown → after known
+                    if (bi === -1) return -1; // b unknown → after known
+                    return ai - bi; // both known → sort by order
+                  })
+                  .map((level) => (
+                    <button
+                      key={level}
+                      onClick={() => setDifficulty(level)}
+                      disabled={!level || isMatchingActive}
+                      className={`btn ${
+                        difficulty === level
+                          ? "btn-primary"
+                          : "btn-outline btn-primary"
+                      } font-normal`}
+                    >
+                      {level}
+                    </button>
+                  ))}
               </div>
             )}
           </div>
@@ -140,6 +154,9 @@ function Matching() {
             userId={user!.id}
             category={topic!}
             difficulty={difficulty!}
+            onMatchStateChange={(state) =>
+              setIsMatchingActive(state !== "idle")
+            }
           />
         </div>
       </div>
