@@ -17,7 +17,7 @@ class AppConfig(BaseSettings):
 
         default_role_id (int): Default role ID for newly registered users. Default: 1.
         verify_email_base (str): Base URL for email verification links. Default: http://localhost:8000/verify.
-        password_reset_base (str): Base URL for password reset links. Default: http://localhost:8000/reset\-password.
+        password_reset_base (str): Base URL for password reset links. Default: http://localhost:8000/reset-password.
 
         mail_from_address (EmailStr): Sender email address used in outbound emails.
         mail_from_name (str): Sender display name used in outbound emails.

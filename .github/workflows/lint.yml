@@ -45,3 +45,11 @@ jobs:
     - name: (US) Run ruff lint check
       working-directory: ./user-svc
       run: uv run ruff check
+
+    - name: (AG) Run uv sync to install dependencies
+      working-directory: ./api-gateway
+      run: uv sync --locked --all-extras --dev
+
+    - name: (AG) Run ruff lint check
+      working-directory: ./api-gateway
+      run: uv run ruff check
