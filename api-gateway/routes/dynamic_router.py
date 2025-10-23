@@ -7,7 +7,7 @@ This router must be included after all other routers so that specific
 routes defined elsewhere take precedence.
 """
 
-from fastapi import APIRouter, Request, HTTPException, Depends
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from controllers.gateway_controller import GatewayController

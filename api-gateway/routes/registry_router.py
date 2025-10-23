@@ -1,14 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from controllers.gateway_controller import GatewayController
-from service.redis_settings import get_gateway
-
 from models.api_models import (
-    RegisterServicePayload,
     RegisterOpenApiPayload,
+    RegisterServicePayload,
     ServiceInstancePayload,
 )
-
+from service.redis_settings import get_gateway
 
 router = APIRouter(prefix="/registry", tags=["registry"])
 

@@ -3,8 +3,8 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from routes.auth_router import router as auth_router
-from routes.registry_router import router as registry_router
 from routes.dynamic_router import router as dynamic_router
+from routes.registry_router import router as registry_router
 from service.redis_settings import get_redis, lifespan
 from utils.utils import get_envvar
 
