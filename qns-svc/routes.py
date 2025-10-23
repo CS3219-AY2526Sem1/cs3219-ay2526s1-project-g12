@@ -1,6 +1,12 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from controllers.heartbeat_controller import (
+    register_heartbeat,
+    register_self_as_service,
+)
 from controllers.question_controller import (
     create_category,
     create_difficulty_level,
@@ -29,7 +35,22 @@ from models.api_models import (
 )
 from service.database_svc import register_database
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):  # pragma: no cover
+    register_self_as_service(app)
+    hc_task = register_heartbeat()
+
+    yield
+
+    hc_task.cancel()
+
+
+app = FastAPI(
+    title="PeerPrep Matching Service",
+    lifespan=lifespan,
+)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
