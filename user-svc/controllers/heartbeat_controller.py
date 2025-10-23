@@ -7,9 +7,11 @@ from fastapi.openapi.utils import get_openapi
 from requests.exceptions import RequestException
 
 from utils.logger import log
-from utils.utils import get_envvar
+from utils.utils import AppConfig
 
-SERVICE_NAME = "qns-svc"
+config = AppConfig()
+
+SERVICE_NAME = "user-svc"
 INSTANCE_ID = str(uuid4())
 
 
@@ -26,13 +28,13 @@ def register_self_as_service(app: FastAPI):
     json_payload = {
         "service_name": SERVICE_NAME,
         "instance_id": INSTANCE_ID,
-        "address": get_envvar("HOST_URL"),
+        "address": config.host_url,
         "openapi": openapi_schema,
     }
 
     try:
         requests.post(
-            f"{get_envvar('APIGATEWAY_URL')}{get_envvar('REGISTRY_PATH')}",
+            f"{config.apigateway_url}{config.registry_path}",
             json=json_payload,
         )
     except RequestException as e:
@@ -45,7 +47,7 @@ def _send_healthcheck():
     json_payload = {"service_name": SERVICE_NAME, "instance_id": INSTANCE_ID}
     try:
         requests.post(
-            f"{get_envvar('APIGATEWAY_URL')}{get_envvar('HEARTBEAT_PATH')}",
+            f"{config.apigateway_url}{config.heartbeat_path}",
             json=json_payload,
         )
     except RequestException as e:
@@ -56,7 +58,7 @@ def _send_healthcheck():
 async def _periodic_healtcheck():  # pragma: no cover
     while True:
         _send_healthcheck()
-        await asyncio.sleep(int(get_envvar("HEARTBEAT_PERIOD")))
+        await asyncio.sleep(int(config.heartbeat_period))
 
 
 def register_heartbeat():  # pragma: no cover

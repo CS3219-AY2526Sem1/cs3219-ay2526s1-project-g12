@@ -83,6 +83,13 @@ class AppConfig(BaseSettings):
     )
     mail_ssl_tls: bool = Field(default=False, description="Whether to use SSL/TLS")
 
+    # Registration
+    apigateway_url: str = Field(description="API Gateway base URL")
+    registry_path: str = Field(description="Service registry path on API Gateway")
+    heartbeat_path: str = Field(description="Heartbeat path on API Gateway")
+    heartbeat_period: str = Field(description="Heartbeat interval in seconds")
+    host_url: str = Field(description="Service host URL")
+
     # Logging config
     log_name: str = Field(
         description="Service log name (used for file naming or context)"
