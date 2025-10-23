@@ -2,7 +2,7 @@ import AuthLayout from "../layouts/AuthLayout";
 import MainLayout from "../layouts/MainLayout";
 
 export const routeSettings = {
-  public: ["/auth/login", "/auth/register", "/"],
+  public: ["/auth/login", "/auth/register", "/verify", "/"],
 };
 
 export const getLayout = (path: string) => {
