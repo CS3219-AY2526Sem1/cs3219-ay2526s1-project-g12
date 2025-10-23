@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import NavBar from "../components/NavBar";
 import { useAuth } from "../context/AuthContext";
 import { questionApi } from "../api/QuestionApi";
-import MatchCard from "../components/MatchCard";
+import { MatchCard } from "../components/Match/MatchCard";
 
 function Matching() {
   const [topics, setTopics] = useState<string[]>([]);
