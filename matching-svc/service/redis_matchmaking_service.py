@@ -5,8 +5,6 @@ from utils.utils import get_envvar
 ENV_REDIS_HOST_KEY = "REDIS_HOST"
 ENV_REDIS_PORT_KEY = "REDIS_PORT"
 
-QUEUED_STATUS_SET_KEY = "queued-users"
-
 def connect_to_redis_matchmaking_service() -> Redis:
     """
     Establishes a connection with redis queue.
@@ -17,36 +15,51 @@ def connect_to_redis_matchmaking_service() -> Redis:
     log.info("Connected to redis queue server.")
     return Redis(host=host, port=redis_port, decode_responses=True, db=0)
 
-async def add_to_queued_users_set(user_id: str, matchmaking_conn: Redis) -> bool:
+async def add_user_queue_details(key: str, difficulty: str, category: str, matchmaking_conn: Redis) -> None:
     """
     Adds the user into the set of queued users.\n
-    Returns true if the user has been added and false if they are already in the set.
     """
-    is_added = await matchmaking_conn.sadd(QUEUED_STATUS_SET_KEY, user_id)
+    mapping = {
+        "difficulty": difficulty,
+        "category": category,
+        "match_found": 0
+    }
 
-    if (is_added == 1):
-        log.info(f"User id, {user_id} queued status has been added.")
-        return True
-    else:
-        return False
+    await matchmaking_conn.hset(key, mapping=mapping)
 
-async def check_in_queued_users_set(user_id: str, matchmaking_conn: Redis) -> bool:
+async def check_user_in_any_queue(key: str, matchmaking_conn: Redis) -> bool:
     """
     Checks if the user is in any of the queues.\n
     """
-    does_exist = await matchmaking_conn.sismember(QUEUED_STATUS_SET_KEY, user_id)
+    does_exist = await matchmaking_conn.exists(key)
 
     if (does_exist == 1):
         return True
     else:
         return False
 
-async def remove_from_queued_users_set(user_id: str, matchmaking_conn: Redis) -> None:
+async def check_user_found_match(key: str, matchmaking_conn: Redis) -> bool:
+    """
+    Checks if the user has currently found a match.\n
+    """
+    has_found_match = await matchmaking_conn.hget(key, "match_found")
+
+    if (has_found_match == "1"):
+        return True
+    else:
+        return False
+
+async def update_user_match_found_status(key: str, matchmaking_conn: Redis) -> None:
+    """
+    Updates the users status to be that they have found a match.
+    """
+    await matchmaking_conn.hset(key, mapping={"match_found": 1})
+
+async def remove_user_queue_details(key: str, matchmaking_conn: Redis) -> None:
     """
     Removes the user from the set of queued users.\n
     """
-    await matchmaking_conn.srem(QUEUED_STATUS_SET_KEY, user_id)
-    log.info(f"User id, {user_id} queue status has been removed.")
+    await matchmaking_conn.delete(key)
 
 async def find_user_in_queue(user_id: str, key:str,  matchmaking_conn: Redis) -> int:
     """
@@ -55,6 +68,12 @@ async def find_user_in_queue(user_id: str, key:str,  matchmaking_conn: Redis) ->
     """
     index = await  matchmaking_conn.lpos(key, user_id)
     return index
+
+async def get_user_queue_details(key: str, matchmaking_conn: Redis) -> dict:
+    """
+    Retrieves the queue details of the user.
+    """
+    return  await matchmaking_conn.hgetall(key)
 
 async def enqueue_user(user_id: str, key:str,  matchmaking_conn: Redis) -> None:
     """

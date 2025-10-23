@@ -39,6 +39,13 @@ async def release_lock(lock:Lock) -> None:
     """
     await lock.release()
 
+def format_in_queue_key(user_id:str) -> str:
+    """
+    Formats the user id into a key to be used to identify if the user is in any queue or not.
+    """
+    key = f"inqueue:{user_id}"
+    return key
+
 def format_queue_key(difficulty:str, category:str) -> str:
     """
     Formats the difficulty and category into a key to be used for matchmaking.
