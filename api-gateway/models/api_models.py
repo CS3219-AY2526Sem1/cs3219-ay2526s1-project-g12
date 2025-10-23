@@ -39,15 +39,15 @@ class RegisterOpenApiPayload(BaseModel):
     extracted and converted to uppercase. If no custom role information is present,
     the roles list will be empty.
 
+    The `servers` section is used to determine the service's base address.
+
     Attributes:
         service_name (str): Unique name of the service.
         instance_id (str): Identifier for this instance (e.g. host:port).
-        address (str): Host:port the gateway should forward to.
         openapi (dict): The OpenAPI specification as a JSON object.
     """
     service_name: Annotated[str, Field(description="Unique name of the service")]
     instance_id: Annotated[str, Field(description="Identifier for this instance (e.g. host:port)")]
-    address: Annotated[str, Field(description="Host:port the gateway should forward to")]
     openapi: Annotated[
         dict, Field(description="The OpenAPI specification as a JSON object")
     ]
