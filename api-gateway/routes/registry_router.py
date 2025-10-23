@@ -48,7 +48,6 @@ async def register_openapi(
     Role information is inferred from an ``x-roles`` extension.
     """
     try:
-        address = payload.openapi["servers"][0]["url"]
         paths = payload.openapi.get("paths", {})
         route_defs = []
         # Iterate over each path and collect methods and roles
@@ -71,7 +70,7 @@ async def register_openapi(
         await gateway.register_service(
             service_name=payload.service_name,
             instance_id=payload.instance_id,
-            address=address,
+            address=payload.address,
             routes=route_defs,
         )
         return {"detail": "Service registered from OpenAPI"}
