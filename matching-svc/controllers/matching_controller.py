@@ -16,7 +16,8 @@ from service.redis_message_service import (
     send_match_found_message,
     send_match_finalised_message,
     send_match_terminated_message,
-    wait_for_message
+    wait_for_message,
+    send_new_request_message
 )
 from service.redis_matchmaking_service import (
     add_user_queue_details,
@@ -142,7 +143,7 @@ async def wait_for_match(match_request: MatchRequest, matchmaking_conn: Redis, m
     elif message[1]  == "terminate":
         return {"message" : "matchmaking has been terminated"}
     elif message[1]  == "new request made":
-        return {"message" : "The match request has been cancled as a new reuest has been made"}
+        raise HTTPException(status_code=400, detail="A new request has been made")
     else:
         match_id = message[1] # Index 0 is the key where the value is popped from
         return {"match_id" : match_id, "message" : "match has been found"}
@@ -163,11 +164,11 @@ async def terminate_previous_match_request(user_id: str, matchmaking_conn: Redis
 
     # Just call terminate match
     old_match_request = MatchRequest(user_id= user_id, difficulty= difficulty, category= category)
-    await terminate_match(old_match_request, matchmaking_conn, message_conn)
+    await terminate_match(old_match_request, matchmaking_conn, message_conn, is_new_request= True)
 
     return True
 
-async def terminate_match(match_request: MatchRequest, matchmaking_conn: Redis, message_conn: Redis) -> None:
+async def terminate_match(match_request: MatchRequest, matchmaking_conn: Redis, message_conn: Redis, is_new_request: bool = False) -> None:
     """
     Terminates the match request for the user.
     """
@@ -200,7 +201,11 @@ async def terminate_match(match_request: MatchRequest, matchmaking_conn: Redis, 
         await remove_user_queue_details(in_queue_key, matchmaking_conn)
 
         message_key = format_match_found_key(user_id)
-        await send_match_terminated_message(message_key, message_conn)
+
+        if (is_new_request):
+            await send_new_request_message(message_key, message_conn)
+        else:
+            await send_match_terminated_message(message_key, message_conn)
 
         log.info(f"{user_id} has terminated his matching.")
     finally:
