@@ -50,14 +50,6 @@ async def dynamic_forward(
     if method in {"POST", "PUT", "PATCH"}:
         body = await request.body()
 
-    # Insert user info into headers
-    user_id = user_data.get("user_id")
-    role = user_data.get("role")
-    if user_id:
-        headers["X-User-ID"] = str(user_id)
-    if role:
-        headers["X-User-Role"] = str(role)
-
     code, data = await gateway.forward(
         method,
         "/" + path,

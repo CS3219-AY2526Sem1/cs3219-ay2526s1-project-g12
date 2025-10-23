@@ -170,6 +170,83 @@ class GatewayController:
         data: Any = None,
         user_data: Dict[str, Any],
     ) -> tuple[int, Any]:
-        # TODO update to use service registry to find appropriate service
-        log.info(f"Forwarding {method} request to {path}")
-        return 502, {"detail": "Bad gateway"}
+        """Forwards a request to the appropriate service based on the registry.
+
+        Args:
+            method: HTTP method (GET, POST, etc.)
+            path: Full request path including gateway prefix
+            headers: Request headers to forward
+            params: Optional query parameters
+            data: Optional request body
+            user_data: Data of the authenticated user making the request
+        """
+        method = method.upper()
+        user_id = user_data.get("user_id")
+        role = user_data.get("role")
+
+        # Find the service responsible for this path
+        matched_route = await self.registry.find_route(path)
+        if not matched_route:
+            log.warning(f"Blocked forwarding of request to '{path}': no service found for path")
+            return 404, {"detail": "Not Found"}
+
+        service_name, canonical_path = matched_route
+
+        # Fetch the route definition
+        route_def = await self.registry.get_route_definition(
+            service_name, canonical_path
+        )
+        if not route_def:
+            log.warning(
+                f"Blocked forwarding of request to '{canonical_path}' for service {service_name}: "
+                f"no route definition found"
+            )
+            return 404, {"detail": "Not found"}
+
+        # Check method
+        if method not in route_def.methods:
+            log.warning(f"Blocked forwarding of {method} request to '{path}': method not allowed")
+            return 405, {"detail": "Method not allowed"}
+
+        # Check role
+        if route_def.roles and (not role or role not in route_def.roles):
+            log.warning(
+                f"Blocked forwarding of request to '{path}': role {role} not permitted"
+            )
+            return 401, {"detail": "Unauthorized"}
+
+        # Choose instance
+        address = await self.registry.choose_instance(service_name)
+        if not address:
+            log.error(f"Blocked forwarding of request to '{path}': no alive instances found for service {service_name}")
+            return 503, {"detail": "Service unavailable"}
+
+        url = f"http://{address}{path}"
+
+        log.info(f"Forwarding {method} request to {url}")
+
+        # Check if there is an existing header dictionary
+        if headers is None:
+            headers = {}
+
+        # Insert user info into headers
+        if user_id:
+            headers["X-User-ID"] = str(user_id)
+        if role:
+            headers["X-User-Role"] = str(role)
+
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                r = await client.request(
+                    method, url, headers=headers, params=params or {}, data=data
+                )
+                try:
+                    body = r.json()
+                except Exception:
+                    body = r.text
+                return r.status_code, body
+        except httpx.TimeoutException:
+            return 504, {"detail": "Gateway timeout"}
+        except httpx.RequestError as e:
+            log.error(f"Forwarding error: {e}")
+            return 502, {"detail": "Bad gateway"}
