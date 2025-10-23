@@ -5,6 +5,9 @@ from controllers.gateway_controller import GatewayController
 from service.cookie_management import get_token_from_cookie, set_access_token_cookie
 from service.redis_settings import get_gateway
 from utils.logger import log
+from utils.utils import get_envvar
+
+USER_SERVICE_LOGIN_PATH = get_envvar("USER_SERVICE_LOGIN_PATH")
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 security = HTTPBearer(auto_error=False)
@@ -20,7 +23,7 @@ async def login(
     log.info(f"Login attempt for user={username}")
 
     # Forward to user-service /auth/login
-    status_code, resp = await gateway.forward("POST", "/auth/login", data=body)
+    status_code, resp = await gateway.forward("POST", USER_SERVICE_LOGIN_PATH, data=body)
     if not (200 <= status_code < 300):
         raise HTTPException(
             status_code=status_code,
