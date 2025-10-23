@@ -1,30 +1,33 @@
-import os
 from datetime import datetime, timezone
-from typing import Any, Dict
+from typing import Any, Dict, Iterable
 
 import httpx
 import redis.asyncio as aioredis
 from fastapi import HTTPException
 
+from models.api_models import RoutePayload
+from service.registry import ServiceRegistry
 from utils.logger import log
+from utils.utils import get_envvar
 
-DEFAULT_COOKIE_MAX_AGE = os.getenv("DEFAULT_COOKIE_MAX_AGE")
+DEFAULT_COOKIE_MAX_AGE = get_envvar("DEFAULT_COOKIE_MAX_AGE")
 
 
 class GatewayController:
+    """API Gateway controller for managing user sessions and routing requests based
+    on the service registry"""
     def __init__(
         self,
         redis: aioredis.Redis,
-        user_service_url: str,
         token_ttl_seconds: int = int(DEFAULT_COOKIE_MAX_AGE),
+        heartbeat_ttl: int = 30,
     ):
         self.redis = redis
-        self.user_service_url = user_service_url.rstrip("/")
         self.ttl = token_ttl_seconds
+        self.registry = ServiceRegistry(redis, heartbeat_ttl=heartbeat_ttl)
 
     async def _find_existing_token_key(self, user_id: str) -> str | None:
-        """
-        Scans for an existing access token key associated with a user ID.
+        """Scans for an existing access token key associated with a user ID.
 
         Args:
             user_id: The ID of the user to search for.
@@ -38,8 +41,8 @@ class GatewayController:
             return token
 
     async def validate_token(self, token: str) -> Dict[str, Any]:
-        """
-        Validates a token atomically, extends TTL in redis and returns the associated user data.
+        """Validates a token atomically, extends TTL in redis and returns
+        the associated user data.
         """
         log.info(f"Validating token: {token}")
 
@@ -66,8 +69,7 @@ class GatewayController:
         return user_data
 
     async def store_token(self, resp: Dict[str, Any]):
-        """
-        Stores an access token in Redis. If the user already has a session,
+        """Stores an access token in Redis. If the user already has a session,
         the old session is deleted before the new one is created.
         """
         # Expect user service to return a token and user info
@@ -109,8 +111,7 @@ class GatewayController:
         return token
 
     async def logout_user(self, token: str) -> Dict[str, Any]:
-        """
-        Logs out a user by completely removing their session from all three Redis tables.
+        """Logs out a user by completely removing their session from all three Redis tables.
 
         Args:
             token: The authentication token to logout
@@ -144,6 +145,21 @@ class GatewayController:
 
         log.info(f"Successfully logged out user {user_id} ")
 
+    async def register_service(
+            self,
+            service_name: str,
+            instance_id: str,
+            address: str,
+            routes: Iterable[RoutePayload],
+    ) -> None:
+        """Register a service instance and its routes in the service registry."""
+        await self.registry.register_service(
+            service_name=service_name,
+            instance_id=instance_id,
+            address=address,
+            routes=routes,
+        )
+
     async def forward(
         self,
         method: str,
@@ -153,20 +169,6 @@ class GatewayController:
         params: Dict[str, Any] | None = None,
         data: Any = None,
     ) -> tuple[int, Any]:
-        log.info(f"Forwarding {method} request to {self.user_service_url}{path}")
-        url = f"{self.user_service_url}{path}"
-        try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                r = await client.request(
-                    method, url, headers=headers or {}, params=params or {}, data=data
-                )
-                try:
-                    body = r.json()
-                except Exception:
-                    body = r.text
-                return r.status_code, body
-        except httpx.TimeoutException:
-            return 504, {"detail": "Gateway timeout"}
-        except httpx.RequestError as e:
-            log.error(f"Forwarding error: {e}")
-            return 502, {"detail": "Bad gateway"}
+        # TODO update to use service registry to find appropriate service
+        log.info(f"Forwarding {method} request to {path}")
+        return 502, {"detail": "Bad gateway"}

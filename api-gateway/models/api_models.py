@@ -65,19 +65,8 @@ class RegisterOpenApiPayload(BaseModel):
         return spec
 
 
-class DeregisterServicePayload(BaseModel):
-    """Model representing the payload for deregistering a service instance.
-
-    Attributes:
-        service_name (str): Unique name of the service.
-        instance_id (str): Identifier for this instance (e.g. host:port).
-    """
-    service_name: Annotated[str, Field(description="Unique name of the service")]
-    instance_id: Annotated[str, Field(description="Identifier for this instance (e.g. host:port)")]
-
-
-class HeartbeatPayload(BaseModel):
-    """Model representing the payload for sending a heartbeat for a service instance.
+class ServiceInstancePayload(BaseModel):
+    """Model representing a service instance identity.
 
     Attributes:
         service_name (str): Unique name of the service.

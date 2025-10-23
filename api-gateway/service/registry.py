@@ -42,6 +42,7 @@ from typing import Iterable, List, Optional, Tuple
 
 import redis.asyncio as aioredis
 
+from models.api_models import RoutePayload
 from models.registry_models import RouteDefinition
 
 
@@ -71,7 +72,7 @@ class ServiceRegistry:
         service_name: str,
         instance_id: str,
         address: str,
-        routes: Iterable[RouteDefinition],
+        routes: Iterable[RoutePayload],
     ) -> None:
         """Register a service instance and its routes in Redis.
 
