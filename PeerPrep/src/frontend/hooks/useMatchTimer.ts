@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 
 export function useMatchTimer(
     active: boolean,
-    initialTime = 180
+    initialTime = 180,
+    onTimeout?: () => void
 ) {
     const [timeLeft, setTimeLeft] = useState(initialTime);
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -17,6 +18,10 @@ export function useMatchTimer(
             if (timerRef.current) clearInterval(timerRef.current);
         };
     }, [active]);
+
+    useEffect(() => {
+        if (active && timeLeft === 0 && onTimeout) onTimeout();
+    }, [timeLeft]);
 
     const reset = (seconds = initialTime) => setTimeLeft(seconds);
     const stop = () => {

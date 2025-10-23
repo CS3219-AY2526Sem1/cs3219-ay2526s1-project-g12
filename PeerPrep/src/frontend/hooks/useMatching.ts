@@ -90,8 +90,8 @@ export function useMatching(userId: string, category: string, difficulty: string
     }
   };
 
-  /** Forfeit and retry matching */
-  const forfeitMatch = async () => {
+  /** Used in forfeit matching, and timer ends */
+  const resetBackToIdle = async () => {
       setMatchState(MatchState.Idle);
   };
 
@@ -104,7 +104,7 @@ export function useMatching(userId: string, category: string, difficulty: string
     isAccepting,
     startMatching,
     cancelMatch,
-    forfeitMatch,
+    resetBackToIdle,
     acceptMatch,
     setMatchState,
   };

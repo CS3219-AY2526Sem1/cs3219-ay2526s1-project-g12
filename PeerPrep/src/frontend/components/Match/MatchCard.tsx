@@ -23,13 +23,14 @@ export function MatchCard({ userId, category, difficulty, onMatchStateChange }: 
     isAccepting,
     startMatching,
     cancelMatch,
-    forfeitMatch,
+    resetBackToIdle,
     acceptMatch,
   } = useMatching(userId, category, difficulty);
 
   const { minutes, seconds, reset, addTime } = useMatchTimer(
     matchState === MatchState.Searching || matchState === MatchState.Found,
     180,
+    resetBackToIdle,
   );
 
   useEffect(() => {
@@ -73,7 +74,7 @@ export function MatchCard({ userId, category, difficulty, onMatchStateChange }: 
             isAccepting={isAccepting}
             statusMessage={statusMessage}
             onAccept={acceptMatch}
-            onForfeit={forfeitMatch}
+            onForfeit={resetBackToIdle}
           />
         );
 
