@@ -9,7 +9,7 @@ from requests.exceptions import RequestException
 from utils.logger import log
 from utils.utils import get_envvar
 
-SERVICE_NAME = "qns-svc"
+SERVICE_NAME = "qs"
 INSTANCE_ID = str(uuid4())
 
 
