@@ -19,6 +19,7 @@ _redis: aioredis.Redis
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # On Startup
     global _redis
     _redis = await aioredis.from_url(
         f"{REDIS_URL}",
@@ -29,6 +30,7 @@ async def lifespan(app: FastAPI):
     await _redis.ping()
     log.info("Connected to Redis")
     yield
+    # On Shutdown
     if _redis:
         await _redis.close()
         log.info("Redis connection closed")

@@ -34,6 +34,7 @@ used:
   this key on a periodic basis.  When the TTL expires, the registry
   considers the instance dead.
 """
+
 from __future__ import annotations
 
 import json
@@ -93,7 +94,9 @@ class ServiceRegistry:
         await self.redis.hset(inst_key, instance_id, json.dumps({"address": address}))
 
         # Write or refresh heartbeat key
-        hb_key = self.HEARTBEAT_KEY.format(service_name=service_name, instance_id=instance_id)
+        hb_key = self.HEARTBEAT_KEY.format(
+            service_name=service_name, instance_id=instance_id
+        )
         await self.redis.set(hb_key, "1", ex=self.heartbeat_ttl)
 
         # Store each route in the service routes hash and global map
@@ -102,6 +105,16 @@ class ServiceRegistry:
             for rd in routes:
                 await pipe.hset(svc_routes_key, rd.path, rd.model_dump_json())
                 await pipe.hset(self.ROUTE_MAP_KEY, rd.path, service_name)
+                if rd.path[-1] == "/":
+                    await pipe.hset(
+                        svc_routes_key, rd.path.rstrip("/"), rd.model_dump_json()
+                    )
+                    await pipe.hset(
+                        self.ROUTE_MAP_KEY, rd.path.rstrip("/"), service_name
+                    )
+                else:
+                    await pipe.hset(svc_routes_key, f"{rd.path}/", rd.model_dump_json())
+                    await pipe.hset(self.ROUTE_MAP_KEY, f"{rd.path}/", service_name)
             await pipe.execute()
 
     async def unregister_service(self, service_name: str, instance_id: str) -> None:
@@ -112,12 +125,16 @@ class ServiceRegistry:
         """
         inst_key = self.SERVICE_INSTANCES_KEY.format(service_name=service_name)
         await self.redis.hdel(inst_key, instance_id)
-        hb_key = self.HEARTBEAT_KEY.format(service_name=service_name, instance_id=instance_id)
+        hb_key = self.HEARTBEAT_KEY.format(
+            service_name=service_name, instance_id=instance_id
+        )
         await self.redis.delete(hb_key)
 
     async def refresh_heartbeat(self, service_name: str, instance_id: str) -> None:
         """Refresh the heartbeat for a service instance."""
-        hb_key = self.HEARTBEAT_KEY.format(service_name=service_name, instance_id=instance_id)
+        hb_key = self.HEARTBEAT_KEY.format(
+            service_name=service_name, instance_id=instance_id
+        )
         await self.redis.set(hb_key, "1", ex=self.heartbeat_ttl)
 
     async def find_route(self, path: str) -> Optional[Tuple[str, str]]:
@@ -150,7 +167,9 @@ class ServiceRegistry:
                 return svc, route_pattern
         return None
 
-    async def get_route_definition(self, service_name: str, path: str) -> Optional[RouteDefinition]:
+    async def get_route_definition(
+        self, service_name: str, path: str
+    ) -> Optional[RouteDefinition]:
         """Retrieve the RouteDefinition for the given path within a service.
 
         Args:
@@ -171,7 +190,9 @@ class ServiceRegistry:
         instances = await self.redis.hgetall(inst_key)
         alive: List[str] = []
         for instance_id, meta_json in instances.items():
-            hb_key = self.HEARTBEAT_KEY.format(service_name=service_name, instance_id=instance_id)
+            hb_key = self.HEARTBEAT_KEY.format(
+                service_name=service_name, instance_id=instance_id
+            )
             # Check heartbeat existence
             if await self.redis.exists(hb_key):
                 try:

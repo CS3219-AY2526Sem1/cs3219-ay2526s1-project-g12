@@ -4,8 +4,8 @@ from controllers.gateway_controller import GatewayController
 from models.api_models import (
     RegisterOpenApiPayload,
     RegisterServicePayload,
-    ServiceInstancePayload,
     RoutePayload,
+    ServiceInstancePayload,
 )
 from service.redis_settings import get_gateway
 
