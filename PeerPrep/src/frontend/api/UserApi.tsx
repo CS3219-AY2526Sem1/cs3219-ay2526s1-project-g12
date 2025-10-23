@@ -37,6 +37,16 @@ export const userApi = {
     return apiClient.request("/users/me");
   },
 
+  // Verify email with token
+  async verifyEmail(token: string): Promise<ApiResponse<any>> {
+    return apiClient.request("/auth/verify", {
+      method: "POST",
+      body: JSON.stringify({
+        token: token,
+      }),
+    });
+  },
+
   // Helper method to check if user is authenticated
   async checkAuth(): Promise<boolean> {
     const response = await this.getCurrentUser();
