@@ -192,38 +192,41 @@ class GatewayController:
 
         service_name, canonical_path = matched_route
 
+        internal_path = path.removeprefix(f"/{service_name}")
+
         # Fetch the route definition
         route_def = await self.registry.get_route_definition(
             service_name, canonical_path
         )
         if not route_def:
             log.warning(
-                f"Blocked forwarding of request to '{canonical_path}' for service {service_name}: "
+                f"Blocked forwarding of request to '{internal_path}' for service {service_name}: "
                 f"no route definition found"
             )
             return 404, {"detail": "Not found"}
 
         # Check method
         if method not in route_def.methods:
-            log.warning(f"Blocked forwarding of {method} request to '{path}': method not allowed")
+            log.warning(f"Blocked forwarding of {method} request to '{internal_path}': method not allowed")
             return 405, {"detail": "Method not allowed"}
 
         # Check role
         if route_def.methods[method] and (not role or role not in route_def.methods[method]):
             log.warning(
-                f"Blocked forwarding of request to '{path}': role {role} not permitted"
+                f"Blocked forwarding of request to '{internal_path}': role {role} not permitted"
             )
             return 401, {"detail": "Unauthorized"}
 
         # Choose instance
         address = await self.registry.choose_instance(service_name)
         if not address:
-            log.error(f"Blocked forwarding of request to '{path}': no alive instances found for service {service_name}")
+            log.error(f"Blocked forwarding of request to '{internal_path}': "
+                      f"no alive instances found for service {service_name}")
             return 503, {"detail": "Service unavailable"}
 
-        url = f"http://{address}{path}"
+        url = f"http://{address}{internal_path}"
 
-        log.info(f"Forwarding {method} request to {url}")
+        log.info(f"Forwarding request: {method} {path} → [{service_name}] {url}")
 
         # Check if there is an existing header dictionary
         if headers is None:

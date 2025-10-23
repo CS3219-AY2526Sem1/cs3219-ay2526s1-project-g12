@@ -45,6 +45,7 @@ import redis.asyncio as aioredis
 
 from models.api_models import RoutePayload
 from models.registry_models import RouteDefinition
+from utils.utils import build_route_path, path_variants
 
 
 class ServiceRegistry:
@@ -103,18 +104,13 @@ class ServiceRegistry:
         svc_routes_key = self.SERVICE_ROUTES_KEY.format(service_name=service_name)
         async with self.redis.pipeline(transaction=True) as pipe:
             for rd in routes:
-                await pipe.hset(svc_routes_key, rd.path, rd.model_dump_json())
-                await pipe.hset(self.ROUTE_MAP_KEY, rd.path, service_name)
-                if rd.path[-1] == "/":
-                    await pipe.hset(
-                        svc_routes_key, rd.path.rstrip("/"), rd.model_dump_json()
-                    )
-                    await pipe.hset(
-                        self.ROUTE_MAP_KEY, rd.path.rstrip("/"), service_name
-                    )
-                else:
-                    await pipe.hset(svc_routes_key, f"{rd.path}/", rd.model_dump_json())
-                    await pipe.hset(self.ROUTE_MAP_KEY, f"{rd.path}/", service_name)
+                # Build full prefixed route
+                full_path = build_route_path(service_name, rd.path)
+
+                # Register both /foo and /foo/ variants
+                for variant in path_variants(full_path):
+                    await pipe.hset(svc_routes_key, variant, rd.model_dump_json())
+                    await pipe.hset(self.ROUTE_MAP_KEY, variant, service_name)
             await pipe.execute()
 
     async def unregister_service(self, service_name: str, instance_id: str) -> None:
