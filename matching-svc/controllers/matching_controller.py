@@ -291,8 +291,11 @@ async def cleanup(match_key: str, matchmaking_conn: Redis, confirmation_conn: Re
 
     match_details = await get_match_details(match_key, confirmation_conn)
 
-    await remove_user_queue_details(match_details["user_one"], matchmaking_conn)
-    await remove_user_queue_details(match_details["user_two"], matchmaking_conn)
+    user_one_in_queue_key = format_in_queue_key(match_details["user_one"])
+    user_two_in_queue_key = format_in_queue_key(match_details["user_two"])
+
+    await remove_user_queue_details(user_one_in_queue_key, matchmaking_conn)
+    await remove_user_queue_details(user_two_in_queue_key, matchmaking_conn)
 
     await delete_match_record(match_key, confirmation_conn)
 
