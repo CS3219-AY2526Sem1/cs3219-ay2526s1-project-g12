@@ -10,12 +10,10 @@ class RoutePayload(BaseModel):
 
     Attributes:
         path (str): The path pattern (e.g. /users/me).
-        methods (list[str]): List of allowed HTTP methods.
-        roles (list[str]): List of allowed roles.
+        methods (Dict[str, list]): List of allowed HTTP methods and their roles.
     """
     path: Annotated[str, Field(description="The path pattern (e.g. /users/me)")]
-    methods: Annotated[list[str], Field(description="List of allowed HTTP methods")]
-    roles: Annotated[list[str], Field(default_factory=list, description="List of allowed roles")]
+    methods: Annotated[dict[str, list[str]], Field(description="List of allowed HTTP methods and their roles")]
 
 
 class RegisterServicePayload(BaseModel):

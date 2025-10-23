@@ -209,7 +209,7 @@ class GatewayController:
             return 405, {"detail": "Method not allowed"}
 
         # Check role
-        if route_def.roles and (not role or role not in route_def.roles):
+        if route_def.methods[method] and (not role or role not in route_def.methods[method]):
             log.warning(
                 f"Blocked forwarding of request to '{path}': role {role} not permitted"
             )

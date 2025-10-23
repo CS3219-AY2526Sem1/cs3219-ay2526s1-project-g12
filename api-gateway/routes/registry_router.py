@@ -55,21 +55,18 @@ async def register_openapi(
             # Exclude standard documentation endpoints
             if path in {"/openapi.json", "/docs", "/redoc"}:
                 continue
-            methods = []
-            roles = None
+            methods: dict[str, list[str]] = dict()
             for method_name, op_spec in operations.items():
-                methods.append(method_name.upper())
+                roles = []
                 # Attempt to read custom roles from extensions
                 ext_roles = op_spec.get("x-roles")
                 if ext_roles:
-                    if roles is None:
-                        roles = []
                     for r in ext_roles:
-                        if r not in roles:
-                            roles.append(r)
+                        roles.append(r)
+                methods[method_name.upper()] = roles
             if not methods:
                 continue
-            route_defs.append(RoutePayload(path=path, methods=methods, roles=roles or []))
+            route_defs.append(RoutePayload(path=path, methods=methods))
         await gateway.register_service(
             service_name=payload.service_name,
             instance_id=payload.instance_id,
