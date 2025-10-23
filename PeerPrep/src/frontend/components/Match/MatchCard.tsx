@@ -11,9 +11,10 @@ interface MatchCardProps {
   userId: string;
   category: string;
   difficulty: string;
+  onMatchStateChange?: (state: MatchState) => void;
 }
 
-export function MatchCard({ userId, category, difficulty }: MatchCardProps) {
+export function MatchCard({ userId, category, difficulty, onMatchStateChange }: MatchCardProps) {
   const {
     matchState,
     partnerName,
@@ -33,6 +34,7 @@ export function MatchCard({ userId, category, difficulty }: MatchCardProps) {
   );
 
   useEffect(() => {
+    onMatchStateChange?.(matchState);
     // Reset timer when user cancels or returns to idle
     if (matchState === MatchState.Idle) {
       reset(180);

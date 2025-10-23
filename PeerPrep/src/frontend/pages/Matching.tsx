@@ -15,6 +15,8 @@ function Matching() {
   const [loadingDifficulties, setLoadingDifficulties] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [isMatchingActive, setIsMatchingActive] = useState(false);
+
   const { user } = useAuth();
 
   // Fetch pool categories on mount
@@ -95,6 +97,7 @@ function Matching() {
                   setTopic(e.target.value || null);
                   setDifficulty(null);
                 }}
+                disabled={isMatchingActive}
               >
                 <option value="" disabled>
                   Select a topic
@@ -121,7 +124,7 @@ function Matching() {
                   <button
                     key={level}
                     onClick={() => setDifficulty(level)}
-                    disabled={!level}
+                    disabled={!level || isMatchingActive}
                     className={`btn ${
                       difficulty === level
                         ? "btn-primary"
@@ -140,6 +143,9 @@ function Matching() {
             userId={user!.id}
             category={topic!}
             difficulty={difficulty!}
+            onMatchStateChange={(state) =>
+              setIsMatchingActive(state !== "idle")
+            }
           />
         </div>
       </div>
