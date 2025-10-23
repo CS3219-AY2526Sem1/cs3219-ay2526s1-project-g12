@@ -6,6 +6,7 @@ import MainLayout from "./layouts/MainLayout";
 import "./assets/styles.css";
 import type { LazyExoticComponent, ReactNode } from "react";
 
+
 // Type for our route object
 type RouteType = {
   path: string;
