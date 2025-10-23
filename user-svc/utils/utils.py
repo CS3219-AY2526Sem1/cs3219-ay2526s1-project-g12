@@ -6,6 +6,8 @@ class AppConfig(BaseSettings):
     """Application configuration settings loaded from environment variables.
 
     Attributes:
+        service_host (str): Host address where the service runs.
+
         database_url (PostgresDsn): PostgreSQL connection string for the service database.
 
         jwt_secret (str): Secret for JWT access tokens (min length 32).
@@ -32,6 +34,8 @@ class AppConfig(BaseSettings):
         log_level (str): Logging verbosity level. Default: INFO.
         log_dir (str): Directory where logs are stored. Default: ./logs.
     """
+    # Service Configuration
+    service_host: str = Field(description="Host address where the service runs")
 
     # Database & Redis Configuration
     database_url: PostgresDsn
