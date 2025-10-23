@@ -1,4 +1,3 @@
-
 import asyncio
 from uuid import uuid4
 
@@ -10,7 +9,7 @@ from requests.exceptions import RequestException
 from utils.logger import log
 from utils.utils import get_envvar
 
-SERVICE_NAME = "matching-svc"
+SERVICE_NAME = "ms"
 INSTANCE_ID = str(uuid4())
 
 

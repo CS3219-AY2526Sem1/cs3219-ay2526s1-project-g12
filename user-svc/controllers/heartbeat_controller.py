@@ -11,7 +11,7 @@ from utils.utils import AppConfig
 
 config = AppConfig()
 
-SERVICE_NAME = "user-svc"
+SERVICE_NAME = "us"
 INSTANCE_ID = str(uuid4())
 
 
