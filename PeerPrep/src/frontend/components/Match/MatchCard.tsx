@@ -30,7 +30,6 @@ export function MatchCard({ userId, category, difficulty, onMatchStateChange }: 
   const { minutes, seconds, reset, addTime } = useMatchTimer(
     matchState === MatchState.Searching || matchState === MatchState.Found,
     180,
-    cancelMatch,
   );
 
   useEffect(() => {
