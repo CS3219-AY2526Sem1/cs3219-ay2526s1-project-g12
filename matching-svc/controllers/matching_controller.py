@@ -16,18 +16,18 @@ from service.redis_message_service import (
     send_match_found_message,
     send_match_finalised_message,
     send_match_terminated_message,
-    wait_for_message,
-    send_new_request_message
+    wait_for_message
 )
 from service.redis_matchmaking_service import (
-    add_to_queued_users_set,
+    add_user_queue_details,
     find_partner,
     enqueue_user,
-    remove_from_queued_users_set, 
+    remove_user_queue_details, 
     dequeue_user,
-    check_in_queued_users_set,
+    check_user_in_any_queue,
     find_user_in_queue,
-    get_user_queue_details
+    get_user_queue_details,
+    check_user_found_match
 )
 from utils.logger import log
 from utils.utils import (
@@ -67,23 +67,10 @@ async def find_match(match_request: MatchRequest, matchmaking_conn: Redis,  mess
     lock_key = format_lock_key(queue_key)
 
     # Check if the user is already in the queue, if they are means we need to cancel the old queue request
-    if (await check_in_queued_users_set(in_queue_key, matchmaking_conn)):
-        old_queue_details = get_user_queue_details(in_queue_key, matchmaking_conn)
-        old_queue_key = format_queue_key(old_queue_details["difficulty"], old_queue_details["category"])
-        old_lock_key = format_lock_key(queue_key)
-
-        # Check if the user has found a match
-
-        old_lock = await acquire_lock(old_lock_key, matchmaking_conn)
-
-        log.info(f"User id, {user_id} has acquired the lock with key: {lock_key}.")
-        remove_from_queued_users_set(in_queue_key, matchmaking_conn)
-        dequeue_user(user_id, old_queue_key)
-        await release_lock(old_lock)
-
-        # Finally send a message to the old connection that a new request came in
-        new_request_message_key = format_match_found_key(user_id)
-        await send_new_request_message(new_request_message_key, match_id, message_conn)
+    if (await check_user_in_any_queue(in_queue_key, matchmaking_conn)):
+        # We only cancle the old request if they have not found a match yet
+        if (not await terminate_previous_match_request(user_id, matchmaking_conn, message_conn)):
+            raise HTTPException(status_code=400, detail="User has found a match, a new request cannot be made currently")
 
     # Ensure that at any time only 1 request is updating the redis queue
     lock = await acquire_lock(lock_key, matchmaking_conn)
@@ -91,7 +78,7 @@ async def find_match(match_request: MatchRequest, matchmaking_conn: Redis,  mess
 
     try:
 
-        add_to_queued_users_set(in_queue_key, difficulty, category, matchmaking_conn)
+        await add_user_queue_details(in_queue_key, difficulty, category, matchmaking_conn)
 
         partner = await find_partner(queue_key, matchmaking_conn)
 
@@ -155,6 +142,26 @@ async def wait_for_match(match_request: MatchRequest, matchmaking_conn: Redis, m
         match_id = message[1] # Index 0 is the key where the value is popped from
         return {"match_id" : match_id, "message" : "match has been found"}
 
+async def terminate_previous_match_request(user_id: str, matchmaking_conn: Redis, message_conn: Redis) -> bool:
+    """
+    Terminates the previous match request sent by the user.
+    """
+    in_queue_key = format_in_queue_key(user_id)
+
+    old_queue_details = await get_user_queue_details(in_queue_key, matchmaking_conn)
+    difficulty = old_queue_details["difficulty"]
+    category = old_queue_details["category"]
+
+    # Check if the user has found a match
+    if (await check_user_found_match(in_queue_key, matchmaking_conn)):
+        return False
+
+    # Just call terminate match
+    old_match_request = MatchRequest(user_id= user_id, difficulty= difficulty, category= category)
+    await terminate_match(old_match_request, matchmaking_conn, message_conn)
+
+    return True
+
 async def terminate_match(match_request: MatchRequest, matchmaking_conn: Redis, message_conn: Redis) -> None:
     """
     Terminates the match request for the user.
@@ -163,16 +170,21 @@ async def terminate_match(match_request: MatchRequest, matchmaking_conn: Redis, 
     difficulty = match_request.difficulty
     category = match_request.category
 
+    in_queue_key = format_in_queue_key(user_id)
+
     # Check if the user is in the queue in the first place
-    if (not await check_in_queued_users_set(user_id, matchmaking_conn)):
+    if (not await check_user_in_any_queue(in_queue_key, matchmaking_conn)):
         raise HTTPException(status_code=400, detail="User is not currently matchmaking")
+    
+    # Check if the user has found a match, if yes we cannot terminate
+    if (await check_user_found_match(in_queue_key, matchmaking_conn)):
+        raise HTTPException(status_code=400, detail="User has been paired with someone, cannot cancel request")
 
     queue_key = format_queue_key(difficulty, category)
 
     if (await find_user_in_queue(user_id, queue_key, matchmaking_conn) is None):
         raise HTTPException(status_code=400, detail=f"User is not queuing for {difficulty} and {category}")
 
-    
     lock_key = format_lock_key(queue_key)
 
     lock = await acquire_lock(lock_key, matchmaking_conn)
@@ -180,7 +192,7 @@ async def terminate_match(match_request: MatchRequest, matchmaking_conn: Redis, 
 
     try:
         await dequeue_user(user_id, queue_key, matchmaking_conn)
-        await remove_from_queued_users_set(user_id, matchmaking_conn)
+        await remove_user_queue_details(in_queue_key, matchmaking_conn)
 
         message_key = format_match_found_key(user_id)
         await send_match_terminated_message(message_key, message_conn)
@@ -279,8 +291,8 @@ async def cleanup(match_key: str, matchmaking_conn: Redis, confirmation_conn: Re
 
     match_details = await get_match_details(match_key, confirmation_conn)
 
-    await remove_from_queued_users_set(match_details["user_one"], matchmaking_conn)
-    await remove_from_queued_users_set(match_details["user_two"], matchmaking_conn)
+    await remove_user_queue_details(match_details["user_one"], matchmaking_conn)
+    await remove_user_queue_details(match_details["user_two"], matchmaking_conn)
 
     await delete_match_record(match_key, confirmation_conn)
 

@@ -15,19 +15,19 @@ def connect_to_redis_matchmaking_service() -> Redis:
     log.info("Connected to redis queue server.")
     return Redis(host=host, port=redis_port, decode_responses=True, db=0)
 
-async def add_to_queued_users_set(key: str, difficulty: str, category: str, matchmaking_conn: Redis) -> None:
+async def add_user_queue_details(key: str, difficulty: str, category: str, matchmaking_conn: Redis) -> None:
     """
     Adds the user into the set of queued users.\n
     """
     mapping = {
-        difficulty: difficulty,
-        category: category,
+        "difficulty": difficulty,
+        "category": category,
         "match_found": 0
     }
 
     await matchmaking_conn.hset(key, mapping=mapping)
 
-async def check_in_queued_users_set(key: str, matchmaking_conn: Redis) -> bool:
+async def check_user_in_any_queue(key: str, matchmaking_conn: Redis) -> bool:
     """
     Checks if the user is in any of the queues.\n
     """
@@ -38,7 +38,18 @@ async def check_in_queued_users_set(key: str, matchmaking_conn: Redis) -> bool:
     else:
         return False
 
-async def remove_from_queued_users_set(key: str, matchmaking_conn: Redis) -> None:
+async def check_user_found_match(key: str, matchmaking_conn: Redis) -> bool:
+    """
+    Checks if the user has currently found a match.\n
+    """
+    has_found_match = await matchmaking_conn.hget(key, "match_found")
+
+    if (has_found_match == 1):
+        return True
+    else:
+        return False
+
+async def remove_user_queue_details(key: str, matchmaking_conn: Redis) -> None:
     """
     Removes the user from the set of queued users.\n
     """

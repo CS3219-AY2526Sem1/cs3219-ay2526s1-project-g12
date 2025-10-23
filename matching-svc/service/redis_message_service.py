@@ -15,12 +15,6 @@ def connect_to_redis_message_service() -> Redis:
     log.info("Connected to redis messaging server.")
     return Redis(host=host, port=redis_port, decode_responses=True, db=1)
 
-async def send_new_request_message(message_key: str, message_conn:Redis) -> None:
-    """
-    Sends a message to the old http request that a new request came in.
-    """
-    await message_conn.rpush(message_key, "new request made")
-
 async def send_match_found_message(message_key: str, match_id: str, message_conn:Redis) -> None:
     """
     Sends a message to the user that a match as been found with the corrosponding match id.
