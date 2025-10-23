@@ -27,7 +27,8 @@ from service.redis_matchmaking_service import (
     check_user_in_any_queue,
     find_user_in_queue,
     get_user_queue_details,
-    check_user_found_match
+    check_user_found_match,
+    update_user_match_found_status
 )
 from utils.logger import log
 from utils.utils import (
@@ -97,6 +98,10 @@ async def find_match(match_request: MatchRequest, matchmaking_conn: Redis,  mess
             message_key = format_match_found_key(partner)
             await send_match_found_message(message_key, match_id, message_conn)
             log.info(f"Notified {partner} that a match has been found.")
+
+            partner_in_queue_key = format_in_queue_key(partner)
+            await update_user_match_found_status(in_queue_key, matchmaking_conn)
+            await update_user_match_found_status(partner_in_queue_key, matchmaking_conn)
 
             asyncio.create_task(confirmation_lookout(match_key, matchmaking_conn, message_conn, confirmation_conn))
 

@@ -44,10 +44,16 @@ async def check_user_found_match(key: str, matchmaking_conn: Redis) -> bool:
     """
     has_found_match = await matchmaking_conn.hget(key, "match_found")
 
-    if (has_found_match == 1):
+    if (has_found_match == "1"):
         return True
     else:
         return False
+
+async def update_user_match_found_status(key: str, matchmaking_conn: Redis) -> None:
+    """
+    Updates the users status to be that they have found a match.
+    """
+    await matchmaking_conn.hset(key, mapping={"match_found": 1})
 
 async def remove_user_queue_details(key: str, matchmaking_conn: Redis) -> None:
     """
