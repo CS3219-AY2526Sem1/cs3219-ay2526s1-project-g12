@@ -100,7 +100,7 @@ class ServiceRegistry:
         svc_routes_key = self.SERVICE_ROUTES_KEY.format(service_name=service_name)
         async with self.redis.pipeline(transaction=True) as pipe:
             for rd in routes:
-                await pipe.hset(svc_routes_key, rd.path, rd.to_json())
+                await pipe.hset(svc_routes_key, rd.path, rd.model_dump_json())
                 await pipe.hset(self.ROUTE_MAP_KEY, rd.path, service_name)
             await pipe.execute()
 

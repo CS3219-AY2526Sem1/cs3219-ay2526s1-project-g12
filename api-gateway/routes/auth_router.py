@@ -23,7 +23,7 @@ async def login(
     log.info(f"Login attempt for user={username}")
 
     # Forward to user-service /auth/login
-    status_code, resp = await gateway.forward("POST", USER_SERVICE_LOGIN_PATH, data=body)
+    status_code, resp = await gateway.forward("POST", USER_SERVICE_LOGIN_PATH, data=body, user_data={})
     if not (200 <= status_code < 300):
         raise HTTPException(
             status_code=status_code,

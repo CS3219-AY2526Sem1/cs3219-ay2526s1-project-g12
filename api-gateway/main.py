@@ -13,17 +13,6 @@ app = FastAPI(title="API Gateway", lifespan=lifespan)
 
 app.include_router(auth_router)
 app.include_router(registry_router)
-app.include_router(dynamic_router)
-
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[FRONT_END_URL],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 
 # --- Redis Debugging Endpoints (TODO remove in production) ---
 @app.get("/print-all")
@@ -67,3 +56,14 @@ async def flush_all_redis(r: aioredis = Depends(get_redis)):
         return {"message": "All Redis databases have been flushed successfully"}
     except Exception as e:
         return {"error": f"Failed to flush Redis: {str(e)}"}
+
+app.include_router(dynamic_router)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[FRONT_END_URL],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)

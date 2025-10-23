@@ -5,6 +5,7 @@ from models.api_models import (
     RegisterOpenApiPayload,
     RegisterServicePayload,
     ServiceInstancePayload,
+    RoutePayload,
 )
 from service.redis_settings import get_gateway
 
@@ -68,7 +69,7 @@ async def register_openapi(
                             roles.append(r)
             if not methods:
                 continue
-            route_defs.append({"path": path, "methods": methods, "roles": roles or []})
+            route_defs.append(RoutePayload(path=path, methods=methods, roles=roles or []))
         await gateway.register_service(
             service_name=payload.service_name,
             instance_id=payload.instance_id,
