@@ -40,8 +40,7 @@ async def lifespan(app: FastAPI):
     yield
     # This is the shut down procedure when the matching service stops.
     log.info(
-        "Matching service shutting down.",
-        openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]},
+        "Matching service shutting down."
     )
     await sever_connection(app.state.redis_matchmaking_service)
     await sever_connection(app.state.redis_message_service)

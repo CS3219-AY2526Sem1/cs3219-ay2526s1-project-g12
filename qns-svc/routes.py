@@ -47,7 +47,7 @@ async def lifespan(app: FastAPI):  # pragma: no cover
 
 
 app = FastAPI(
-    title="PeerPrep Matching Service",
+    title="PeerPrep Question Service",
     lifespan=lifespan,
 )
 

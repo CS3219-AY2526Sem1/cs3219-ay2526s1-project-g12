@@ -55,7 +55,7 @@ def _send_healthcheck():
         log.warning("Could not register on API Gateway")
 
 
-async def _periodic_healtcheck():  # pragma: no cover
+async def _periodic_healthcheck():  # pragma: no cover
     while True:
         _send_healthcheck()
         await asyncio.sleep(int(config.heartbeat_period))
@@ -64,4 +64,4 @@ async def _periodic_healtcheck():  # pragma: no cover
 def register_heartbeat():  # pragma: no cover
     log.info("Registering heartbeat")
     loop = asyncio.get_event_loop()
-    return loop.create_task(_periodic_healtcheck())
+    return loop.create_task(_periodic_healthcheck())
