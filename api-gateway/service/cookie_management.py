@@ -1,6 +1,6 @@
-from typing import Optional, Annotated
+from typing import Annotated
 
-from fastapi import Cookie, Depends, HTTPException, Response
+from fastapi import Cookie, HTTPException, Response
 
 from utils.logger import log
 from utils.utils import get_envvar
