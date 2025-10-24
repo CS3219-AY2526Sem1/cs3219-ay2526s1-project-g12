@@ -1,0 +1,24 @@
+24-10-2025 06:58:31|INFO|Connected to Redis
+24-10-2025 07:03:07|INFO|Redis connection closed
+24-10-2025 07:10:49|INFO|Connected to Redis
+24-10-2025 07:11:53|INFO|Redis connection closed
+24-10-2025 07:11:59|INFO|Connected to Redis
+24-10-2025 07:17:13|INFO|Redis connection closed
+24-10-2025 07:17:48|INFO|Connected to Redis
+24-10-2025 07:18:53|INFO|Login attempt for user=a@mail.com
+24-10-2025 07:18:53|INFO|Forwarding request: POST /us/auth/login → [us] http://user-svc/auth/login
+24-10-2025 07:18:55|ERROR|Forwarding error: [Errno -2] Name or service not known
+24-10-2025 07:27:24|INFO|Redis connection closed
+24-10-2025 07:27:45|INFO|Connected to Redis
+24-10-2025 07:31:07|INFO|Redis connection closed
+24-10-2025 07:31:13|INFO|Connected to Redis
+24-10-2025 07:37:06|INFO|Redis connection closed
+24-10-2025 07:37:24|INFO|Connected to Redis
+24-10-2025 10:43:39|INFO|Connected to Redis
+24-10-2025 10:48:52|INFO|Redis connection closed
+24-10-2025 10:49:08|INFO|Connected to Redis
+24-10-2025 10:51:23|INFO|Redis connection closed
+24-10-2025 10:51:59|INFO|Connected to Redis
+24-10-2025 11:39:49|INFO|Redis connection closed
+24-10-2025 11:40:29|INFO|Connected to Redis
+24-10-2025 12:07:05|INFO|Redis connection closed

@@ -1,0 +1,127 @@
+24-10-2025 06:58:37|INFO|Connected to redis queue server.
+24-10-2025 06:58:37|INFO|Connected to redis messaging server.
+24-10-2025 06:58:37|INFO|Connected to redis messaging server.
+24-10-2025 06:58:37|INFO|Matching service is Up.
+24-10-2025 06:58:37|INFO|Registering service with ms af16f3e3-7497-4726-840d-0890d0d8e16d
+24-10-2025 06:58:37|INFO|Registering heartbeat
+24-10-2025 06:58:37|INFO|Sending Healthcheck now
+24-10-2025 07:03:06|INFO|Matching service shutting down.
+24-10-2025 07:10:55|INFO|Connected to redis queue server.
+24-10-2025 07:10:55|INFO|Connected to redis messaging server.
+24-10-2025 07:10:55|INFO|Connected to redis messaging server.
+24-10-2025 07:10:55|INFO|Matching service is Up.
+24-10-2025 07:10:55|INFO|Registering service with ms d465b0d4-b5f3-4965-b091-91712e68f6b2
+24-10-2025 07:10:55|INFO|Registering heartbeat
+24-10-2025 07:10:55|INFO|Sending Healthcheck now
+24-10-2025 07:11:52|INFO|Matching service shutting down.
+24-10-2025 07:12:05|INFO|Connected to redis queue server.
+24-10-2025 07:12:05|INFO|Connected to redis messaging server.
+24-10-2025 07:12:05|INFO|Connected to redis messaging server.
+24-10-2025 07:12:05|INFO|Matching service is Up.
+24-10-2025 07:12:05|INFO|Registering service with ms 7eb66a99-12e9-41de-bcba-f74799aef159
+24-10-2025 07:12:05|INFO|Registering heartbeat
+24-10-2025 07:12:06|INFO|Sending Healthcheck now
+24-10-2025 07:16:35|INFO|Sending Healthcheck now
+24-10-2025 07:17:12|INFO|Matching service shutting down.
+24-10-2025 07:17:54|INFO|Connected to redis queue server.
+24-10-2025 07:17:54|INFO|Connected to redis messaging server.
+24-10-2025 07:17:54|INFO|Connected to redis messaging server.
+24-10-2025 07:17:54|INFO|Matching service is Up.
+24-10-2025 07:17:54|INFO|Registering service with ms ce7dd7b6-ff99-44f9-8c50-17145951724c
+24-10-2025 07:17:54|INFO|Registering heartbeat
+24-10-2025 07:17:54|INFO|Sending Healthcheck now
+24-10-2025 07:22:24|INFO|Sending Healthcheck now
+24-10-2025 07:26:54|INFO|Sending Healthcheck now
+24-10-2025 07:27:23|INFO|Matching service shutting down.
+24-10-2025 07:27:51|INFO|Connected to redis queue server.
+24-10-2025 07:27:51|INFO|Connected to redis messaging server.
+24-10-2025 07:27:51|INFO|Connected to redis messaging server.
+24-10-2025 07:27:51|INFO|Matching service is Up.
+24-10-2025 07:27:51|INFO|Registering service with ms 764ee867-6fd5-4d31-9be7-de9632fd828e
+24-10-2025 07:27:51|INFO|Registering heartbeat
+24-10-2025 07:27:51|INFO|Sending Healthcheck now
+24-10-2025 07:32:21|INFO|Sending Healthcheck now
+24-10-2025 07:36:51|INFO|Sending Healthcheck now
+24-10-2025 07:37:05|INFO|Matching service shutting down.
+24-10-2025 07:37:29|INFO|Connected to redis queue server.
+24-10-2025 07:37:29|INFO|Connected to redis messaging server.
+24-10-2025 07:37:29|INFO|Connected to redis messaging server.
+24-10-2025 07:37:29|INFO|Matching service is Up.
+24-10-2025 07:37:29|INFO|Registering service with ms 0ffbe45e-e5f8-4e5f-b417-fd13a4c6fd70
+24-10-2025 07:37:29|INFO|Registering heartbeat
+24-10-2025 07:37:29|INFO|Sending Healthcheck now
+24-10-2025 07:41:59|INFO|Sending Healthcheck now
+24-10-2025 07:46:29|INFO|Sending Healthcheck now
+24-10-2025 07:50:59|INFO|Sending Healthcheck now
+24-10-2025 07:55:29|INFO|Sending Healthcheck now
+24-10-2025 07:59:59|INFO|Sending Healthcheck now
+24-10-2025 08:04:29|INFO|Sending Healthcheck now
+24-10-2025 08:08:59|INFO|Sending Healthcheck now
+24-10-2025 08:13:29|INFO|Sending Healthcheck now
+24-10-2025 08:17:59|INFO|Sending Healthcheck now
+24-10-2025 08:22:29|INFO|Sending Healthcheck now
+24-10-2025 08:26:59|INFO|Sending Healthcheck now
+24-10-2025 08:31:29|INFO|Sending Healthcheck now
+24-10-2025 08:35:59|INFO|Sending Healthcheck now
+24-10-2025 08:40:29|INFO|Sending Healthcheck now
+24-10-2025 08:44:59|INFO|Sending Healthcheck now
+24-10-2025 08:49:29|INFO|Sending Healthcheck now
+24-10-2025 08:53:59|INFO|Sending Healthcheck now
+24-10-2025 08:58:29|INFO|Sending Healthcheck now
+24-10-2025 09:02:59|INFO|Sending Healthcheck now
+24-10-2025 09:07:29|INFO|Sending Healthcheck now
+24-10-2025 09:11:59|INFO|Sending Healthcheck now
+24-10-2025 09:16:29|INFO|Sending Healthcheck now
+24-10-2025 09:20:59|INFO|Sending Healthcheck now
+24-10-2025 09:25:29|INFO|Sending Healthcheck now
+24-10-2025 09:29:59|INFO|Sending Healthcheck now
+24-10-2025 09:34:29|INFO|Sending Healthcheck now
+24-10-2025 09:38:59|INFO|Sending Healthcheck now
+24-10-2025 10:43:44|INFO|Connected to redis queue server.
+24-10-2025 10:43:44|INFO|Connected to redis messaging server.
+24-10-2025 10:43:44|INFO|Connected to redis messaging server.
+24-10-2025 10:43:44|INFO|Matching service is Up.
+24-10-2025 10:43:44|INFO|Registering service with ms 61bd0e9e-c998-41cb-89c8-b2b31b5510cd
+24-10-2025 10:43:44|INFO|Registering heartbeat
+24-10-2025 10:43:44|INFO|Sending Healthcheck now
+24-10-2025 10:48:14|INFO|Sending Healthcheck now
+24-10-2025 10:48:51|INFO|Matching service shutting down.
+24-10-2025 10:49:13|INFO|Connected to redis queue server.
+24-10-2025 10:49:13|INFO|Connected to redis messaging server.
+24-10-2025 10:49:13|INFO|Connected to redis messaging server.
+24-10-2025 10:49:13|INFO|Matching service is Up.
+24-10-2025 10:49:13|INFO|Registering service with ms ccc2735d-2abc-41d4-a7a8-07bc839a854c
+24-10-2025 10:49:13|INFO|Registering heartbeat
+24-10-2025 10:49:13|INFO|Sending Healthcheck now
+24-10-2025 10:51:21|INFO|Matching service shutting down.
+24-10-2025 10:52:05|INFO|Connected to redis queue server.
+24-10-2025 10:52:05|INFO|Connected to redis messaging server.
+24-10-2025 10:52:05|INFO|Connected to redis messaging server.
+24-10-2025 10:52:05|INFO|Matching service is Up.
+24-10-2025 10:52:05|INFO|Registering service with ms 58d1720f-8a37-4667-93c1-b068ad7619f8
+24-10-2025 10:52:05|INFO|Registering heartbeat
+24-10-2025 10:52:05|INFO|Sending Healthcheck now
+24-10-2025 10:56:35|INFO|Sending Healthcheck now
+24-10-2025 11:01:05|INFO|Sending Healthcheck now
+24-10-2025 11:05:35|INFO|Sending Healthcheck now
+24-10-2025 11:10:05|INFO|Sending Healthcheck now
+24-10-2025 11:14:35|INFO|Sending Healthcheck now
+24-10-2025 11:19:05|INFO|Sending Healthcheck now
+24-10-2025 11:23:35|INFO|Sending Healthcheck now
+24-10-2025 11:28:05|INFO|Sending Healthcheck now
+24-10-2025 11:32:35|INFO|Sending Healthcheck now
+24-10-2025 11:37:05|INFO|Sending Healthcheck now
+24-10-2025 11:39:48|INFO|Matching service shutting down.
+24-10-2025 11:40:35|INFO|Connected to redis queue server.
+24-10-2025 11:40:35|INFO|Connected to redis messaging server.
+24-10-2025 11:40:35|INFO|Connected to redis messaging server.
+24-10-2025 11:40:35|INFO|Matching service is Up.
+24-10-2025 11:40:35|INFO|Registering service with ms 8f914df5-1c44-41ce-ac01-f45078977602
+24-10-2025 11:40:35|INFO|Registering heartbeat
+24-10-2025 11:40:35|INFO|Sending Healthcheck now
+24-10-2025 11:45:05|INFO|Sending Healthcheck now
+24-10-2025 11:49:35|INFO|Sending Healthcheck now
+24-10-2025 11:54:05|INFO|Sending Healthcheck now
+24-10-2025 11:58:35|INFO|Sending Healthcheck now
+24-10-2025 12:03:05|INFO|Sending Healthcheck now
+24-10-2025 12:07:03|INFO|Matching service shutting down.
