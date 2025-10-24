@@ -49,7 +49,7 @@ async def login(
     }
 
 
-@router.post("/logout")
+@router.post("/logout", status_code=204)
 async def logout(
     response: Response,
     token: str = Depends(get_token),
