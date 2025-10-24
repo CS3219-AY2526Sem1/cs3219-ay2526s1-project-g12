@@ -8,11 +8,17 @@ from routes.registry_router import router as registry_router
 from service.redis_settings import get_redis, lifespan
 from utils.utils import get_envvar
 
-FRONT_END_URL =get_envvar("FRONT_END_URL")
+FRONT_END_URL = get_envvar("FRONT_END_URL")
 app = FastAPI(title="API Gateway", lifespan=lifespan)
 
 app.include_router(auth_router)
 app.include_router(registry_router)
+
+
+@app.get("/")
+async def root():
+    return {"status": "working"}
+
 
 # --- Redis Debugging Endpoints (TODO remove in production) ---
 @app.get("/print-all")
@@ -56,6 +62,7 @@ async def flush_all_redis(r: aioredis = Depends(get_redis)):
         return {"message": "All Redis databases have been flushed successfully"}
     except Exception as e:
         return {"error": f"Failed to flush Redis: {str(e)}"}
+
 
 app.include_router(dynamic_router)
 

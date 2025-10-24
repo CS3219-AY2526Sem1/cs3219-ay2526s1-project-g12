@@ -1,5 +1,7 @@
 FROM python:3.13-slim
 
+RUN apt-get update && apt-get install -y curl
+
 # Install uv.
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
