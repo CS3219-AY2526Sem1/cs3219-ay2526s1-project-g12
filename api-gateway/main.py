@@ -3,7 +3,8 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from routes.auth_router import router as auth_router
-from routes.user_router import router as user_router
+from routes.dynamic_router import router as dynamic_router
+from routes.registry_router import router as registry_router
 from service.redis_settings import get_redis, lifespan
 from utils.utils import get_envvar
 
@@ -11,17 +12,7 @@ FRONT_END_URL =get_envvar("FRONT_END_URL")
 app = FastAPI(title="API Gateway", lifespan=lifespan)
 
 app.include_router(auth_router)
-app.include_router(user_router)
-
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[FRONT_END_URL],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
+app.include_router(registry_router)
 
 # --- Redis Debugging Endpoints (TODO remove in production) ---
 @app.get("/print-all")
@@ -65,3 +56,14 @@ async def flush_all_redis(r: aioredis = Depends(get_redis)):
         return {"message": "All Redis databases have been flushed successfully"}
     except Exception as e:
         return {"error": f"Failed to flush Redis: {str(e)}"}
+
+app.include_router(dynamic_router)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[FRONT_END_URL],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)

@@ -6,6 +6,12 @@ class AppConfig(BaseSettings):
     """Application configuration settings loaded from environment variables.
 
     Attributes:
+        apigateway_url (str): Base URL of the API Gateway (service registry).
+        registry_path (str): Path for service registration endpoint.
+        heartbeat_path (str): Path for service heartbeat endpoint.
+        heartbeat_period (int): Interval in seconds to send heartbeat signals.
+        host_url (str): Externally reachable address (host:port) of this service instance.
+
         database_url (PostgresDsn): PostgreSQL connection string for the service database.
 
         jwt_secret (str): Secret for JWT access tokens (min length 32).
@@ -32,6 +38,23 @@ class AppConfig(BaseSettings):
         log_level (str): Logging verbosity level. Default: INFO.
         log_dir (str): Directory where logs are stored. Default: ./logs.
     """
+
+    # Registration / Service Discovery
+    apigateway_url: str = Field(
+        description="Base URL of the API Gateway (service registry)"
+    )
+    registry_path: str = Field(
+        description="Path on the API Gateway for registering the service's OpenAPI schema"
+    )
+    heartbeat_path: str = Field(
+        description="Path on the API Gateway for sending heartbeat pings"
+    )
+    heartbeat_period: int = Field(
+        default=300, description="Interval in seconds for heartbeat updates"
+    )
+    host_url: str = Field(
+        description="Externally reachable host:port of this service instance"
+    )
 
     # Database & Redis Configuration
     database_url: PostgresDsn

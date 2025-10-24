@@ -1,12 +1,13 @@
-
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.security import HTTPBearer
 
 from controllers.gateway_controller import GatewayController
 from service.cookie_management import get_token_from_cookie, set_access_token_cookie
 from service.redis_settings import get_gateway
 from utils.logger import log
+from utils.utils import get_envvar
+
+USER_SERVICE_LOGIN_PATH = get_envvar("USER_SERVICE_LOGIN_PATH")
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 security = HTTPBearer(auto_error=False)
@@ -22,7 +23,7 @@ async def login(
     log.info(f"Login attempt for user={username}")
 
     # Forward to user-service /auth/login
-    status_code, resp = await gateway.forward("POST", "/auth/login", data=body)
+    status_code, resp = await gateway.forward("POST", USER_SERVICE_LOGIN_PATH, data=body, user_data={})
     if not (200 <= status_code < 300):
         raise HTTPException(
             status_code=status_code,
@@ -31,7 +32,7 @@ async def login(
 
     if not resp:
         raise HTTPException(
-            status_code=502, detail="User service did not return a respesponse"
+            status_code=502, detail="User service did not return a response"
         )
     
     token = await gateway.store_token(resp)
@@ -58,33 +59,3 @@ async def logout(
     log.info("Logout succeeded")
 
     response.delete_cookie(key="access_token")
-
-
-# Wildcard proxy for any other /auth/* route
-@router.api_route(
-    "/{path:path}",
-    methods=[
-        "GET",
-        "POST",
-        "PUT",
-        "PATCH",
-        "DELETE",
-    ],
-    include_in_schema=False,
-)
-async def forward_auth(
-    path: str, request: Request, gateway: GatewayController = Depends(get_gateway)
-):
-    method = request.method
-    headers = dict(request.headers)
-    params = dict(request.query_params)
-    body = None
-    if method in {"POST", "PUT", "PATCH"}:
-        body = await request.body()
-
-    code, data = await gateway.forward(
-        method, f"/auth/{path}", headers=headers, params=params, data=body
-    )
-    if not (200 <= code < 300):
-        raise HTTPException(status_code=code, detail=data)
-    return JSONResponse(content=data, status_code=code)
