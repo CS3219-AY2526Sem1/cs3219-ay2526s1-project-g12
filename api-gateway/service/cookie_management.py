@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Annotated
 
 from fastapi import Cookie, Depends, HTTPException, Response
 
@@ -28,7 +28,7 @@ def _manage_access_token_cookie(
     
 
 
-async def get_token_from_cookie(access_token: Optional[str] = Cookie(None)) -> str:
+async def get_token(access_token: Annotated[str | None, Cookie()] = None) -> str:
     """
     Dependency to extract the access token from the browser cookie.
     Raises a 401 error if the cookie is not found.
@@ -53,11 +53,14 @@ async def set_access_token_cookie(
 
 async def extend_access_token_cookie(
     response: Response,
-    token: str = Depends(get_token_from_cookie),
+    access_token: Annotated[str | None, Cookie()] = None,
     expiration_seconds: int = DEFAULT_COOKIE_MAX_AGE,
 ):
     """
-    Extends the expiration of the current 'access_token' cookie.
+    Extends the 'access_token' cookie expiration if it exists.
     """
-    _manage_access_token_cookie(response, token, expiration_seconds, action="Extended")
-    return token
+    if not access_token:
+        return None
+
+    _manage_access_token_cookie(response, access_token, expiration_seconds, action="Extended")
+    return access_token

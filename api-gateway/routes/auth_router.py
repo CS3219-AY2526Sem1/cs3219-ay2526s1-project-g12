@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.security import HTTPBearer
 
 from controllers.gateway_controller import GatewayController
-from service.cookie_management import get_token_from_cookie, set_access_token_cookie
+from service.cookie_management import get_token, set_access_token_cookie
 from service.redis_settings import get_gateway
 from utils.logger import log
 from utils.utils import get_envvar
@@ -52,7 +52,7 @@ async def login(
 @router.post("/logout")
 async def logout(
     response: Response,
-    token: str = Depends(get_token_from_cookie),
+    token: str = Depends(get_token),
     gateway: GatewayController = Depends(get_gateway),
 ):
     await gateway.logout_user(token)

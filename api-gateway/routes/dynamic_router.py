@@ -20,9 +20,11 @@ async def auth_user(
     access_token: str = Depends(extend_access_token_cookie),
     gateway: GatewayController = Depends(get_gateway),
 ) -> dict:
-    """Validates and extends TTL of the token from the cookie and returns
-    the associated user data.
+    """Validates and extends the TTL of the access token if present.
+    Returns user data if valid, or an empty dict if unauthenticated.
     """
+    if not access_token:
+        return {}
 
     return await gateway.validate_token(access_token)
 
