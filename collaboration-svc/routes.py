@@ -9,7 +9,6 @@ from models.WebSocketManager import WebSocketManager
 from services.redis_event_queue import connect_to_redis_event_queue
 from services.redis_room_service import connect_to_redis_room_service
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.middleware.cors import CORSMiddleware
 from utils.logger import log
 from utils.utils import sever_connection, get_envvar
 
@@ -45,14 +44,7 @@ async def lifespan(app: FastAPI):
     log.info("Collaboration service shutting down.")
     hc_task.cancel()
 
-app = FastAPI(title="PeerPrep Matching Service", lifespan=lifespan)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[FRONT_END_URL],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app = FastAPI(title="PeerPrep Collaboration Service", lifespan=lifespan)
 
 @app.get("/")
 async def root():
