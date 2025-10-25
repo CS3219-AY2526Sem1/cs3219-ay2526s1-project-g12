@@ -5,7 +5,7 @@ class Message(BaseModel):
         receiver: str
         content: str
 
-class ConnectionManager:
+class WebSocketManager:
     def __init__(self):
         self.active_connection: WebSocket
 

@@ -5,7 +5,7 @@ from controllers.heartbeat_controller import (
     register_self_as_service,
 )
 from controllers.room_controller import create_listener
-from models import WebSocketManager
+from models.WebSocketManager import WebSocketManager
 from services.redis_event_queue import connect_to_redis_event_queue
 from services.redis_room_service import connect_to_redis_room_service
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -57,7 +57,6 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"status": "working"}
-
 
 @app.websocket("/ws/connect")
 async def websocket_endpoint(websocket: WebSocket):
