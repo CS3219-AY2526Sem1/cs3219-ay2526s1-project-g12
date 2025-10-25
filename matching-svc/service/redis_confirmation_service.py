@@ -24,8 +24,8 @@ async def setup_match_confirmation(match_key: str, user_one: str, user_two: str,
         "user_two_confirmation": 0,
         "user_one": user_one,
         "user_two": user_two,
-        difficulty: difficulty,
-        category: category,
+        "difficulty": difficulty,
+        "category": category,
     }
 
     await confirmation_conn.hset(match_key, mapping = mapping)

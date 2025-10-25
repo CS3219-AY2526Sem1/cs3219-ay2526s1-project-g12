@@ -12,6 +12,7 @@ from service.redis_confirmation_service import (
     get_match_details,
     delete_match_record
 )
+from service.redis_event_queue import send_match_confirmed_event
 from service.redis_message_service import (
     send_match_found_message,
     send_match_finalised_message,
@@ -240,6 +241,9 @@ async def confirm_match(match_id: str, confirm_request: MatchConfirmRequest, mat
             message_key = format_match_accepted_key(partner)
             await send_match_finalised_message(message_key, match_id, message_conn)
             log.info(f"Match comfirm message has been sent for user id, {partner}.")
+
+            match_info = await get_match_details(match_key, confirmation_conn)
+            await send_match_confirmed_event(match_id, user_id, partner, match_info["difficulty"], match_info["category"])
 
             return {"match_details": match_id, "message": "starting match"}
     finally:
