@@ -1,6 +1,6 @@
 from redis.asyncio import Redis
 from utils.logger import log
-from utils.utils import get_envvar
+from utils.utils import get_envvar, format_room_key
 
 ENV_REDIS_HOST_KEY = "REDIS_PORT"
 ENV_REDIS_PORT_KEY = "REDIS_PORT"
@@ -14,3 +14,9 @@ def connect_to_redis_room_service() -> Redis:
     # decode_responses = True is to allow redis to automatically decode responses
     log.info("Connected to the event queue")
     return Redis(host=host, port=redis_port, decode_responses=True, db=0)
+
+async def create_room(match_data: dict, room_connection: Redis) -> None:
+    """
+    Creates a room given the match data received.
+    """
+    room_key = format_room_key(match_data["match_id"]) 

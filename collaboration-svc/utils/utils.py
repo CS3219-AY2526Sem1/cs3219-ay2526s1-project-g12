@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 import os
 from redis.asyncio import Redis
-from redis.asyncio.lock import Lock
 
 def get_envvar(var_name: str) -> str:
     load_dotenv()
@@ -21,3 +20,10 @@ async def ping_redis_server(redis_connection: Redis) -> bool:
     Pings the redis server to check if it is responding.
     """
     return await redis_connection.ping()
+
+def format_room_key(match_id: str) -> str:
+    """
+    Formats the room key given the match_id.
+    """
+    key = f"room:{match_id}"
+    return key

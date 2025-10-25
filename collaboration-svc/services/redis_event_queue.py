@@ -23,5 +23,8 @@ async def get_match_confirmation_event(event_queue_connection: Redis) -> dict:
     """
     return await event_queue_connection.hgetall(MATCH_CONFIRMATION_EVENT_KEY)
 
-async def create_room() -> None:
-    pass 
+async def remove_match_confirmation_event(event_queue_connection: Redis) -> None:
+    """
+    Removes the match confirmation event log from the event queue.
+    """
+    await event_queue_connection.delete(MATCH_CONFIRMATION_EVENT_KEY)
