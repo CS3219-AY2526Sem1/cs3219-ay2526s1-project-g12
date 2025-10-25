@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 import os
 from redis.asyncio import Redis
+from redis.asyncio.lock import Lock
 
 def get_envvar(var_name: str) -> str:
     load_dotenv()
@@ -20,6 +21,21 @@ async def ping_redis_server(redis_connection: Redis) -> bool:
     Pings the redis server to check if it is responding.
     """
     return await redis_connection.ping()
+
+async def acquire_lock(key: str, redis_connection: Redis) -> Lock:
+    """
+    Attempts to acquire the lock and will be blocked it is being used by someone else.
+    """
+    lock = Lock(redis_connection, key, timeout=10) # Timeout to prevent deadlocks
+    await  lock.acquire()
+
+    return lock
+
+async def release_lock(lock: Lock) -> None:
+    """
+    Releases the acquired lock.
+    """
+    await lock.release()
 
 def format_room_key(match_id: str) -> str:
     """

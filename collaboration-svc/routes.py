@@ -8,8 +8,11 @@ from controllers.room_controller import create_listener
 from services.redis_event_queue import connect_to_redis_event_queue
 from services.redis_room_service import connect_to_redis_room_service
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from utils.logger import log
-from utils.utils import sever_connection
+from utils.utils import sever_connection, get_envvar
+
+FRONT_END_URL = get_envvar("FRONT_END_URL")
 
 ADMIN_ROLE = "admin"
 USER_ROLE = "user"
@@ -22,21 +25,33 @@ async def lifespan(app: FastAPI):
     app.state.event_queue_connection = connect_to_redis_event_queue()
     app.state.room_connection = connect_to_redis_room_service()
 
-    listener = asyncio.create_task(create_listener(app.state.event_queue_connection, app.state.room_connection))
+    stop_event = asyncio.Event()
+    listener = asyncio.create_task(create_listener(app.state.event_queue_connection, app.state.room_connection, stop_event))
 
     register_self_as_service(app)
     hc_task = register_heartbeat()
     yield
     # This is the shut down procedure when the collaboration service stops.
-    stop_event = asyncio.Event()
     stop_event.set()
 
     if (listener and not listener.done()):
         await listener
 
-    sever_connection(app.state.event_queue_connection)
-    sever_connection(app.state.room_connection)
+    await sever_connection(app.state.event_queue_connection)
+    await sever_connection(app.state.room_connection)
 
     log.info("Collaboration service shutting down.")
     hc_task.cancel()
 
+app = FastAPI(title="PeerPrep Matching Service", lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[FRONT_END_URL],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/")
+async def root():
+    return {"status": "working"}
