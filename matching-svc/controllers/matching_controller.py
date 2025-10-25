@@ -12,6 +12,7 @@ from service.redis_confirmation_service import (
     get_match_details,
     delete_match_record
 )
+from service.redis_event_queue import send_match_confirmed_event
 from service.redis_message_service import (
     send_match_found_message,
     send_match_finalised_message,
@@ -236,15 +237,15 @@ async def confirm_match(match_id: str, confirm_request: MatchConfirmRequest, mat
         # The other user has accepted
         if (await is_match_confirmed(match_key, confirmation_conn)):
             
-            # TODO: Signal the collaboration service to create a room
-            collab_svc_data = "Data from collaboration service"
-
             partner = await get_match_partner(user_id, match_key, confirmation_conn)
             message_key = format_match_accepted_key(partner)
-            await send_match_finalised_message(message_key, collab_svc_data, message_conn)
+            await send_match_finalised_message(message_key, match_id, message_conn)
             log.info(f"Match comfirm message has been sent for user id, {partner}.")
 
-            return {"match_details": collab_svc_data, "message": "starting match"}
+            match_info = await get_match_details(match_key, confirmation_conn)
+            await send_match_confirmed_event(match_id, user_id, partner, match_info["difficulty"], match_info["category"])
+
+            return {"match_details": match_id, "message": "starting match"}
     finally:
         await release_lock(lock)
 
@@ -263,10 +264,10 @@ async def wait_for_confirmation(match_id: str, confirm_request: MatchConfirmRequ
         log.info(f"The partner for user id, {user_id} has failed to accept the match")
         return {"message" : "partner failed to accept the match"}
     else:
-        match_details = message[1] # Index 0 is the key where the value is popped from
+        match_id = message[1] # Index 0 is the key where the value is popped from
         match_key = format_match_key(match_id)
         await cleanup(match_key, matchmaking_conn, confirmation_conn)
-        return {"match_details": match_details, "message": "starting match"}
+        return {"match_details": match_id, "message": "starting match"}
 
 async def confirmation_lookout(match_key: str, matchmaking_conn: Redis, message_conn: Redis, confirmation_conn: Redis):
     """
