@@ -1,0 +1,112 @@
+services:
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: pp-api-gateway
+    ports:
+      - "8000:80"
+    networks:
+      - pp-network
+    env_file:
+      - ./api-gateway/.env
+    environment:
+      - REDIS_URL=
+      - FRONT_END_URL=http://0.0.0.0:5173
+      - HEARTBEAT_TTL=300
+    volumes:
+      - ./logs/api-gateway/:/app/logs/
+    healthcheck:
+      test: curl --fail http://localhost:80 || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  user-svc:
+    build:
+      context: ./user-svc
+      dockerfile: Dockerfile
+    container_name: pp-user-svc
+    ports:
+      - "8001:80"
+    networks:
+      - pp-network
+    env_file:
+      - ./user-svc/.env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://
+      - APIGATEWAY_URL=http://api-gateway
+      - HOST_URL=user-svc
+      - HEARTBEAT_PERIOD=270
+      - VERIFY_EMAIL_BASE=http://0.0.0.0:5173/verify
+      - PASSWORD_RESET_BASE=http://0.0.0.0:5173/reset-password
+    volumes:
+      - ./logs/user-svc/:/app/logs/
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+        restart: true
+
+  qns-svc:
+    build:
+      context: ./qns-svc
+      dockerfile: Dockerfile
+    container_name: pp-qns-svc
+    ports:
+      - "8002:80"
+    networks:
+      - pp-network
+    env_file:
+      - ./qns-svc/.env
+    environment:
+      - DATABASE_URL=asyncpg://
+      - APIGATEWAY_URL=http://api-gateway
+      - HOST_URL=qns-svc
+      - HEARTBEAT_PERIOD=270
+      - FRONT_END_URL=http://0.0.0.0:5173
+    volumes:
+      - ./logs/qns-svc/:/app/logs/
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+        restart: true
+
+  matching-svc:
+    build:
+      context: ./matching-svc
+      dockerfile: Dockerfile
+    container_name: pp-matching-svc
+    ports:
+      - "8003:80"
+    networks:
+      - pp-network
+    env_file:
+      - ./matching-svc/.env
+    environment:
+      - REDIS_HOST=
+      - REDIS_PORT=
+      - APIGATEWAY_URL=http://api-gateway
+      - HOST_URL=matching-svc
+      - HEARTBEAT_PERIOD=270
+      - FRONT_END_URL=http://0.0.0.0:5173
+    volumes:
+      - ./logs/matching-svc/:/app/logs/
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+        restart: true
+
+  # frontend:
+  #   build:
+  #     context: ./PeerPrep
+  #     dockerfile: Dockerfile
+  #   container_name: pp-frontend
+  #   ports:
+  #     - "80:80"
+  #   networks:
+  #     - pp-network
+
+networks:
+  pp-network:
+    driver: bridge
