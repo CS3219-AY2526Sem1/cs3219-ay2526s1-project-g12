@@ -5,9 +5,10 @@ from controllers.heartbeat_controller import (
     register_self_as_service,
 )
 from controllers.room_controller import create_listener
+from models import WebSocketManager
 from services.redis_event_queue import connect_to_redis_event_queue
 from services.redis_room_service import connect_to_redis_room_service
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from utils.logger import log
 from utils.utils import sever_connection, get_envvar
@@ -24,6 +25,7 @@ async def lifespan(app: FastAPI):
     """
     app.state.event_queue_connection = connect_to_redis_event_queue()
     app.state.room_connection = connect_to_redis_room_service()
+    app.state.websocket_manager = WebSocketManager() 
 
     stop_event = asyncio.Event()
     listener = asyncio.create_task(create_listener(app.state.event_queue_connection, app.state.room_connection, stop_event))
@@ -55,3 +57,15 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"status": "working"}
+
+
+@app.websocket("/ws/connect")
+async def websocket_endpoint(websocket: WebSocket):
+    manager = app.state.websocket_manager
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            print(data) # For now but we should not be expecting messages from the gateway
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
