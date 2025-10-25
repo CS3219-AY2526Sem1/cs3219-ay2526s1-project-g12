@@ -7,7 +7,7 @@ ENV_REDIS_PORT_KEY = "REDIS_EVENT_QUEUE_PORT"
 
 def connect_to_redis_event_queue() -> Redis:
     """
-    Establishes a connection with redis queue.
+    Establishes a connection with redis event queue.
     """
     redis_port = get_envvar(ENV_REDIS_PORT_KEY)
     host = get_envvar(ENV_REDIS_HOST_KEY)

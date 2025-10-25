@@ -14,4 +14,3 @@ def connect_to_redis_room_service() -> Redis:
     # decode_responses = True is to allow redis to automatically decode responses
     log.info("Connected to the event queue")
     return Redis(host=host, port=redis_port, decode_responses=True, db=0)
-
