@@ -22,6 +22,6 @@ def register_database(app: FastAPI):
     register_tortoise(
         app,
         config=ORM_CONFIG,
-        generate_schemas=False,
-        add_exception_handlers=False,
+        generate_schemas=True,
+        add_exception_handlers=True,
     )
