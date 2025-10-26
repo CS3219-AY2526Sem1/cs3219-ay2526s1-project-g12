@@ -1,7 +1,7 @@
 from models.api_models import SubmitQuestionAttemptModel
 from models.db_models import QuestionAttempt, UserAttempt
 from models.models import QuestionAttemptModel, convert_question_attempt_orm_to_py_model
-from service.feedback_ai_svc import evalation_question_attempt
+from service.feedback_ai_svc import run_evalation_question_attempt
 from utils.logger import log
 
 
@@ -33,6 +33,6 @@ async def submit_question_attempt(sqam: SubmitQuestionAttemptModel) -> dict:
     for user_id in sqam.users:
         await UserAttempt.create(user_id=user_id, question_attempt=qa_db)
 
-    await evalation_question_attempt(qa_db.id)  # type: ignore
+    run_evalation_question_attempt.delay(qa_db.id)  # type: ignore
 
     return {"status": "success", "message": "Attempt successfully logged"}

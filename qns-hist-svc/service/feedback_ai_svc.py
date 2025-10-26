@@ -1,9 +1,14 @@
+import asyncio
+
 from pydantic_ai import Agent, ModelHTTPError, PromptedOutput
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
+from tortoise import Tortoise
 
+from controllers.task_controller import cel
 from models.db_models import AttemptFeedback, QuestionAttempt
 from models.models import EvaluationOutput
+from service.database_svc import ORM_CONFIG
 from utils.logger import log
 from utils.utils import get_envvar
 
@@ -24,7 +29,14 @@ data_extraction_agent = Agent(
 )
 
 
+@cel.task(max_retries=5, retry_backoff=300, retry_jitter=True)
+def run_evalation_question_attempt(qa_id):
+    asyncio.run(evalation_question_attempt(qa_id))
+
+
 async def evalation_question_attempt(qa_id: int) -> None:
+    await Tortoise.init(config=ORM_CONFIG)
+
     log.info(f"Evaluating question attempt: {qa_id}")
 
     if not await QuestionAttempt.filter(id=qa_id).exists():
@@ -34,6 +46,7 @@ async def evalation_question_attempt(qa_id: int) -> None:
     qa = await QuestionAttempt.get(id=qa_id)
 
     prompt = f"Given the following question given to the candidate: \n Title: {qa.title} \n Difficulty: {qa.difficulty} \n Category: {qa.category} \n Description: {qa.description} \n Code Template: ```{qa.code_template}``` \n Solution Sample: ```{qa.solution_sample}``` \n You are to evaluate and provide a comprehensive feedback on the following submitted solution: \n ```{qa.submitted_solution}```"
+    log.debug(prompt)
 
     try:
         result = await data_extraction_agent.run(prompt)
@@ -47,3 +60,6 @@ async def evalation_question_attempt(qa_id: int) -> None:
     except ModelHTTPError as e:
         log.warning(f"Failed to evaluate question attempt: {qa_id}")
         log.debug(e)
+        raise e
+    finally:
+        await Tortoise.close_connections()
