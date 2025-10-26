@@ -1,13 +1,19 @@
 from contextlib import asynccontextmanager
+from typing import Annotated
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Header
 
 from controllers.heartbeat_controller import (
     register_heartbeat,
     register_self_as_service,
 )
+from controllers.history_controller import (
+    fetch_question_history_details_by_user_id,
+    submit_question_attempt,
+)
+from models.api_models import SubmitQuestionAttemptModel
 from service.database_svc import register_database
+from utils.logger import log
 
 
 @asynccontextmanager
@@ -25,14 +31,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 register_database(app)
 
 ADMIN_ROLE = "admin"
@@ -42,3 +40,17 @@ USER_ROLE = "user"
 @app.get("/")
 async def root():
     return {"status": "working"}
+
+
+@app.get("/attempts", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
+async def get_fetch_question_history_details(
+    x_user_id: Annotated[str, Header()],
+):
+    log.info(f"Fetching question history details for user {x_user_id}")
+    return await fetch_question_history_details_by_user_id(x_user_id)
+
+
+@app.post("/attempts")
+async def post_submit_question_attempt(attempt: SubmitQuestionAttemptModel):
+    log.info("Submitting question attempt")
+    return await submit_question_attempt(attempt)
