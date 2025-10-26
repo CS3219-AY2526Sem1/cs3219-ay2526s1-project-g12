@@ -28,6 +28,7 @@ async def submit_question_attempt(sqam: SubmitQuestionAttemptModel) -> dict:
         solution_sample=sqam.solution_sample,
         difficulty=sqam.difficulty,
         category=sqam.category,
+        time_elapsed=sqam.time_elapsed,
         submitted_solution=sqam.submitted_solution,
     )
     for user_id in sqam.users:

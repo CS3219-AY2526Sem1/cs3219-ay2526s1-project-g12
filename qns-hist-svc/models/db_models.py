@@ -10,6 +10,7 @@ class QuestionAttempt(Model):
     solution_sample = fields.TextField()
     difficulty = fields.TextField()
     category = fields.TextField()
+    time_elapsed = fields.IntField()
     submitted_solution = fields.TextField()
     attmpted_at = fields.DatetimeField(auto_now_add=True)
 

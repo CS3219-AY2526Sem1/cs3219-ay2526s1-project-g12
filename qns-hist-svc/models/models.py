@@ -15,6 +15,7 @@ class QuestionAttemptModel(BaseModel):
     solution_sample: str
     difficulty: str
     category: str
+    time_elapsed: int
     submitted_solution: str
     attmpted_at: datetime
     feedback: str
@@ -34,6 +35,7 @@ def convert_question_attempt_orm_to_py_model(attempt: QuestionAttempt):
         solution_sample=attempt.solution_sample,
         difficulty=attempt.difficulty,
         category=attempt.category,
+        time_elapsed=attempt.time_elapsed,
         submitted_solution=attempt.submitted_solution,
         attmpted_at=attempt.attmpted_at,
         feedback=feedback,

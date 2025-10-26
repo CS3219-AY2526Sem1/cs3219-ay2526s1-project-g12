@@ -11,5 +11,6 @@ class SubmitQuestionAttemptModel(BaseModel):
     solution_sample: Annotated[str, Field(min_length=1)]
     difficulty: Annotated[str, Field(min_length=1)]
     category: Annotated[str, Len(min_length=1)]
+    time_elapsed: Annotated[int, Field(ge=0)]
     submitted_solution: Annotated[str, Field(min_length=1)]
     users: Annotated[list[Annotated[str, Field(min_length=1)]], Field(min_length=1)]
