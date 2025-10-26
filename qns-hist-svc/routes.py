@@ -50,7 +50,9 @@ async def get_fetch_question_history_details(
     return await fetch_question_history_details_by_user_id(x_user_id)
 
 
-@app.post("/attempts")
+@app.post("/attempts", openapi_extra={"x-roles": [ADMIN_ROLE]})
 async def post_submit_question_attempt(attempt: SubmitQuestionAttemptModel):
-    log.info("Submitting question attempt")
+    log.info(
+        f"Submitting question attempt:\nQuestion: {attempt.title}\nUser: {attempt.users}"
+    )
     return await submit_question_attempt(attempt)

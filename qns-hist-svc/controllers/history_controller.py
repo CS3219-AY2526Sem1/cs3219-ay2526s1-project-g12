@@ -1,15 +1,21 @@
 from models.api_models import SubmitQuestionAttemptModel
 from models.db_models import QuestionAttempt, UserAttempt
+from models.models import QuestionAttemptModel, convert_question_attempt_orm_to_py_model
 from utils.logger import log
 
 
 async def fetch_question_history_details_by_user_id(
     user_id: str,
-) -> list[QuestionAttempt]:
+) -> list[QuestionAttemptModel]:
     log.info(f"Fetching question history details for user_id: {user_id}")
-    qa_db = await QuestionAttempt.filter(user_attempts__user_id=user_id)
-    log.debug(qa_db)
-    return qa_db
+
+    qa_db = await QuestionAttempt.filter(
+        user_attempts__user_id=user_id
+    ).prefetch_related("attempt_feedback")
+
+    qam_list = [convert_question_attempt_orm_to_py_model(qa) for qa in qa_db]
+    log.debug(qam_list)
+    return qam_list
 
 
 async def submit_question_attempt(sqam: SubmitQuestionAttemptModel) -> dict:
