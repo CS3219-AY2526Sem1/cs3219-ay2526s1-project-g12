@@ -38,3 +38,7 @@ def convert_question_attempt_orm_to_py_model(attempt: QuestionAttempt):
         attmpted_at=attempt.attmpted_at,
         feedback=feedback,
     )
+
+
+class EvaluationOutput(BaseModel):
+    feedback: str

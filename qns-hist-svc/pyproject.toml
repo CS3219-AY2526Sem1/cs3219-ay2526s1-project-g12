@@ -8,6 +8,7 @@ dependencies = [
     "aerich[toml]>=0.9.1",
     "asyncpg>=0.30.0",
     "fastapi[standard]>=0.116.2",
+    "pydantic-ai-slim[openai]>=1.6.0",
     "python-dotenv>=1.1.1",
     "requests>=2.32.5",
     "tortoise-orm[asyncpg]>=0.25.1",
