@@ -41,6 +41,10 @@ class TestEvaluateQuestionAttempt:
         await self.qa.save()
 
     @patch(
+        "service.feedback_ai_svc.cel",
+        new_callable=AsyncMock,
+    )
+    @patch(
         "service.feedback_ai_svc.Tortoise",
         new_callable=AsyncMock,
     )
@@ -48,7 +52,9 @@ class TestEvaluateQuestionAttempt:
         "service.feedback_ai_svc.data_extraction_agent",
         new_callable=AsyncMock,
     )
-    async def test_evaluate_question_attempt_success(self, mock_agent, mock_tortoise):
+    async def test_evaluate_question_attempt_success(
+        self, mock_agent, mock_tortoise, mock_celery
+    ):
         result_mock = MagicMock()
         result_mock.output = EvaluationOutput(feedback=self.test_feedback)
         mock_agent.run.return_value = result_mock
@@ -60,6 +66,10 @@ class TestEvaluateQuestionAttempt:
         assert af_db.feedback == self.test_feedback
 
     @patch(
+        "service.feedback_ai_svc.cel",
+        new_callable=AsyncMock,
+    )
+    @patch(
         "service.feedback_ai_svc.Tortoise",
         new_callable=AsyncMock,
     )
@@ -68,12 +78,16 @@ class TestEvaluateQuestionAttempt:
         new_callable=AsyncMock,
     )
     async def test_evaluate_question_attempt_qa_not_exist(
-        self, mock_agent, mock_tortoise
+        self, mock_agent, mock_tortoise, mock_celery
     ):
         await evalation_question_attempt(-1)
 
         mock_agent.run.assert_not_called()
 
+    @patch(
+        "service.feedback_ai_svc.cel",
+        new_callable=AsyncMock,
+    )
     @patch(
         "service.feedback_ai_svc.Tortoise",
         new_callable=AsyncMock,
@@ -83,7 +97,7 @@ class TestEvaluateQuestionAttempt:
         new_callable=AsyncMock,
     )
     async def test_evaluate_question_attempt_agent_error_failure(
-        self, mock_agent, mock_tortoise
+        self, mock_agent, mock_tortoise, mock_celery
     ):
         mock_agent.run.side_effect = ModelHTTPError(
             status_code=429, model_name="somename"

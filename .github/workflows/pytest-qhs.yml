@@ -1,4 +1,4 @@
-name: (Question Svc) Unit Testing with pytest
+name: (Question History Svc) Unit Testing with pytest
 
 on:
   pull_request:
