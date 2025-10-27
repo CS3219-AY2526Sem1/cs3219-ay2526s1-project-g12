@@ -11,6 +11,9 @@ on:
     - 'qns-hist-svc/**'
   workflow_dispatch:
 
+env:
+  REDIS_QUEUE_URL: redis://
+
 jobs:
   build:
     runs-on: [self-hosted, linux]
