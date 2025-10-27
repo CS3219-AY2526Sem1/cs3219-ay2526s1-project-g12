@@ -37,7 +37,15 @@ jobs:
 
     - name: (QHS) Run pytest
       working-directory: ./qns-hist-svc
-      run: uv run pytest --cov-branch --cov-report=xml
+      run: uv run pytest --cov-branch --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
+
+    - name: Upload test results to Codecov
+      if: ${{ !cancelled() }}
+      uses: codecov/test-results-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        working-directory: ./qns-hist-svc
+        flags: qns-hist-svc
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v5
