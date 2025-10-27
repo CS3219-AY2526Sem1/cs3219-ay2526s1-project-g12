@@ -4,7 +4,7 @@ from utils.logger import log
 from utils.utils import get_envvar
 
 
-def setup_celery():
+def setup_celery():  # pragma: no cover
     log.info("Setting up Celery")
     cel = Celery(
         "cel",

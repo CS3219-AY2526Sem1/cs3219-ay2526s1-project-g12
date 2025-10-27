@@ -12,10 +12,10 @@ class QuestionAttempt(Model):
     category = fields.TextField()
     time_elapsed = fields.IntField()
     submitted_solution = fields.TextField()
-    attmpted_at = fields.DatetimeField(auto_now_add=True)
+    attempted_at = fields.DatetimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Title:\t{self.title}\nDifficulty:\t{self.difficulty}\nCategory:\t{self.category}\nAttempted at:\t{self.attmpted_at}\nDescription:\n{self.description}\nAttempted Solution:\n{self.submitted_solution}"
+        return f"Title:\t{self.title}\nDifficulty:\t{self.difficulty}\nCategory:\t{self.category}\nAttempted at:\t{self.attempted_at}\nDescription:\n{self.description}\nAttempted Solution:\n{self.submitted_solution}"
 
     class Meta:
         table = "question_attempt"
