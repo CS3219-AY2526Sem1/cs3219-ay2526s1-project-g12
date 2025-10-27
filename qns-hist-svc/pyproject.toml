@@ -113,7 +113,7 @@ src_folder = "./."
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-addopts = ["--import-mode=importlib", "--cov", "--cov-report=term-missing"]
+addopts = ["--import-mode=importlib", "--cov", "--cov-branch", "--cov-report=term-missing"]
 pythonpath = ["."]
 testpaths = ["tests"]
 
