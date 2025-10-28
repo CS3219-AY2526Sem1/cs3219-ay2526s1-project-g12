@@ -51,6 +51,13 @@ def format_heartbeat_key(user_id: str) -> str:
     key = f"heartbeat:{user_id}"
     return key
 
+def format_cleanup_key(room_id: str) -> str:
+    """
+    Formats the cleanup key given the room_id.
+    """
+    key = f"cleanup:{room_id}"
+    return key
+
 def extract_information_from_event(message: list) -> tuple:
     """
     Parses the event and extracts the relevant information.
