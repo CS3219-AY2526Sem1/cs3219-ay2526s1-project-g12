@@ -3,6 +3,7 @@ import NavBar from "../components/NavBar";
 import { useAuth } from "../context/AuthContext";
 import { questionApi } from "../api/QuestionApi";
 import { MatchCard } from "../components/Match/MatchCard";
+import { formatError } from "../utils/formatError";
 
 function Matching() {
   const [topics, setTopics] = useState<string[]>([]);
@@ -74,7 +75,7 @@ function Matching() {
 
       {error && (
         <div className="alert alert-error mb-4">
-          <span>{error}</span>
+          <span>{formatError(error)}</span>
         </div>
       )}
 

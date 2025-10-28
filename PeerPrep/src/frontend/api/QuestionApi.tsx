@@ -1,8 +1,5 @@
-import { ApiClient } from "./ApiClient";
+import { apiClient } from "./ApiClient";
 import type { ApiResponse } from "./ApiClient";
-
-// Separate ApiClient instance for Question Service (Temporary)
-const qnApiClient = new ApiClient("http://localhost:8002");
 
 export interface Question {
   title: string;
@@ -33,7 +30,7 @@ export const questionApi = {
     start: number = 1,
     end: number = 10,
   ): Promise<ApiResponse<Question[]>> {
-    return qnApiClient.request(`/questions/?start=${start}&end=${end}`, {
+    return apiClient.request(`/qs/questions/?start=${start}&end=${end}`, {
       method: "GET",
       headers: { "X-User-ID": userId },
     });
@@ -43,7 +40,7 @@ export const questionApi = {
     userId: string,
     questionId: number,
   ): Promise<ApiResponse<Question>> {
-    return qnApiClient.request(`/questions/${questionId}`, {
+    return apiClient.request(`/qs/questions/${questionId}`, {
       method: "GET",
       headers: { "X-User-ID": userId },
     });
@@ -53,7 +50,7 @@ export const questionApi = {
     userId: string,
     data: Question,
   ): Promise<ApiResponse<{ message: string }>> {
-    return qnApiClient.request("/questions/", {
+    return apiClient.request("/qs/questions/", {
       method: "POST",
       headers: { "X-User-ID": userId },
       body: JSON.stringify(data),
@@ -65,7 +62,7 @@ export const questionApi = {
     questionId: number,
     data: Partial<Question>,
   ): Promise<ApiResponse<{ message: string }>> {
-    return qnApiClient.request(`/questions/${questionId}`, {
+    return apiClient.request(`/qs/questions/${questionId}`, {
       method: "PUT",
       headers: { "X-User-ID": userId },
       body: JSON.stringify(data),
@@ -76,7 +73,7 @@ export const questionApi = {
     userId: string,
     questionId: number,
   ): Promise<ApiResponse<{ message: string }>> {
-    return qnApiClient.request(`/questions/${questionId}`, {
+    return apiClient.request(`/qs/questions/${questionId}`, {
       method: "DELETE",
       headers: { "X-User-ID": userId },
     });
@@ -87,7 +84,7 @@ export const questionApi = {
   async getAllCategories(
     userId: string,
   ): Promise<ApiResponse<{ categories: string[] }>> {
-    return qnApiClient.request("/category/", {
+    return apiClient.request("/qs/category/", {
       method: "GET",
       headers: { "X-User-ID": userId },
     });
@@ -97,7 +94,7 @@ export const questionApi = {
     userId: string,
     data: Category,
   ): Promise<ApiResponse<{ message: string }>> {
-    return qnApiClient.request("/category/", {
+    return apiClient.request("/qs/category/", {
       method: "POST",
       headers: { "X-User-ID": userId },
       body: JSON.stringify(data),
@@ -108,7 +105,7 @@ export const questionApi = {
     userId: string,
     data: { name: string; new_name: string },
   ): Promise<ApiResponse<{ message: string }>> {
-    return qnApiClient.request(`/category/`, {
+    return apiClient.request(`/qs/category/`, {
       method: "PUT",
       headers: { "X-User-ID": userId },
       body: JSON.stringify(data),
@@ -119,7 +116,7 @@ export const questionApi = {
     userId: string,
     data: Category,
   ): Promise<ApiResponse<{ message: string }>> {
-    return qnApiClient.request(`/category/`, {
+    return apiClient.request(`/qs/category/`, {
       method: "DELETE",
       headers: { "X-User-ID": userId },
       body: JSON.stringify(data),
@@ -131,7 +128,7 @@ export const questionApi = {
   async getAllDifficulties(
     userId: string,
   ): Promise<ApiResponse<{ difficulties: string[] }>> {
-    return qnApiClient.request("/difficulty/", {
+    return apiClient.request("/qs/difficulty/", {
       method: "GET",
       headers: { "X-User-ID": userId },
     });
@@ -141,7 +138,7 @@ export const questionApi = {
     userId: string,
     data: Difficulty,
   ): Promise<ApiResponse<{ message: string }>> {
-    return qnApiClient.request("/difficulty/", {
+    return apiClient.request("/qs/difficulty/", {
       method: "POST",
       headers: { "X-User-ID": userId },
       body: JSON.stringify(data),
@@ -152,7 +149,7 @@ export const questionApi = {
     userId: string,
     data: { level: string; new_level: string },
   ): Promise<ApiResponse<{ message: string }>> {
-    return qnApiClient.request(`/difficulty/`, {
+    return apiClient.request(`/qs/difficulty/`, {
       method: "PUT",
       headers: { "X-User-ID": userId },
       body: JSON.stringify(data),
@@ -163,7 +160,7 @@ export const questionApi = {
     userId: string,
     data: Difficulty,
   ): Promise<ApiResponse<{ message: string }>> {
-    return qnApiClient.request(`/difficulty/`, {
+    return apiClient.request(`/qs/difficulty/`, {
       method: "DELETE",
       headers: { "X-User-ID": userId },
       body: JSON.stringify(data),
@@ -174,7 +171,7 @@ export const questionApi = {
   async getPoolCategories(
     userId: string,
   ): Promise<ApiResponse<{ categories: string[] }>> {
-    return qnApiClient.request("/pool/category/", {
+    return apiClient.request("/qs/pool/category/", {
       method: "GET",
       headers: { "X-User-ID": userId },
     });
@@ -184,8 +181,8 @@ export const questionApi = {
     userId: string,
     category: string,
   ): Promise<ApiResponse<{ difficulty_levels: string[] }>> {
-    return qnApiClient.request(
-      `/pool/${encodeURIComponent(category)}/difficulty/`,
+    return apiClient.request(
+      `/qs/pool/${encodeURIComponent(category)}/difficulty/`,
       {
         method: "GET",
         headers: { "X-User-ID": userId },
@@ -198,8 +195,8 @@ export const questionApi = {
     category: string,
     difficulty: string,
   ): Promise<ApiResponse<PoolQuestion>> {
-    return qnApiClient.request(
-      `/pool/${encodeURIComponent(category)}/${encodeURIComponent(difficulty)}/`,
+    return apiClient.request(
+      `/qs/pool/${encodeURIComponent(category)}/${encodeURIComponent(difficulty)}/`,
       {
         method: "GET",
         headers: { "X-User-ID": userId },
