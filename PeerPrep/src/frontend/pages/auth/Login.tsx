@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import GitHubLogo from "../../assets/Images/github-logo.png";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../../context/AuthContext";
+import { formatError } from "../../utils/formatError";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -59,7 +60,7 @@ export default function Login() {
 
         {error && (
           <div className="alert alert-error">
-            <span>{error.detail}</span>
+            <span>{formatError(error)}</span>
           </div>
         )}
 
