@@ -6,8 +6,8 @@ from controllers.heartbeat_controller import (
     register_self_as_service,
 )
 from controllers.room_controller import create_room_listener, create_ttl_expire_listener
+from controllers.websocket_controller import WebSocketManager
 from fastapi import FastAPI, Header
-from models.websocket_manager import WebSocketManager
 from services.redis_event_queue import connect_to_redis_event_queue
 from services.redis_room_service import connect_to_redis_room_service
 from typing import Annotated
