@@ -48,6 +48,7 @@ def main():
                     "event": "expired",
                     "timestamp": str(datetime.now())
                 })
+                print("Event sent")
             else:
                 continue
         except KeyboardInterrupt:

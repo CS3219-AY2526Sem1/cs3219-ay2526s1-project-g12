@@ -1,21 +1,25 @@
 import asyncio
 from contextlib import asynccontextmanager
 from controllers.heartbeat_controller import (
+    INSTANCE_ID,
     register_heartbeat,
     register_self_as_service,
 )
-from controllers.room_controller import create_listener
+from controllers.room_controller import create_room_listener, create_ttl_expire_listener
 from models.WebSocketManager import WebSocketManager
 from services.redis_event_queue import connect_to_redis_event_queue
 from services.redis_room_service import connect_to_redis_room_service
 from fastapi import FastAPI
 from utils.logger import log
-from utils.utils import sever_connection, get_envvar, ping_redis_server
+from utils.utils import sever_connection, get_envvar
 
 FRONT_END_URL = get_envvar("FRONT_END_URL")
 
 ADMIN_ROLE = "admin"
 USER_ROLE = "user"
+
+ENV_REDIS_STREAM_KEY = "REDIS_STREAM_KEY"
+ENV_REDIS_GROUP_KEY = "REDIS_GROUP"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -23,26 +27,25 @@ async def lifespan(app: FastAPI):
     Set up variables for the collaboration service.
     """
     app.state.event_queue_connection = connect_to_redis_event_queue()
-    app.state.room_connection = connect_to_redis_room_service()
+    app.state.room_connection = await connect_to_redis_room_service()
     app.state.websocket_manager = WebSocketManager() 
 
     stop_event = asyncio.Event()
-    listener = asyncio.create_task(create_listener(app.state.event_queue_connection, app.state.room_connection, stop_event))
+    room_listener = asyncio.create_task(create_room_listener(app.state.event_queue_connection, app.state.room_connection, stop_event))
+    expired_ttl_listener = asyncio.create_task(create_ttl_expire_listener(INSTANCE_ID, app.state.event_queue_connection, app.state.room_connection, app.state.websocket_manager, stop_event))
 
     register_self_as_service(app)
     hc_task = register_heartbeat()
 
-    if (await ping_redis_server(app.state.room_connection)):
-        log.info("Connected to redis server")
-        yield
-    else:
-        log.error("Could not connect to the redis servcer, shutting down collaboration service")
-
+    yield
     # This is the shut down procedure when the collaboration service stops.
     stop_event.set()
 
-    if (listener and not listener.done()):
-        await listener
+    if (room_listener and not room_listener.done()):
+        await room_listener
+
+    if (expired_ttl_listener and not expired_ttl_listener.done()):
+        await expired_ttl_listener
 
     await sever_connection(app.state.event_queue_connection)
     await sever_connection(app.state.room_connection)
