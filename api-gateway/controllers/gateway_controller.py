@@ -16,6 +16,7 @@ DEFAULT_COOKIE_MAX_AGE = get_envvar("DEFAULT_COOKIE_MAX_AGE")
 class GatewayController:
     """API Gateway controller for managing user sessions and routing requests based
     on the service registry"""
+
     def __init__(
         self,
         redis: aioredis.Redis,
@@ -61,10 +62,9 @@ class GatewayController:
             await pipe.expire(f"user:{user_id}", self.ttl)
             await pipe.expire(f"userdata:{user_id}", self.ttl)
             await pipe.hgetall(f"userdata:{user_id}")
-            _,_,_,user_data=await pipe.execute()
+            _, _, _, user_data = await pipe.execute()
 
         log.info(f"Token validation successful for user: {user_id}")
-        
 
         return user_data
 
@@ -88,7 +88,7 @@ class GatewayController:
         redis_key = f"token:{token}"
 
         role = resp.get("role").get("role")
-        del resp["access_token"],resp["role"]  # Remove token & role from user data
+        del resp["access_token"], resp["role"]  # Remove token & role from user data
         resp["role"] = role
         user_data = resp  # Remaining user data to store
         user_data["create_time"] = datetime.now(timezone.utc).isoformat()
@@ -146,11 +146,11 @@ class GatewayController:
         log.info(f"Successfully logged out user {user_id} ")
 
     async def register_service(
-            self,
-            service_name: str,
-            instance_id: str,
-            address: str,
-            routes: Iterable[RoutePayload],
+        self,
+        service_name: str,
+        instance_id: str,
+        address: str,
+        routes: Iterable[RoutePayload],
     ) -> None:
         """Register a service instance and its routes in the service registry."""
         await self.registry.register_service(
@@ -187,7 +187,9 @@ class GatewayController:
         # Find the service responsible for this path
         matched_route = await self.registry.find_route(path)
         if not matched_route:
-            log.warning(f"Blocked forwarding of request to '{path}': no service found for path")
+            log.warning(
+                f"Blocked forwarding of request to '{path}': no service found for path"
+            )
             return 404, {"detail": "Not Found"}
 
         service_name, canonical_path = matched_route
@@ -207,11 +209,15 @@ class GatewayController:
 
         # Check method
         if method not in route_def.methods:
-            log.warning(f"Blocked forwarding of {method} request to '{internal_path}': method not allowed")
+            log.warning(
+                f"Blocked forwarding of {method} request to '{internal_path}': method not allowed"
+            )
             return 405, {"detail": "Method not allowed"}
 
         # Check role
-        if route_def.methods[method] and (not role or role not in route_def.methods[method]):
+        if route_def.methods[method] and (
+            not role or role not in route_def.methods[method]
+        ):
             log.warning(
                 f"Blocked forwarding of request to '{internal_path}': role {role} not permitted"
             )
@@ -220,8 +226,10 @@ class GatewayController:
         # Choose instance
         address = await self.registry.choose_instance(service_name)
         if not address:
-            log.error(f"Blocked forwarding of request to '{internal_path}': "
-                      f"no alive instances found for service {service_name}")
+            log.error(
+                f"Blocked forwarding of request to '{internal_path}': "
+                f"no alive instances found for service {service_name}"
+            )
             return 503, {"detail": "Service unavailable"}
 
         url = f"http://{address}{internal_path}"
@@ -239,7 +247,7 @@ class GatewayController:
             headers["X-User-Role"] = str(role)
 
         try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
+            async with httpx.AsyncClient(timeout=190.0) as client:
                 r = await client.request(
                     method, url, headers=headers, params=params or {}, data=data
                 )

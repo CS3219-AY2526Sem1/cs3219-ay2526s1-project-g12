@@ -16,6 +16,7 @@ from service.redis_settings import get_gateway
 
 router = APIRouter(include_in_schema=False)
 
+
 async def auth_user(
     access_token: str = Depends(extend_access_token_cookie),
     gateway: GatewayController = Depends(get_gateway),
@@ -48,9 +49,7 @@ async def dynamic_forward(
     method = request.method
     headers = dict(request.headers)
     params = dict(request.query_params)
-    body = None
-    if method in {"POST", "PUT", "PATCH"}:
-        body = await request.body()
+    body = await request.body()
 
     code, data = await gateway.forward(
         method,

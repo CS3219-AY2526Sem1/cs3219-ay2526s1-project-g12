@@ -97,6 +97,33 @@ services:
         condition: service_healthy
         restart: true
 
+  qns-hist-svc:
+    build:
+      context: ./qns-hist-svc
+      dockerfile: Dockerfile
+    container_name: pp-qns-hist-svc
+    ports:
+      - "8004:80"
+    networks:
+      - pp-network
+    env_file:
+      - ./qns-hist-svc/.env
+    environment:
+      - DATABASE_URL=asyncpg://
+      - REDIS_QUEUE_URL=redis://
+      - APIGATEWAY_URL=http://api-gateway
+      - HOST_URL=qns-hist-svc
+      - HEARTBEAT_PERIOD=270
+      - EVALUATION_MODEL_NAME=
+      - OPENAI_COMPAT_API_ENDPOINT=
+      - OPENAI_COMPAT_API_KEY=
+    volumes:
+      - ./logs/qns-hist-svc/:/app/logs/
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+        restart: true
+
   # frontend:
   #   build:
   #     context: ./PeerPrep

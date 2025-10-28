@@ -21,7 +21,7 @@ export const userApi = {
     first_name: string;
     last_name: string;
   }): Promise<ApiResponse<any>> {
-    return apiClient.request("/auth/register", {
+    return apiClient.request("/us/auth/register", {
       method: "POST",
       body: JSON.stringify(userData),
     });
@@ -34,12 +34,12 @@ export const userApi = {
   },
 
   async getCurrentUser(): Promise<ApiResponse<any>> {
-    return apiClient.request("/users/me");
+    return apiClient.request("/us/users/me");
   },
 
   // Verify email with token
   async verifyEmail(token: string): Promise<ApiResponse<any>> {
-    return apiClient.request("/auth/verify", {
+    return apiClient.request("/us/auth/verify", {
       method: "POST",
       body: JSON.stringify({
         token: token,
