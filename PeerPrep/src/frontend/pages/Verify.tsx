@@ -30,7 +30,7 @@ export default function Verify() {
                 if (response.error) {
                     // Handle API errors returned from backend
                     setMessage("Verification failed");
-                    setErrorDetails(response.error.detail);
+                    setErrorDetails(response.error);
                     setStatus("error");
                 } else if (response.data) {
                     // Success case
