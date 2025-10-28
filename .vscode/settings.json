@@ -12,6 +12,11 @@
             "packageManager": "ms-python.python:pip"
         },
         {
+            "path": "qns-hist-svc",
+            "envManager": "ms-python.python:venv",
+            "packageManager": "ms-python.python:pip"
+        },
+        {
             "path": "qns-svc",
             "envManager": "ms-python.python:venv",
             "packageManager": "ms-python.python:pip"
@@ -26,5 +31,10 @@
             "envManager": "ms-python.python:venv",
             "packageManager": "ms-python.python:pip"
         }
-    ]
+    ],
+    "python.testing.pytestArgs": [
+        "qns-svc"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }
