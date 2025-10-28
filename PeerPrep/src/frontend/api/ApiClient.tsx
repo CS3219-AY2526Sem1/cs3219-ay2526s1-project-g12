@@ -30,12 +30,18 @@ export class ApiClient {
       }
 
       const text = await response.text();
-      if (!response.ok) {
-        // Try to parse JSON error, else return text
-        let errMsg: string;
+      if (response.status > 299) {
+        let errMsg = "";
         try {
-          const json = JSON.parse(text);
-          errMsg = json.detail || JSON.stringify(json);
+          const errData = JSON.parse(text);
+          if (typeof errData === "string") errMsg = errData;
+          else if (typeof errData?.detail === "string") errMsg = errData.detail;
+          else if (
+            typeof errData?.detail === "object" &&
+            "detail" in errData.detail
+          )
+            errMsg = String(errData.detail.detail);
+          else errMsg = JSON.stringify(errData);
         } catch {
           errMsg = text || `HTTP ${response.status}`;
         }

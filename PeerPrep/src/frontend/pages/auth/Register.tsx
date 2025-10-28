@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import GitHubLogo from "../../assets/Images/github-logo.png";
 import { Link } from "react-router";
 import { useAuth } from "../../context/AuthContext";
-import { formatError } from "../../utils/formatError";
 
 interface RegisterForm {
   email: string;
@@ -179,7 +178,7 @@ export default function Register() {
         {/* Shared error display for both validation & API errors */}
         {(validationError || error) && (
           <div className="alert alert-error">
-            <span>{validationError || formatError(error)}</span>
+            <span>{validationError || error}</span>
           </div>
         )}
 
