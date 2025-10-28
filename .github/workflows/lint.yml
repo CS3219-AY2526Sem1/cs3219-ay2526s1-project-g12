@@ -53,3 +53,11 @@ jobs:
     - name: (AG) Run ruff lint check
       working-directory: ./api-gateway
       run: uv run ruff check
+
+    - name: (QHS) Run uv sync to install dependencies
+      working-directory: ./qns-hist-svc
+      run: uv sync --locked --all-extras --dev
+
+    - name: (QHS) Run ruff lint check
+      working-directory: ./qns-hist-svc
+      run: uv run ruff check

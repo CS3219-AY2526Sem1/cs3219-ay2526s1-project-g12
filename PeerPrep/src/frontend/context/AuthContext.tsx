@@ -46,6 +46,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     fetchUser();
   }, []);
 
+  // clear error whenever route changes
+  useEffect(() => {
+    setError(null);
+  }, [location.pathname]);
+
   const login = async (email: string, password: string) => {
     const { error } = await userApi.login(email, password);
     if (error) {

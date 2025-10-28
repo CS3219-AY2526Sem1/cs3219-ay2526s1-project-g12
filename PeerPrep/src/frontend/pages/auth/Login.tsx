@@ -12,7 +12,7 @@ export default function Login() {
 
   // Redirect authenticated user to dashboard
   useEffect(() => {
-    if (user) navigate("/dashboard");
+    if (user && user.is_verified) navigate("/dashboard");
   }, [user]);
 
   // Clear auth error when user starts typing again
@@ -59,7 +59,7 @@ export default function Login() {
 
         {error && (
           <div className="alert alert-error">
-            <span>{error.detail}</span>
+            <span>{error}</span>
           </div>
         )}
 

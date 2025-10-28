@@ -1,8 +1,5 @@
-import { ApiClient } from "./ApiClient";
+import { apiClient } from "./ApiClient";
 import type { ApiResponse } from "./ApiClient";
-
-// Separate ApiClient instance for Matching Service (Temporary)
-const matchingApiClient = new ApiClient("http://localhost:8003");
 
 export interface MatchRequest {
   user_id: string;
@@ -21,11 +18,11 @@ export interface ConfirmMatchSuccess {
 
 export const matchingApi = {
   async getRootStatus(): Promise<ApiResponse<{ status: string }>> {
-    return matchingApiClient.request("/", { method: "GET" });
+    return apiClient.request("/ms", { method: "GET" });
   },
 
   async checkQueueConnection(): Promise<ApiResponse<{ message: string }>> {
-    return matchingApiClient.request("/check_connection/queue", {
+    return apiClient.request("/ms/check_connection/queue", {
       method: "GET",
     });
   },
@@ -33,20 +30,20 @@ export const matchingApi = {
   async checkMessageQueueConnection(): Promise<
     ApiResponse<{ message: string }>
   > {
-    return matchingApiClient.request("/check_connection/message_queue", {
+    return apiClient.request("/ms/check_connection/message_queue", {
       method: "GET",
     });
   },
 
   async findMatch(matchRequest: MatchRequest): Promise<ApiResponse<any>> {
-    return matchingApiClient.request("/find_match", {
+    return apiClient.request("/ms/find_match", {
       method: "POST",
       body: JSON.stringify(matchRequest),
     });
   },
 
   async terminateMatch(cancelRequest: MatchRequest): Promise<ApiResponse<any>> {
-    return matchingApiClient.request("/terminate_match", {
+    return apiClient.request("/ms/terminate_match", {
       method: "DELETE",
       body: JSON.stringify(cancelRequest),
     });
@@ -56,7 +53,7 @@ export const matchingApi = {
     matchId: string,
     confirmRequest: MatchConfirmRequest,
   ): Promise<ApiResponse<ConfirmMatchSuccess>> {
-    return matchingApiClient.request(`/confirm_match/${matchId}`, {
+    return apiClient.request(`/ms/confirm_match/${matchId}`, {
       method: "POST",
       body: JSON.stringify(confirmRequest),
     });
