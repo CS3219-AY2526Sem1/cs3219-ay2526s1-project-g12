@@ -77,7 +77,7 @@ async def create_ttl_expire_listener(
             await acknowlwedge_event(event_queue_connection, stream_key, group_key, event_id)
             log.info(f"Collaboration service, {service_id} has completed handling event {event_id}")
 
-def alert_user(user_id: str, room_id: str, websocket_manager: WebSocketManager) -> None:
+def alert_user(user_id: str, websocket_manager: WebSocketManager) -> None:
     """
     Sends a message to the user altering them that.
     """
