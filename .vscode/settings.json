@@ -36,5 +36,7 @@
         "qns-svc"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "prettier.configPath": "./PeerPrep/.prettierrc",
+    "prettier.ignorePath": "./PeerPrep/.prettierignore"
 }
