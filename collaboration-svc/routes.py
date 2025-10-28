@@ -8,9 +8,9 @@ from controllers.room_controller import create_listener
 from models.WebSocketManager import WebSocketManager
 from services.redis_event_queue import connect_to_redis_event_queue
 from services.redis_room_service import connect_to_redis_room_service
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI
 from utils.logger import log
-from utils.utils import sever_connection, get_envvar
+from utils.utils import sever_connection, get_envvar, ping_redis_server
 
 FRONT_END_URL = get_envvar("FRONT_END_URL")
 
@@ -31,7 +31,13 @@ async def lifespan(app: FastAPI):
 
     register_self_as_service(app)
     hc_task = register_heartbeat()
-    yield
+
+    if (await ping_redis_server(app.state.room_connection)):
+        log.info("Connected to redis server")
+        yield
+    else:
+        log.error("Could not connect to the redis servcer, shutting down collaboration service")
+
     # This is the shut down procedure when the collaboration service stops.
     stop_event.set()
 

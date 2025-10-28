@@ -43,3 +43,10 @@ def format_room_key(match_id: str) -> str:
     """
     key = f"room:{match_id}"
     return key
+
+def format_heartbeat_key(user_id: str) -> str:
+    """
+    Formats the heartbeat key given the user_id.
+    """
+    key = f"heartbeat:{user_id}"
+    return key
