@@ -79,7 +79,7 @@ async def fe_websocket_endpoint(
     redis: aioredis.Redis = Depends(get_redis),
 ):
     """WebSocket endpoint for Frontend clients to connect"""
-    user_id = "1" #  Please edit this with the desired user ID for testing.
+    user_id = user_data.get("user_id") #  Please edit this with the desired user ID for testing.
     connection_id = f"fe:{user_id}"
 
     # Store connection info in Redis
