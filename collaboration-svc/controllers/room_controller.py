@@ -1,6 +1,6 @@
 import asyncio
 from asyncio import Event
-from models.websocket_manager import WebSocketManager
+from controllers.websocket_controller import WebSocketManager
 from redis.asyncio import Redis
 from services.redis_event_queue import (
     get_match_confirmation_event,
