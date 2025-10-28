@@ -6,12 +6,15 @@ from controllers.heartbeat_controller import (
     register_self_as_service,
 )
 from controllers.room_controller import create_room_listener, create_ttl_expire_listener
+from fastapi import FastAPI, Header
 from models.WebSocketManager import WebSocketManager
 from services.redis_event_queue import connect_to_redis_event_queue
 from services.redis_room_service import connect_to_redis_room_service
-from fastapi import FastAPI
+from typing import Annotated
 from utils.logger import log
-from utils.utils import sever_connection, get_envvar
+from utils.utils import sever_connection, get_envvar, format_heartbeat_key
+
+from services.redis_room_service import update_user_ttl
 
 FRONT_END_URL = get_envvar("FRONT_END_URL")
 
@@ -56,5 +59,17 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="PeerPrep Collaboration Service", lifespan=lifespan)
 
 @app.get("/")
-async def root():
+async def root() -> dict:
     return {"status": "working"}
+
+@app.post("/reconnect", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
+async def reconnect_user_to_match(x_user_id: Annotated[str, Header()]) -> dict:
+    return {"message": "Reconnecting user"}
+
+@app.post("/exit", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
+async def reconnect_user_to_match(x_user_id: Annotated[str, Header()]) -> dict:
+    return {"message": "Exit match"}
+
+@app.post("/terminate/{match_id}", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
+async def reconnect_user_to_match(match_id: str, x_user_id: Annotated[str, Header()]) -> dict:
+    return {"message": "Terminate match"}

@@ -37,18 +37,18 @@ async def release_lock(lock: Lock) -> None:
     """
     await lock.release()
 
-def format_room_key(match_id: str) -> str:
+def format_user_room_key(user_id: str) -> str:
     """
-    Formats the room key given the match_id.
+    Formats the room key for the particular user.
     """
-    key = f"room:{match_id}"
+    key = f"room:{user_id}"
     return key
 
-def format_heartbeat_key(user_id: str, match_id: str) -> str:
+def format_heartbeat_key(user_id: str) -> str:
     """
-    Formats the heartbeat key given the user_id and match_id.
+    Formats the heartbeat key given the user_id.
     """
-    key = f"heartbeat:{user_id}:{match_id}"
+    key = f"heartbeat:{user_id}"
     return key
 
 def extract_information_from_event(message: list) -> tuple:
@@ -61,6 +61,5 @@ def extract_information_from_event(message: list) -> tuple:
 
     string_list = key.split(":")
     user_id = string_list[1]
-    match_id = string_list[2]
 
-    return event_id, user_id, match_id
+    return event_id, user_id

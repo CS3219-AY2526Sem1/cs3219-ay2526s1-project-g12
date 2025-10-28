@@ -2,14 +2,14 @@ from datetime import datetime
 from redis.asyncio import Redis
 import requests
 from utils.logger import log
-from utils.utils import get_envvar, format_room_key, format_heartbeat_key
+from utils.utils import get_envvar, format_user_room_key, format_heartbeat_key
 
 ENV_REDIS_HOST_KEY = "REDIS_HOST"
 ENV_REDIS_PORT_KEY = "REDIS_PORT"
 
 ENV_QN_SVC_POOL_ENDPOINT = "QUESTION_SERVICE_POOL_URL"
 
-TTL = 5 # We give them 2 minutes to respond
+TTL = 10 # We give them 2 minutes to respond
 
 async def connect_to_redis_room_service() -> Redis:
     """
@@ -28,8 +28,6 @@ async def create_room(match_data: dict, room_connection: Redis) -> None:
     """
     Creates a room given the match data received.
     """
-    room_key = format_room_key(match_data["match_id"])
-
     response = requests.get(f"{get_envvar(ENV_QN_SVC_POOL_ENDPOINT)}/{match_data["category"]}/{match_data["difficulty"]}")
     data = response.json()
 
@@ -42,15 +40,20 @@ async def create_room(match_data: dict, room_connection: Redis) -> None:
     match_id = match_data["match_id"]
 
     user_one_id = match_data["user_one"]
-    user_one_heartbeat_key = format_heartbeat_key(user_one_id, match_id)
+    user_one_key = format_user_room_key(user_one_id)
+    user_one_heartbeat_key = format_heartbeat_key(user_one_id)
+
     user_two_id = match_data["user_two"]
-    user_two_heartbeat_key = format_heartbeat_key(user_two_id, match_id)
+    user_two_key = format_user_room_key(user_two_id)
+    user_two_heartbeat_key = format_heartbeat_key(user_two_id)
 
     # Set up heartbeat for user 1 and 2
     await room_connection.set(user_one_heartbeat_key, str(datetime.now()), TTL)
-    await room_connection.set(user_two_heartbeat_key, str(datetime.now()), 10)
+    await room_connection.set(user_two_heartbeat_key, str(datetime.now()), TTL)
 
-    await room_connection.hset(room_key, mapping= data)
+    await room_connection.hset(user_one_key, mapping= data)
+    await room_connection.hset(user_two_key, mapping= data)
+
     log.info(f"Room has been created for match ID, {match_data["match_id"]}")
 
 async def get_partner(user_id: str, room_key: str, room_connection: Redis) -> bool:
@@ -71,3 +74,9 @@ async def is_user_alive(heartbeat_key: str, room_connection: Redis) -> bool:
         return True
     else:
         return False
+
+async def update_user_ttl(heartbeat_key: str, room_connection: Redis) -> None:
+    """
+    Refreshes the time to live for the user.
+    """
+    await room_connection.set(heartbeat_key, str(datetime.now()), TTL)
