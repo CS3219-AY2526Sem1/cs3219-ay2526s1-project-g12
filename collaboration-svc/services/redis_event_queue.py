@@ -1,5 +1,4 @@
 from redis.asyncio import Redis
-from utils.logger import log
 from utils.utils import get_envvar
 
 ENV_REDIS_HOST_KEY = "REDIS_HOST"

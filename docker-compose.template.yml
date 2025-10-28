@@ -124,6 +124,50 @@ services:
         condition: service_healthy
         restart: true
 
+  collaboration-svc:
+    build:
+      context: ./collaboration-svc
+      dockerfile: Dockerfile
+    container_name: pp-collaboration-svc
+    ports:
+      - "8005:80"
+    networks:
+      - pp-network
+    env_file:
+      - ./collaboration-svc/.env
+    environment:
+      - REDIS_HOST=
+      - REDIS_PORT=
+      - APIGATEWAY_URL=http://api-gateway
+      - HOST_URL=collaboration-svc
+      - HEARTBEAT_PERIOD=270
+      - FRONT_END_URL=http://0.0.0.0:5173
+    volumes:
+      - ./logs/collaboration-svc/:/app/logs/
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+        restart: true
+
+  expire-observer-svc:
+    build:
+      context: ./expire-observer-svc
+      dockerfile: Dockerfile
+    container_name: pp-expire-observer-svc
+    networks:
+      - pp-network
+    env_file:
+      - ./expire-observer-svc/.env
+    environment:
+      - REDIS_HOST=
+      - REDIS_PORT=
+    volumes:
+      - ./logs/expire-observer-svc/:/app/logs/
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+        restart: true
+
   # frontend:
   #   build:
   #     context: ./PeerPrep
