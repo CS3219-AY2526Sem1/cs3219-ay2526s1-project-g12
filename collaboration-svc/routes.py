@@ -49,14 +49,3 @@ app = FastAPI(title="PeerPrep Collaboration Service", lifespan=lifespan)
 @app.get("/")
 async def root():
     return {"status": "working"}
-
-@app.websocket("/ws/connect")
-async def websocket_endpoint(websocket: WebSocket):
-    manager = app.state.websocket_manager
-    await manager.connect(websocket)
-    try:
-        while True:
-            data = await websocket.receive_text()
-            print(data) # For now but we should not be expecting messages from the gateway
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
