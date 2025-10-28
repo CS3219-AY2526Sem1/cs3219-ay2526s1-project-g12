@@ -92,7 +92,7 @@ async def start_room_hold_timer(room_id: str, user_id: str, room_connection: Red
     
     retries = 0
 
-    while (retries < 10):
+    while (retries < 300):
 
         if (not await check_room_cleanup(clean_up_key, room_connection)):
             log.info(f"Clean up for {room_id} has been terminated")

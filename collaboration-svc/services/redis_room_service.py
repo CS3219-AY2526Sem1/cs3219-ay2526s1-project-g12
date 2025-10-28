@@ -9,7 +9,7 @@ ENV_REDIS_PORT_KEY = "REDIS_PORT"
 
 ENV_QN_SVC_POOL_ENDPOINT = "QUESTION_SERVICE_POOL_URL"
 
-TTL = 10 # We give them 2 minutes to respond
+TTL = 120 # We give them 2 minutes to respond
 
 async def connect_to_redis_room_service() -> Redis:
     """
