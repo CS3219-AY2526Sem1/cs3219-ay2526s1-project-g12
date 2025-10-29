@@ -2,8 +2,6 @@ import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import { userApi } from "../api/UserApi";
 
-type ApiError = string | { detail?: string | Record<string, any> } | null;
-
 interface User {
   id: string;
   email: string;
@@ -18,7 +16,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  error: ApiError;
+  error: string | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   register: (userData: {
@@ -35,7 +33,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<ApiError>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Load user on mount (if logged in)
   useEffect(() => {
@@ -47,6 +45,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
     fetchUser();
   }, []);
+
+  // clear error whenever route changes
+  useEffect(() => {
+    setError(null);
+  }, [location.pathname]);
 
   const login = async (email: string, password: string) => {
     const { error } = await userApi.login(email, password);

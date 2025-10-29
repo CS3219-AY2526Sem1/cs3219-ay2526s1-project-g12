@@ -60,5 +60,7 @@ async def dynamic_forward(
         user_data=user_data,
     )
     if not (200 <= code < 300):
+        if data["detail"]:
+            data = data["detail"]
         raise HTTPException(status_code=code, detail=data)
     return JSONResponse(content=data, status_code=code)
