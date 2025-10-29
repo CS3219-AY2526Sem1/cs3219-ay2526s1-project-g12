@@ -85,6 +85,12 @@ async def update_user_ttl(heartbeat_key: str, room_connection: Redis) -> None:
     """
     await room_connection.set(heartbeat_key, str(datetime.now()), TTL)
 
+async def delete_user_ttl(heartbeat_key: str, room_connection: Redis) -> None:
+    """
+    Removes the time to live entry for the user.
+    """
+    await room_connection.delete(heartbeat_key)
+
 async def add_room_cleanup(clean_up_key: str, user_id: str, room_connection: Redis) -> None:
     """
     Adds a room cleanup item inside redis which is to be checked for clean up.
