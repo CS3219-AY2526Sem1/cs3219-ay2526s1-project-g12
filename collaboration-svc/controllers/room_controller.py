@@ -93,6 +93,7 @@ async def remove_user(user_id: str, room_connection: Redis, websocket_manager: W
 
     await delete_user_ttl(heartbeat_key, room_connection)
     await check_empty_room(user_id, room_connection, websocket_manager)
+    log.info(f"{user_id} has been removed from their room")
 
 async def check_empty_room(user_id: str, room_connection: Redis, websocket_manager: WebSocketManager) -> None:
     """
@@ -116,7 +117,7 @@ async def start_room_hold_timer(room_id: str, user_id: str, room_connection: Red
     """
     clean_up_key = format_cleanup_key(room_id)
     await add_room_cleanup (clean_up_key, user_id, room_connection)
-    
+    log.info(f"Holding room, {room_id} for 5 minutes due to both players leaving")
     retries = 0
 
     while (retries < 300):
