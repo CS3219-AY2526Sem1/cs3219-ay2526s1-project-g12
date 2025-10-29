@@ -125,4 +125,7 @@ async def reconnect_user(user_id: str, room_connection: Redis, websocket_manager
     heartbeat_key = format_heartbeat_key(user_id)
     await update_user_ttl(heartbeat_key, room_connection)
 
+    room_id = get_room_id(room_key)
+    log.info(f"User, {user_id} has reconnected to room, {room_id}")
+
     #TODO : Lastly when collab service has the websocket notify the partner if they are there
