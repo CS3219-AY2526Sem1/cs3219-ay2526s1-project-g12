@@ -61,3 +61,19 @@ jobs:
     - name: (QHS) Run ruff lint check
       working-directory: ./qns-hist-svc
       run: uv run ruff check
+    
+    - name: (CS) Run uv sync to install dependencies
+      working-directory: ./collaboration-svc
+      run: uv sync --locked --all-extras --dev
+
+    - name: (CS) Run ruff lint check
+      working-directory: ./collaboration-svc
+      run: uv run ruff check
+
+    - name: (EOS) Run uv sync to install dependencies
+      working-directory: ./expire-observer-svc
+      run: uv sync --locked --all-extras --dev
+
+    - name: (EOS) Run ruff lint check
+      working-directory: ./expire-observer-svc
+      run: uv run ruff check
