@@ -159,5 +159,4 @@ def send_room_for_review(user_one: str, user_two: str, submitted_solution: str, 
             "users": [user_one, user_two]
         }
 
-        print(body)
-        #requests.get(f"{get_envvar(ENV_QN_SVC_HISTORY_ENDPOINT)}", json= body)
+        requests.get(f"{get_envvar(ENV_QN_SVC_HISTORY_ENDPOINT)}", json= body)

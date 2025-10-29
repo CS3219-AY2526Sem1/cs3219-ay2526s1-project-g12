@@ -133,24 +133,28 @@ async def terminate_match(user_id: str, room_id: str, match_data: MatchData, roo
     """
     Terminates the match for both parties.
     """
-    # Check if this room even exist first
     room_key = format_user_room_key(user_id)
-    if (not does_key_exist(room_key, room_connection)):
+    user_heartbeat_key = format_heartbeat_key(user_id)
+    # Check if user is a valid user with a alive heartbeat
+
+    has_valid_heartbeat = does_key_exist(user_heartbeat_key, room_connection)
+    has_valid_room = does_key_exist(room_key, room_connection)
+
+    if (has_valid_heartbeat and has_valid_room and get_room_id(room_key, room_connection) == room_id):
+        room_informaion = await get_room_information(room_key, room_connection)
+        partner = await get_partner(user_id, room_key, room_connection)
+
+        cleanup_key = format_cleanup_key(room_id)
+        await cleanup(cleanup_key, room_connection)
+
+        partner_heartbeat_key = format_heartbeat_key(partner)
+
+        await delete_user_ttl(user_heartbeat_key, room_connection)
+        await delete_user_ttl(partner_heartbeat_key, room_connection)
+
+        send_room_for_review(user_id, partner, match_data.data, room_informaion)
+    else:
         raise HTTPException(
                 status_code=400,
-                detail="Cannot terminate as this room does not exist",
+                detail="Cannot terminate match as user or room id is invalid"
             )
-    
-    room_informaion = await get_room_information(room_key, room_connection)
-    partner = await get_partner(user_id, room_key, room_connection)
-
-    cleanup_key = format_cleanup_key(room_id)
-    await cleanup(cleanup_key, room_connection)
-
-    user_heartbeat_key = format_heartbeat_key(user_id)
-    partner_heartbeat_key = format_heartbeat_key(partner)
-
-    await delete_user_ttl(user_heartbeat_key, room_connection)
-    await delete_user_ttl(partner_heartbeat_key, room_connection)
-
-    send_room_for_review(user_id, partner, match_data.data, room_informaion)
