@@ -4,7 +4,7 @@ from fastapi import WebSocket
 
 from utils.logger import log
 
-
+COLLAB = "collab"
 class WebSocketManager:
     """Manages WebSocket connections for FE and Collab service"""
     
@@ -36,7 +36,7 @@ class WebSocketManager:
     
     def get_collab_connection(self) -> Optional[WebSocket]:
         """Get the Collab service WebSocket connection"""
-        return self.connections.get("collab")
+        return self.connections.get(COLLAB)
     
     def get_fe_connections(self) -> Dict[str, WebSocket]:
         """Get all Frontend WebSocket connections"""

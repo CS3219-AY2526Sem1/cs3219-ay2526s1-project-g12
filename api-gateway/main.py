@@ -71,7 +71,7 @@ app.include_router(dynamic_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONT_END_URL],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
