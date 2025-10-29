@@ -85,23 +85,23 @@ async def update_user_ttl(heartbeat_key: str, room_connection: Redis) -> None:
     """
     await room_connection.set(heartbeat_key, str(datetime.now()), TTL)
 
-async def add_room_cleanup(clean_up_key: str, user_id: str, room_connection: Redis) -> None:
+async def add_room_cleanup(cleanup_key: str, user_id: str, room_connection: Redis) -> None:
     """
     Adds a room cleanup item inside redis which is to be checked for clean up.
     """
-    await room_connection.set(clean_up_key, user_id)
+    await room_connection.set(cleanup_key, user_id)
 
-async def remove_room_cleanup(clean_up_key: str, room_connection: Redis) -> None:
+async def remove_room_cleanup(cleanup_key: str, room_connection: Redis) -> None:
     """
     Remoeves the room cleanup item inside redis.
     """
-    await room_connection.delete(clean_up_key)
+    await room_connection.delete(cleanup_key)
 
-async def check_room_cleanup(clean_up_key: str, room_connection: Redis) -> bool:
+async def check_room_cleanup(cleanup_key: str, room_connection: Redis) -> bool:
     """
     Adds if the room needs to be cleaned up.
     """
-    result =  await room_connection.exists(clean_up_key)
+    result =  await room_connection.exists(cleanup_key)
 
     if (result == 1):
         return True

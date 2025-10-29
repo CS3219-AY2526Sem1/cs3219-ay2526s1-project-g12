@@ -9,7 +9,7 @@ from services.redis_event_queue import (
     create_group, retrieve_stream_data,
     acknowlwedge_event
 )
-from services.redis_room_service import create_room, get_partner, is_user_alive, cleanup, add_room_cleanup, get_room_id, check_room_cleanup, update_user_ttl
+from services.redis_room_service import create_room, get_partner, is_user_alive, cleanup, add_room_cleanup, get_room_id, check_room_cleanup, update_user_ttl, remove_room_cleanup
 from utils.logger import log
 from utils.utils import acquire_lock, release_lock, get_envvar, format_user_room_key, extract_information_from_event, format_heartbeat_key, format_cleanup_key, does_key_exist
 
@@ -122,10 +122,14 @@ async def reconnect_user(user_id: str, room_connection: Redis, websocket_manager
                 detail="User is not assiged a room or the room has expired",
             )
 
+    # Removes the cleanup countdown if there is 
+    room_id = get_room_id(room_key)
+    cleanup_key = format_cleanup_key(room_id)
+    await remove_room_cleanup(cleanup_key, room_connection)
+
     heartbeat_key = format_heartbeat_key(user_id)
     await update_user_ttl(heartbeat_key, room_connection)
 
-    room_id = get_room_id(room_key)
     log.info(f"User, {user_id} has reconnected to room, {room_id}")
 
     #TODO : Lastly when collab service has the websocket notify the partner if they are there
