@@ -4,7 +4,7 @@ import redis.asyncio as aioredis
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from fastapi.security import HTTPBearer
 
-from models.websocket_manager import WebSocketManager
+from controllers.websocket_manager import WebSocketManager
 from routes.dynamic_router import auth_user
 from service.redis_settings import get_redis
 from utils.logger import log
