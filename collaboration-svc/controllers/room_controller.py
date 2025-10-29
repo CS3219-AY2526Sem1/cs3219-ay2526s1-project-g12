@@ -2,15 +2,16 @@ import asyncio
 from asyncio import Event
 from controllers.websocket_controller import WebSocketManager
 from redis.asyncio import Redis
+from fastapi import HTTPException
 from services.redis_event_queue import (
     get_match_confirmation_event,
     remove_match_confirmation_event,
     create_group, retrieve_stream_data,
     acknowlwedge_event
 )
-from services.redis_room_service import create_room, get_partner, is_user_alive, cleanup, add_room_cleanup, get_room_id, check_room_cleanup
+from services.redis_room_service import create_room, get_partner, is_user_alive, cleanup, add_room_cleanup, get_room_id, check_room_cleanup, update_user_ttl
 from utils.logger import log
-from utils.utils import acquire_lock, release_lock, get_envvar, format_user_room_key, extract_information_from_event, format_heartbeat_key, format_cleanup_key
+from utils.utils import acquire_lock, release_lock, get_envvar, format_user_room_key, extract_information_from_event, format_heartbeat_key, format_cleanup_key, does_key_exist
 
 LOCK_KEY = "event_manager_lock"
 
@@ -108,3 +109,20 @@ async def create_heartbeat_listner(room_connection: Redis, websocket_manager: We
     """
     Spawns a worker to periodically check for any heartbeat update request from the user through the websocket.
     """ 
+
+async def reconnect_user(user_id: str, room_connection: Redis, websocket_manager: WebSocketManager) -> None:
+    """
+    Reconnects the user to their assigned match.
+    """
+    room_key = format_user_room_key(user_id)
+
+    if (not does_key_exist(room_key)):
+        raise HTTPException(
+                status_code=400,
+                detail="User is not assiged a room or the room has expired",
+            )
+
+    heartbeat_key = format_heartbeat_key(user_id)
+    await update_user_ttl(heartbeat_key, room_connection)
+
+    #TODO : Lastly when collab service has the websocket notify the partner if they are there
