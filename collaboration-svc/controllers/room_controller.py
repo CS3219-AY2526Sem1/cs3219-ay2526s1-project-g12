@@ -94,13 +94,11 @@ async def start_room_hold_timer(room_id: str, user_id: str, room_connection: Red
     retries = 0
 
     while (retries < 300):
-
+        await asyncio.sleep(1)
         if (not await check_room_cleanup(clean_up_key, room_connection)):
             log.info(f"Clean up for {room_id} has been terminated")
             return
-
         retries += 1
-        await asyncio.sleep(1)
 
     await cleanup(clean_up_key, room_connection)
     log.info(f"Data for {room_id} is cleared due to inactivity")
