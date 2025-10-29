@@ -2,20 +2,22 @@ import { CodeEditor } from "../components/Collab/CodeEditor";
 import { ProblemPanel } from "../components/Collab/ProblemPanel";
 import { TopBar } from "../components/Collab/TopBar";
 
-export function CollabEditor() {
-    return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-            <TopBar />
+export default function CollabEditor() {
+  return (
+    <div className="min-h-screen flex flex-col px-20 py-10">
+      <TopBar />
 
-            <div className="flex flex-1 overflow-hidden p-6 gap-4">
-                <div className="w-1/3 bg-white shadow-md rounded-2xl p-6 overflow-y-auto">
-                    <ProblemPanel />
-                </div>
-
-                <div className="flex-1 bg-white shadow-md rounded-2xl p-4">
-                    <CodeEditor />
-                </div>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-10 justify-center overflow-hidden">
+        <div className="card shadow-sm border-1 border-base-200 p-10 overflow-y-auto">
+          <ProblemPanel />
         </div>
-    );
+
+        <div className="col-span-2 card shadow-sm border-1 border-base-200 p-10">
+          <div className="w-full overflow-visible">
+            <CodeEditor />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

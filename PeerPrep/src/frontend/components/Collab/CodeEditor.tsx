@@ -16,7 +16,12 @@ export function CodeEditor() {
     if (editorRef.current) {
       const model = editorRef.current.getModel();
       if (model) {
-        new MonacoBinding(ytext, model, new Set([editorRef.current]), provider.awareness);
+        new MonacoBinding(
+          ytext,
+          model,
+          new Set([editorRef.current]),
+          provider.awareness,
+        );
       }
     }
 
@@ -32,11 +37,24 @@ export function CodeEditor() {
 
   return (
     <Editor
-      height="80vh"
-      theme="vs-dark"
+      height="70vh"
+      theme="light"
       language="python"
       defaultValue={`class Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        `}
       onMount={handleEditorDidMount}
+      options={{
+        scrollBeyondLastLine: false,
+        minimap: { enabled: false },
+        lineNumbers: "on",
+        lineNumbersMinChars: 4,
+        renderLineHighlight: "all",
+        wordWrap: "on",
+        automaticLayout: true,
+        scrollbar: {
+          vertical: "hidden",
+          handleMouseWheel: true,
+        },
+      }}
     />
   );
-};
+}
