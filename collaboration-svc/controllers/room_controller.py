@@ -88,7 +88,7 @@ async def remove_user(user_id: str, room_connection: Redis, websocket_manager: W
     if (not does_key_exist(heartbeat_key, room_connection)):
         raise HTTPException(
                 status_code=400,
-                detail="Cannot leave the match as user does not belong to this room"
+                detail="Cannot leave the match as the user is currently not in a room"
             )
 
     await delete_user_ttl(heartbeat_key, room_connection)
