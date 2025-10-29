@@ -153,6 +153,7 @@ async def terminate_match(user_id: str, room_id: str, match_data: MatchData, roo
         await delete_user_ttl(partner_heartbeat_key, room_connection)
 
         send_room_for_review(user_id, partner, match_data.data, room_informaion)
+        log.info(f"User, {user_id} has terminated room, {room_id}")
     else:
         raise HTTPException(
                 status_code=400,
