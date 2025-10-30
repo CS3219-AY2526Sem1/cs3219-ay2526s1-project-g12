@@ -1,17 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { userApi } from '../api/UserApi';
-
-interface User {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  role_id: number;
-  is_active: boolean;
-  is_superuser: boolean;
-  is_verified: boolean;
-}
+import type { User } from '../types/User.tsx';
 
 interface AuthContextType {
   user: User | null;
@@ -73,13 +63,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     last_name: string;
   }) => {
     const { data, error } = await userApi.register(userData);
-    if (error) {
-      setError(error);
-      return false;
-    } else {
+    if (data) {
       setUser(data);
       return true;
     }
+    if (error) {
+      setError(error);
+    }
+    return false;
   };
 
   const logout = async () => {
