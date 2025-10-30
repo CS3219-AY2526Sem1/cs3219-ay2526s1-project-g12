@@ -38,6 +38,7 @@ used:
 from __future__ import annotations
 
 import json
+import random
 import re
 from typing import Iterable, List, Optional, Tuple
 
@@ -199,7 +200,35 @@ class ServiceRegistry:
         return alive
 
     async def choose_instance(self, service_name: str) -> Optional[str]:
-        """Choose one alive instance to handle a request."""
-        # TODO : Implement better load balancing strategy
+        """Choose one alive instance to handle a request using Redis‑based round-robin.
+
+        This implementation uses a Redis counter for each service to ensure
+        requests are distributed evenly across all healthy instances. Each
+        service has its own counter key (``gw:rr:<service_name>``) which is
+        atomically incremented on every call. On each invocation the next instance
+        in the list is selected. If the list changes (e.g. new instances register
+        or old ones disappear) the counters automatically wrap around using
+        modulo arithmetic.
+
+        Args:
+            service_name: The name of the service for which to choose an instance.
+
+        Returns:
+            A string representing the chosen instance's address, or None if
+            no healthy instances are available.
+        """
         instances = await self.list_instances(service_name)
-        return instances[0] if instances else None
+        if not instances:
+            return None
+        # Build a per‑service counter key.
+        counter_key = f"gw:rr:{service_name}"
+        try:
+            counter = await self.redis.incr(counter_key)
+        except Exception:
+            # Fallback to random selection if Redis is unavailable or any
+            # error occurs during increment. This ensures the gateway can
+            # still operate albeit without strict round‑robin.
+            return random.choice(instances)
+        # Use modulo to wrap around the available instances
+        index = (counter - 1) % len(instances)
+        return instances[index]
