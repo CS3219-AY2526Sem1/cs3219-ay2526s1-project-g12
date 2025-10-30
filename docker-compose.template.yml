@@ -86,6 +86,8 @@ services:
     environment:
       - REDIS_HOST=
       - REDIS_PORT=
+      - REDIS_EVENT_QUEUE_HOST=
+      - REDIS_EVENT_QUEUE_PORT=
       - APIGATEWAY_URL=http://api-gateway
       - HOST_URL=matching-svc
       - HEARTBEAT_PERIOD=270

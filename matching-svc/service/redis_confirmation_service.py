@@ -53,7 +53,7 @@ async def get_match_details(match_key: str, confirmation_conn: Redis) -> dict:
     """
     return await confirmation_conn.hgetall(match_key)
 
-async def get_match_partner(user_id: str, match_key: str, confirmation_conn: Redis) -> bool:
+async def get_match_partner(user_id: str, match_key: str, confirmation_conn: Redis) -> str:
     """
     Retrieves the user's partner user id for that match.
     """
