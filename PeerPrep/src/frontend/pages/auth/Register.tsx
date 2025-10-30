@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import GitHubLogo from "../../assets/Images/github-logo.png";
-import { Link } from "react-router";
-import { useAuth } from "../../context/AuthContext";
+import React, { useState } from 'react';
+import GitHubLogo from '../../assets/Images/github-logo.png';
+import { Link } from 'react-router';
+import { useAuth } from '../../context/AuthContext';
 
 interface RegisterForm {
   email: string;
@@ -13,11 +13,11 @@ interface RegisterForm {
 
 export default function Register() {
   const [formData, setFormData] = useState<RegisterForm>({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    first_name: "",
-    last_name: "",
+    email: '',
+    password: '',
+    confirmPassword: '',
+    first_name: '',
+    last_name: '',
   });
   const [validationError, setValidationError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -50,7 +50,7 @@ export default function Register() {
     }));
 
     // Validate password in real-time
-    if (name === "password") {
+    if (name === 'password') {
       validatePassword(value);
     }
 
@@ -72,30 +72,30 @@ export default function Register() {
       !formData.first_name ||
       !formData.last_name
     ) {
-      setValidationError("All fields are required");
+      setValidationError('All fields are required');
       setSubmitting(false);
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setValidationError("Passwords do not match");
+      setValidationError('Passwords do not match');
       setSubmitting(false);
       return;
     }
 
     if (!validatePassword(formData.password)) {
-      setValidationError("Password does not meet requirements");
+      setValidationError('Password does not meet requirements');
       setSubmitting(false);
       return;
     }
 
     if (formData.email.includes(formData.password)) {
-      setValidationError("Password should not contain your email address");
+      setValidationError('Password should not contain your email address');
       setSubmitting(false);
       return;
     }
 
-    console.log("Registration attempt:", formData.email);
+    console.log('Registration attempt:', formData.email);
 
     const success = await register({
       email: formData.email,
@@ -107,11 +107,11 @@ export default function Register() {
     if (success) {
       setSuccess(true);
       setFormData({
-        email: "",
-        password: "",
-        confirmPassword: "",
-        first_name: "",
-        last_name: "",
+        email: '',
+        password: '',
+        confirmPassword: '',
+        first_name: '',
+        last_name: '',
       });
     }
 
@@ -148,8 +148,8 @@ export default function Register() {
             <strong>Email:</strong> {user.email}
           </p>
           <p className="mb-4">
-            <strong>Account Status:</strong>{" "}
-            {user.is_verified ? "Verified" : "Pending Verification"}
+            <strong>Account Status:</strong>{' '}
+            {user.is_verified ? 'Verified' : 'Pending Verification'}
           </p>
 
           <Link
@@ -266,34 +266,34 @@ export default function Register() {
           {formData.password && (
             <div className="mt-2 text-xs space-y-1">
               <div
-                className={`flex items-center ${passwordValidation.length ? "text-success" : "text-error"}`}
+                className={`flex items-center ${passwordValidation.length ? 'text-success' : 'text-error'}`}
               >
                 <span className="mr-1">
-                  {passwordValidation.length ? "✓" : "✗"}
+                  {passwordValidation.length ? '✓' : '✗'}
                 </span>
                 At least 8 characters
               </div>
               <div
-                className={`flex items-center ${passwordValidation.uppercase ? "text-success" : "text-error"}`}
+                className={`flex items-center ${passwordValidation.uppercase ? 'text-success' : 'text-error'}`}
               >
                 <span className="mr-1">
-                  {passwordValidation.uppercase ? "✓" : "✗"}
+                  {passwordValidation.uppercase ? '✓' : '✗'}
                 </span>
                 One uppercase letter
               </div>
               <div
-                className={`flex items-center ${passwordValidation.lowercase ? "text-success" : "text-error"}`}
+                className={`flex items-center ${passwordValidation.lowercase ? 'text-success' : 'text-error'}`}
               >
                 <span className="mr-1">
-                  {passwordValidation.lowercase ? "✓" : "✗"}
+                  {passwordValidation.lowercase ? '✓' : '✗'}
                 </span>
                 One lowercase letter
               </div>
               <div
-                className={`flex items-center ${passwordValidation.numberOrSymbol ? "text-success" : "text-error"}`}
+                className={`flex items-center ${passwordValidation.numberOrSymbol ? 'text-success' : 'text-error'}`}
               >
                 <span className="mr-1">
-                  {passwordValidation.numberOrSymbol ? "✓" : "✗"}
+                  {passwordValidation.numberOrSymbol ? '✓' : '✗'}
                 </span>
                 One number or symbol
               </div>
@@ -316,11 +316,11 @@ export default function Register() {
             className={`input validator w-full ${
               formData.confirmPassword &&
               formData.password !== formData.confirmPassword
-                ? "border-error"
+                ? 'border-error'
                 : formData.confirmPassword &&
                     formData.password === formData.confirmPassword
-                  ? "border-success"
-                  : ""
+                  ? 'border-success'
+                  : ''
             }`}
             placeholder="Confirm your password"
             value={formData.confirmPassword}
@@ -348,7 +348,7 @@ export default function Register() {
               Creating account...
             </>
           ) : (
-            "Register Account"
+            'Register Account'
           )}
         </button>
 

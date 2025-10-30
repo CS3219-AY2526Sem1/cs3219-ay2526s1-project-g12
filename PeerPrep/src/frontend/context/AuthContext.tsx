@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import type { ReactNode } from "react";
-import { userApi } from "../api/UserApi";
+import { createContext, useContext, useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
+import { userApi } from '../api/UserApi';
 
 interface User {
   id: string;
@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const fetchUser = async () => {
       const { data, error } = await userApi.getCurrentUser();
       if (data) setUser(data);
-      else if (error) console.warn("User not authenticated:", error);
+      else if (error) console.warn('User not authenticated:', error);
       setIsLoading(false);
     };
     fetchUser();
@@ -101,6 +101,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 };

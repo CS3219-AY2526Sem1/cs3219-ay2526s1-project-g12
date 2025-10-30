@@ -1,11 +1,11 @@
-import { useMatching } from "../../hooks/useMatching";
-import { useMatchTimer } from "../../hooks/useMatchTimer";
-import { MatchState } from "../../types/MatchState";
-import { MatchIdle } from "./MatchIdle";
-import { MatchSearching } from "./MatchSearching";
-import { MatchFound } from "./MatchFound";
-import { MatchConfirmed } from "./MatchConfirmed";
-import { useEffect } from "react";
+import { useMatching } from '../../hooks/useMatching';
+import { useMatchTimer } from '../../hooks/useMatchTimer';
+import { MatchState } from '../../types/MatchState';
+import { MatchIdle } from './MatchIdle';
+import { MatchSearching } from './MatchSearching';
+import { MatchFound } from './MatchFound';
+import { MatchConfirmed } from './MatchConfirmed';
+import { useEffect } from 'react';
 
 interface MatchCardProps {
   userId: string;
@@ -14,7 +14,12 @@ interface MatchCardProps {
   onMatchStateChange?: (state: MatchState) => void;
 }
 
-export function MatchCard({ userId, category, difficulty, onMatchStateChange }: MatchCardProps) {
+export function MatchCard({
+  userId,
+  category,
+  difficulty,
+  onMatchStateChange,
+}: MatchCardProps) {
   const {
     matchState,
     partnerName,
@@ -30,7 +35,7 @@ export function MatchCard({ userId, category, difficulty, onMatchStateChange }: 
   const { minutes, seconds, reset, addTime } = useMatchTimer(
     matchState === MatchState.Searching || matchState === MatchState.Found,
     180,
-    resetBackToIdle,
+    resetBackToIdle
   );
 
   useEffect(() => {
@@ -70,7 +75,7 @@ export function MatchCard({ userId, category, difficulty, onMatchStateChange }: 
       case MatchState.Found:
         return (
           <MatchFound
-            partnerName={partnerName ?? "Partner"}
+            partnerName={partnerName ?? 'Partner'}
             isAccepting={isAccepting}
             statusMessage={statusMessage}
             onAccept={acceptMatch}
@@ -79,7 +84,7 @@ export function MatchCard({ userId, category, difficulty, onMatchStateChange }: 
         );
 
       case MatchState.Confirmed:
-        return <MatchConfirmed matchDetails={matchDetails ?? "No details"} />;
+        return <MatchConfirmed matchDetails={matchDetails ?? 'No details'} />;
 
       default:
         return null;

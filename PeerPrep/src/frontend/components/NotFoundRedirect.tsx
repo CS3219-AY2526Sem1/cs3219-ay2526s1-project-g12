@@ -1,5 +1,5 @@
-import { Navigate } from "react-router";
-import { useAuth } from "../context/AuthContext";
+import { Navigate } from 'react-router';
+import { useAuth } from '../context/AuthContext';
 
 export default function NotFoundRedirect() {
   const { user, isLoading } = useAuth();
@@ -12,7 +12,11 @@ export default function NotFoundRedirect() {
     );
   }
 
-  console.log("NotFoundRedirect:", user);
+  console.log('NotFoundRedirect:', user);
   // Redirect based on authentication status
-  return user ? <Navigate to="/dashboard" replace /> : <Navigate to="/" replace />;
+  return user ? (
+    <Navigate to="/dashboard" replace />
+  ) : (
+    <Navigate to="/" replace />
+  );
 }

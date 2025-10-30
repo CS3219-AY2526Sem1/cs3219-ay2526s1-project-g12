@@ -22,7 +22,7 @@ export function MatchIdle({
         onClick={onStart}
         disabled={disabled}
         className={`btn font-normal w-full ${
-          disabled ? "btn-disabled btn-outline" : "btn-primary"
+          disabled ? 'btn-disabled btn-outline' : 'btn-primary'
         }`}
       >
         🔍 Match

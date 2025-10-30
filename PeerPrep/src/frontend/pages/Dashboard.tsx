@@ -1,5 +1,5 @@
-import NavBar from "../components/NavBar";
-import { NAV_BUTTONS } from "../config/NavConfig";
+import NavBar from '../components/NavBar';
+import { NAV_BUTTONS } from '../config/NavConfig';
 
 function Dashboard() {
   return (

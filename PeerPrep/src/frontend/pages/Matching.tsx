@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
-import NavBar from "../components/NavBar";
-import { useAuth } from "../context/AuthContext";
-import { questionApi } from "../api/QuestionApi";
-import { MatchCard } from "../components/Match/MatchCard";
+import { useEffect, useState } from 'react';
+import NavBar from '../components/NavBar';
+import { useAuth } from '../context/AuthContext';
+import { questionApi } from '../api/QuestionApi';
+import { MatchCard } from '../components/Match/MatchCard';
 
 function Matching() {
   const [topics, setTopics] = useState<string[]>([]);
@@ -16,7 +16,7 @@ function Matching() {
   const [error, setError] = useState<string | null>(null);
 
   const [isMatchingActive, setIsMatchingActive] = useState(false);
-  const difficultyOrder = ["Easy", "Medium", "Hard"];
+  const difficultyOrder = ['Easy', 'Medium', 'Hard'];
 
   const { user } = useAuth();
 
@@ -29,7 +29,7 @@ function Matching() {
       setError(null);
       const res = await questionApi.getPoolCategories(user?.id);
       if (res.error) {
-        setError("Failed to load topics.");
+        setError('Failed to load topics.');
       } else if (res.data) {
         setTopics(res.data.categories);
         // default to first topic if needed
@@ -54,7 +54,7 @@ function Matching() {
       setError(null);
       const res = await questionApi.getPoolDifficultiesByCategory(
         user?.id,
-        topic,
+        topic
       );
       if (res.error) {
         setError(res.error);
@@ -93,7 +93,7 @@ function Matching() {
             ) : (
               <select
                 className="select select-bordered w-full text-center"
-                value={topic ?? ""}
+                value={topic ?? ''}
                 onChange={(e) => {
                   setTopic(e.target.value || null);
                   setDifficulty(null);
@@ -138,8 +138,8 @@ function Matching() {
                       disabled={!level || isMatchingActive}
                       className={`btn ${
                         difficulty === level
-                          ? "btn-primary"
-                          : "btn-outline btn-primary"
+                          ? 'btn-primary'
+                          : 'btn-outline btn-primary'
                       } font-normal`}
                     >
                       {level}
@@ -155,7 +155,7 @@ function Matching() {
             category={topic!}
             difficulty={difficulty!}
             onMatchStateChange={(state) =>
-              setIsMatchingActive(state !== "idle")
+              setIsMatchingActive(state !== 'idle')
             }
           />
         </div>
