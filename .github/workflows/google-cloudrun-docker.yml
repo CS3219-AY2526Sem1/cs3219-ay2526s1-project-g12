@@ -71,9 +71,9 @@ jobs:
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-api-gateway:latest
 
       - name: (CS) Build and Push Docker Image
-        working-directory: ./collaborationt-svc
+        working-directory: ./collaboration-svc
         run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-collaborationt-svc:latest .
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-collaboration-svc:latest .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-collaboration-svc:latest     
 
       - name: (ES) Build and Push Docker Image
