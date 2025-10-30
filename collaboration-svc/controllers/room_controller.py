@@ -82,20 +82,15 @@ async def create_ttl_expire_listener(
             event_id, user_id = extract_information_from_event(message)
             log.info(f"Collaboration service, {service_id} is handling event {event_id}")
 
-            room_key = format_user_room_key(user_id)
-
-            room_id = await get_room_id(room_key, room_connection)
-            partner = await get_partner(user_id, room_key, room_connection)
-            partner_heartbeat_key = format_heartbeat_key(partner)
-
-            if (await is_user_alive(partner_heartbeat_key, room_connection)):
-                alert_user(partner, websocket_manager)
-            else:
-                # Fire and foeget this task to check again in 5 minutes if any user joins back
-                asyncio.create_task(start_room_hold_timer(room_id, user_id, room_connection))
+            await check_empty_room (user_id, room_connection, websocket_manager)
             
             await acknowlwedge_event(event_queue_connection, stream_key, group_key, event_id)
             log.info(f"Collaboration service, {service_id} has completed handling event {event_id}")
+
+async def create_heartbeat_listener(room_connection: Redis, websocket_manager: WebSocketManager):
+    """
+    Spawns a worker to periodically check for any heartbeat update request from the user through the websocket.
+    """ 
 
 def alert_user(user_id: str, websocket_manager: WebSocketManager) -> None:
     """
@@ -103,13 +98,45 @@ def alert_user(user_id: str, websocket_manager: WebSocketManager) -> None:
     """
     log.info(f"Sent a notification to {user_id} that their parter has left the mattch")
 
+async def remove_user(user_id: str, room_connection: Redis, websocket_manager: WebSocketManager) -> None:
+    """
+    Removes the user from the room.
+    """
+    heartbeat_key = format_heartbeat_key(user_id)
+
+    if (not does_key_exist(heartbeat_key, room_connection)):
+        raise HTTPException(
+                status_code=400,
+                detail="Cannot leave the match as the user is currently not in a room"
+            )
+
+    await delete_user_ttl(heartbeat_key, room_connection)
+    await check_empty_room(user_id, room_connection, websocket_manager)
+    log.info(f"{user_id} has been removed from their room")
+
+async def check_empty_room(user_id: str, room_connection: Redis, websocket_manager: WebSocketManager) -> None:
+    """
+    Checks if the room is empty. If it is then initate the wait for cleanup.
+    """ 
+    room_key = format_user_room_key(user_id)
+
+    room_id = await get_room_id(room_key, room_connection)
+    partner = await get_partner(user_id, room_key, room_connection)
+    partner_heartbeat_key = format_heartbeat_key(partner)
+
+    if (await is_user_alive(partner_heartbeat_key, room_connection)):
+        alert_user(partner, websocket_manager)
+    else:
+        # Fire and foeget this task to check again in 5 minutes if any user joins back
+        asyncio.create_task(start_room_hold_timer(room_id, user_id, room_connection))
+
 async def start_room_hold_timer(room_id: str, user_id: str, room_connection: Redis) -> None:
     """
     Initates a 2 minute timer to check if anyone has retunred before cleaning up.
     """
     clean_up_key = format_cleanup_key(room_id)
     await add_room_cleanup (clean_up_key, user_id, room_connection)
-    
+    log.info(f"Holding room, {room_id} for 5 minutes due to both players leaving")
     retries = 0
 
     while (retries < 300):
