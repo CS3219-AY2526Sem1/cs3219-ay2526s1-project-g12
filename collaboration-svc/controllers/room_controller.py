@@ -1,6 +1,8 @@
 import asyncio
 from asyncio import Event
 from controllers.websocket_controller import WebSocketManager
+from fastapi import HTTPException
+from models.api_models import MatchData
 from redis.asyncio import Redis
 from services.redis_event_queue import (
     get_match_confirmation_event,
@@ -8,9 +10,27 @@ from services.redis_event_queue import (
     create_group, retrieve_stream_data,
     acknowlwedge_event
 )
-from services.redis_room_service import create_room, get_partner, is_user_alive, cleanup, add_room_cleanup, get_room_id, check_room_cleanup
+from services.redis_room_service import (
+    create_room,
+    get_partner,
+    get_room_information,
+    is_user_alive, cleanup,
+    add_room_cleanup,
+    get_room_id,
+    check_room_cleanup,
+    delete_user_ttl,
+    send_room_for_review
+)
 from utils.logger import log
-from utils.utils import acquire_lock, release_lock, get_envvar, format_user_room_key, extract_information_from_event, format_heartbeat_key, format_cleanup_key
+from utils.utils import (
+    acquire_lock, release_lock,
+    get_envvar,
+    format_user_room_key,
+    extract_information_from_event,
+    format_heartbeat_key,
+    format_cleanup_key,
+    does_key_exist
+)
 
 LOCK_KEY = "event_manager_lock"
 
@@ -108,3 +128,34 @@ async def create_heartbeat_listner(room_connection: Redis, websocket_manager: We
     """
     Spawns a worker to periodically check for any heartbeat update request from the user through the websocket.
     """ 
+
+async def terminate_match(user_id: str, room_id: str, match_data: MatchData, room_connection: Redis):
+    """
+    Terminates the match for both parties.
+    """
+    room_key = format_user_room_key(user_id)
+    user_heartbeat_key = format_heartbeat_key(user_id)
+    # Check if user is a valid user with a alive heartbeat
+
+    has_valid_heartbeat = does_key_exist(user_heartbeat_key, room_connection)
+    has_valid_room = does_key_exist(room_key, room_connection)
+
+    if (has_valid_heartbeat and has_valid_room and get_room_id(room_key, room_connection) == room_id):
+        room_informaion = await get_room_information(room_key, room_connection)
+        partner = await get_partner(user_id, room_key, room_connection)
+
+        cleanup_key = format_cleanup_key(room_id)
+        await cleanup(cleanup_key, room_connection)
+
+        partner_heartbeat_key = format_heartbeat_key(partner)
+
+        await delete_user_ttl(user_heartbeat_key, room_connection)
+        await delete_user_ttl(partner_heartbeat_key, room_connection)
+
+        send_room_for_review(user_id, partner, match_data.data, room_informaion)
+        log.info(f"User, {user_id} has terminated room, {room_id}")
+    else:
+        raise HTTPException(
+                status_code=400,
+                detail="Cannot terminate match as user or room id is invalid"
+            )

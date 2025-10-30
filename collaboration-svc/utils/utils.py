@@ -70,3 +70,14 @@ def extract_information_from_event(message: list) -> tuple:
     user_id = string_list[1]
 
     return event_id, user_id
+
+async def does_key_exist(key: str, redis_connection: Redis) -> bool:
+    """
+    Checks if the given key existis with redis.
+    """
+    does_exist = await redis_connection.exists(key)
+
+    if (does_exist == 1):
+        return True
+    else:
+        return False
