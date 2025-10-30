@@ -23,7 +23,7 @@ class WebSocketManager:
         """
         try:
             self.active_connection = await websockets.connect(get_envvar(ENV_API_WEBSOCKET_URL))
-        except Exception as e:
+        except Exception:
             log.error("Unable to establish a WebSocket connection with API gateway")
             raise
 
@@ -43,7 +43,7 @@ class WebSocketManager:
         message = {
             "user_id": receiver,
             "room_id": room_id,
-            "message": body
+            "event": body
         }
 
         if self.active_connection:
@@ -65,6 +65,6 @@ class WebSocketManager:
             except json.JSONDecodeError:
                 log.warning(f"Received non-JSON message: {data}")
                 return None
-        except ConnectionClosed as e:
+        except ConnectionClosed:
             log.error("WebSocket connection is closed.")
             raise
