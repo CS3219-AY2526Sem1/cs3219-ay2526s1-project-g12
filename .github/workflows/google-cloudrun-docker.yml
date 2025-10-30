@@ -91,8 +91,8 @@ jobs:
       - name: (QHS) Build and Push Docker Image
         working-directory: ./qns-hist-svc
         run: |
-          docker build -t pp-qns-hist-svc:latest .
-          docker push asia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/pp-qns-hist-svc:latest
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-qns-hist-svc:latest .
+          docker push  ${{ env.DOCKER_IMAGE_URL }}pp-qns-hist-svc:latest
       
       - name: (QS) Build and Push Docker Image
         working-directory: ./qns-svc
