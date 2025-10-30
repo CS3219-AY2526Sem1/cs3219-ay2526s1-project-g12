@@ -8,6 +8,7 @@ ENV_REDIS_HOST_KEY = "REDIS_HOST"
 ENV_REDIS_PORT_KEY = "REDIS_PORT"
 
 ENV_QN_SVC_POOL_ENDPOINT = "QUESTION_SERVICE_POOL_URL"
+ENV_QN_SVC_HISTORY_ENDPOINT = "QUESTION_SERVICE_HISTORY_URL"
 
 TTL = 120 # We give them 2 minutes to respond
 
@@ -34,8 +35,9 @@ async def create_room(match_data: dict, room_connection: Redis) -> None:
     # Question data is already in a dictionary so append the rest of the details there
     for key, value in match_data.items():
         data[key] = value
-    
-    del data["categories"]
+
+    data["start_time"] = str(datetime.now())
+    del(data["categories"])
 
     user_one_id = match_data["user_one"]
     user_one_key = format_user_room_key(user_one_id)
@@ -54,7 +56,7 @@ async def create_room(match_data: dict, room_connection: Redis) -> None:
 
     log.info(f"Room has been created for match ID, {match_data["match_id"]}")
 
-async def get_partner(user_id: str, room_key: str, room_connection: Redis) -> bool:
+async def get_partner(user_id: str, room_key: str, room_connection: Redis) -> str:
     """
     Retrieves the user's partner user id for that room.
     """
@@ -63,7 +65,13 @@ async def get_partner(user_id: str, room_key: str, room_connection: Redis) -> bo
     else:
         return await room_connection.hget(room_key, "user_one")
 
-async def get_room_id(room_key: str, room_connection: Redis) -> bool:
+async def get_room_information(room_key: str, room_connection: Redis) -> dict:
+    """
+    Retrieves the room information.
+    """
+    return await room_connection.hgetall(room_key)
+
+async def get_room_id(room_key: str, room_connection: Redis) -> str:
     """
     Retrieves the user's partner user id for that room.
     """
@@ -129,3 +137,26 @@ async def cleanup(clean_up_key: str, room_connection: Redis ) -> None:
     pipe.delete(partner_room_key)
     pipe.delete(clean_up_key)
     await pipe.execute()
+
+def send_room_for_review(user_one: str, user_two: str, submitted_solution: str, room_infoamtion: dict) -> None:
+        """
+        Sends the room data to the question history service to be reviewed.
+        """
+        start_time = datetime.fromisoformat(room_infoamtion["start_time"])
+        end_time = datetime.now()
+        elapsed_seconds = (end_time - start_time).total_seconds()
+
+        # Formar the body for the HTTP request
+        body = {
+            "title" : room_infoamtion["title"],
+            "description": room_infoamtion["description"],
+            "code_template": room_infoamtion["code_template"],
+            "solution_sample": room_infoamtion["solution_sample"],
+            "difficulty": room_infoamtion["difficulty"],
+            "category": room_infoamtion["category"],
+            "time_elapsed": elapsed_seconds,
+            "submitted_solution": submitted_solution,
+            "users": [user_one, user_two]
+        }
+
+        requests.get(f"{get_envvar(ENV_QN_SVC_HISTORY_ENDPOINT)}", json= body)
