@@ -59,7 +59,12 @@ function Account() {
   // Extract role string for display
   const roleString = user?.role.role;
 
-  // Password validation
+  /**
+   * Validate password against defined criteria.
+   *
+   * @param password - The password string to validate
+   * @returns Whether the password meets all criteria
+   */
   const validatePassword = (password: string) => {
     const validation = {
       length: password.length >= 8,
@@ -71,6 +76,9 @@ function Account() {
     return Object.values(validation).every(Boolean);
   };
 
+  /**
+   * Handle input field changes and update local state accordingly.
+   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setUpdateUser((prev) => ({

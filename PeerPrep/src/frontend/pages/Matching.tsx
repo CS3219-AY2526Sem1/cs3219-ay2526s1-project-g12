@@ -27,7 +27,7 @@ function Matching() {
     const fetchCategories = async () => {
       setLoadingTopics(true);
       setError(null);
-      const res = await questionApi.getPoolCategories(user?.id);
+      const res = await questionApi.getPoolCategories();
       if (res.error) {
         setError('Failed to load topics.');
       } else if (res.data) {
@@ -52,10 +52,7 @@ function Matching() {
     const fetchDifficulties = async () => {
       setLoadingDifficulties(true);
       setError(null);
-      const res = await questionApi.getPoolDifficultiesByCategory(
-        user?.id,
-        topic
-      );
+      const res = await questionApi.getPoolDifficultiesByCategory(topic);
       if (res.error) {
         setError(res.error);
         setDifficulties([]);
