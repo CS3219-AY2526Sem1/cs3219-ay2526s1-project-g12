@@ -158,6 +158,7 @@ function Account() {
         setSubmitting(false);
         return;
       }
+      updateData.password = updateUser.password;
     }
 
     if (Object.keys(updateData).length === 0) {
