@@ -1,0 +1,130 @@
+# This workflow build and push a Docker container to Google Artifact Registry
+# and deploy it on Cloud Run when a commit is pushed to the "master"
+# branch.
+#
+# To configure this workflow:
+#
+# 1. Enable the following Google Cloud APIs:
+#
+#    - Artifact Registry (artifactregistry.googleapis.com)
+#    - Cloud Run (run.googleapis.com)
+#    - IAM Credentials API (iamcredentials.googleapis.com)
+#
+#    You can learn more about enabling APIs at
+#    https://support.google.com/googleapi/answer/6158841.
+#
+# 2. Create and configure a Workload Identity Provider for GitHub:
+#    https://github.com/google-github-actions/auth#preferred-direct-workload-identity-federation.
+#
+#    Depending on how you authenticate, you will need to grant an IAM principal
+#    permissions on Google Cloud:
+#
+#    - Artifact Registry Administrator (roles/artifactregistry.admin)
+#    - Cloud Run Developer (roles/run.developer)
+#
+#    You can learn more about setting IAM permissions at
+#    https://cloud.google.com/iam/docs/manage-access-other-resources
+#
+# 3. Change the values in the "env" block to match your values.
+
+name: 'Build and Deploy to Cloud Run'
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux]
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: 'Checkout'
+        uses: 'actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332' # actions/checkout@v4
+
+      # Configure Workload Identity Federation and generate an access token.
+      #
+      # See https://github.com/google-github-actions/auth for more options,
+      # including authenticating via a JSON credentials file.
+      - id: 'auth'
+      - name: Google Cloud Auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+          project_id: ${{ env.PROJECT_ID }}
+          
+      - name: Set up Cloud SDK
+        uses: 'google-github-actions/setup-gcloud@v2'
+      
+      - name: Configure Docker
+        run: |
+          gcloud auth configure-docker asia-southeast1-docker.pkg.dev
+      
+      - name: (AG) Build and Push Docker Image
+        working-directory: ./api-gateway
+        run: |
+          docker build -t pp-api-gateway:latest .
+          docker push pp-api-gateway:latest
+
+      - name: (CS) Build and Push Docker Image
+        working-directory: ./collaborationt-svc
+        run: |
+          docker build -t pp-collaborationt-svc:latest .
+          docker push pp-collaboration-svc:latest     
+
+      - name: (ES) Build and Push Docker Image
+        working-directory: .expire-observer-svc
+        run: |
+          docker build -t pp-expire-observer-svc:latest .
+          docker push pp-expire-observer-svc:latest 
+
+      - name: (MS) Build and Push Docker Image
+        working-directory: ./matching-svc
+        run: |
+          docker build -t pp-matching-svc:latest .
+          docker push pp-matching-svc:latest
+
+      - name: (QHS) Build and Push Docker Image
+        working-directory: ./qns-hist-svc
+        run: |
+          docker build -t pp-qns-hist-svc:latest .
+          docker push pp-qns-hist-svc:latest
+      
+      - name: (QS) Build and Push Docker Image
+        working-directory: ./qns-svc
+        run: |
+          docker build -t pp-qns-svc:latest .
+          docker push pp-qns-svc:latest
+
+      - name: (US) Build and Push Docker Image
+        working-directory: ./user-svc
+        run: |
+          docker build -t pp-user-svc:latest .
+          docker push pp-user-svc:latest
+
+      - name: (FE) Build and Push Docker Image
+        working-directory: ./PeerPrep
+        run: |
+          docker build -t pp-fe:latest .
+          docker push pp-fe:latest
+
+      # - name: Deploy to Cloud Run
+        
+      #   run: |
+      #     echo SERVICE_NAME $SERVICE_NAME
+      #     gcloud run deploy $SERVICE_NAME \
+      #       --image ${{ env.DOCKER_IMAGE_URL }}:latest \
+      #       --platform managed \
+      #       --region asia-southeast1 \
+      #       --allow-unauthenticated
+            
+      # If required, use the Cloud Run URL output in later steps
+      - name: 'Show output'
+        run: |2-
+
+          echo ${{ steps.deploy.outputs.url }}
