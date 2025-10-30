@@ -77,7 +77,7 @@ jobs:
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-collaboration-svc:latest     
 
       - name: (ES) Build and Push Docker Image
-        working-directory: .expire-observer-svc
+        working-directory: ./expire-observer-svc
         run: |
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-expire-observer-svc:latest .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-expire-observer-svc:latest 
