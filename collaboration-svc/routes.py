@@ -5,7 +5,7 @@ from controllers.heartbeat_controller import (
     register_heartbeat,
     register_self_as_service,
 )
-from controllers.room_controller import create_room_listener, create_ttl_expire_listener, terminate_match, remove_user
+from controllers.room_controller import create_room_listener, create_ttl_expire_listener, terminate_match, remove_user, reconnect_user
 from controllers.websocket_controller import WebSocketManager
 from fastapi import FastAPI, Header
 from models.api_models import MatchData
@@ -63,6 +63,7 @@ async def root() -> dict:
 
 @app.post("/reconnect", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
 async def reconnect_user_to_match(x_user_id: Annotated[str, Header()]) -> dict:
+    await reconnect_user(x_user_id, app.state.room_connection, app.state.websocket_manager)
     return {"message": "Reconnecting user"}
 
 @app.post("/exit", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})

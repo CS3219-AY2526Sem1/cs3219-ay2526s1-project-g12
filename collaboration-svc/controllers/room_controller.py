@@ -10,6 +10,7 @@ from services.redis_event_queue import (
     create_group, retrieve_stream_data,
     acknowlwedge_event
 )
+
 from services.redis_room_service import (
     create_room,
     get_partner,
@@ -19,7 +20,9 @@ from services.redis_room_service import (
     get_room_id,
     check_room_cleanup,
     delete_user_ttl,
-    send_room_for_review
+    send_room_for_review,
+    remove_room_cleanup,
+    update_user_ttl
 )
 from utils.logger import log
 from utils.utils import (
@@ -140,13 +143,11 @@ async def start_room_hold_timer(room_id: str, user_id: str, room_connection: Red
     retries = 0
 
     while (retries < 300):
-
+        await asyncio.sleep(1)
         if (not await check_room_cleanup(clean_up_key, room_connection)):
             log.info(f"Clean up for {room_id} has been terminated")
             return
-
         retries += 1
-        await asyncio.sleep(1)
 
     await cleanup(clean_up_key, room_connection)
     log.info(f"Data for {room_id} is cleared due to inactivity")
@@ -156,6 +157,29 @@ async def create_heartbeat_listner(room_connection: Redis, websocket_manager: We
     Spawns a worker to periodically check for any heartbeat update request from the user through the websocket.
     """ 
 
+async def reconnect_user(user_id: str, room_connection: Redis, websocket_manager: WebSocketManager) -> None:
+    """
+    Reconnects the user to their assigned match.
+    """
+    room_key = format_user_room_key(user_id)
+
+    if (not does_key_exist(room_key)):
+        raise HTTPException(
+                status_code=400,
+                detail="User is not assiged a room or the room has expired",
+            )
+
+    # Removes the cleanup countdown if there is 
+    room_id = get_room_id(room_key)
+    cleanup_key = format_cleanup_key(room_id)
+    await remove_room_cleanup(cleanup_key, room_connection)
+
+    heartbeat_key = format_heartbeat_key(user_id)
+    await update_user_ttl(heartbeat_key, room_connection)
+
+    log.info(f"User, {user_id} has reconnected to room, {room_id}")
+
+    #TODO : Lastly when collab service has the websocket notify the partner if they are there
 async def terminate_match(user_id: str, room_id: str, match_data: MatchData, room_connection: Redis):
     """
     Terminates the match for both parties.
