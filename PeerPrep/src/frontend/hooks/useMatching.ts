@@ -6,7 +6,7 @@ import { MatchState } from "../types/MatchState";
 export function useMatching(userId: string, category: string, difficulty: string) {
   const [matchState, setMatchState] = useState<MatchState>(MatchState.Idle);
   const [matchId, setMatchId] = useState<string | null>(null);
-  const [partnerName, setPartnerName] = useState<string | null>(null);
+  const [partnerId, setPartnerId] = useState<string | null>(null);
   const [matchDetails, setMatchDetails] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isAccepting, setIsAccepting] = useState(false);
@@ -33,7 +33,7 @@ export function useMatching(userId: string, category: string, difficulty: string
       if (res.data?.match_id) {
         setMatchState(MatchState.Found);
         setMatchId(res.data.match_id);
-        setPartnerName(res.data.partner_id || "Your partner");
+        setPartnerId(res.data.partner_id || "Your partner");
       }
     } catch (err) {
       console.error("Find match exception:", err);
@@ -54,7 +54,7 @@ export function useMatching(userId: string, category: string, difficulty: string
     } finally {
       setMatchState(MatchState.Idle);
       setMatchId(null);
-      setPartnerName(null);
+      setPartnerId(null);
     }
   };
 
@@ -98,7 +98,7 @@ export function useMatching(userId: string, category: string, difficulty: string
   return {
     matchState,
     matchId,
-    partnerName,
+    partnerId,
     matchDetails,
     statusMessage,
     isAccepting,

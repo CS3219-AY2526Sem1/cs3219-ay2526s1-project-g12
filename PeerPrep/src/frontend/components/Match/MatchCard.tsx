@@ -6,6 +6,7 @@ import { MatchSearching } from "./MatchSearching";
 import { MatchFound } from "./MatchFound";
 import { MatchConfirmed } from "./MatchConfirmed";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface MatchCardProps {
   userId: string;
@@ -17,7 +18,7 @@ interface MatchCardProps {
 export function MatchCard({ userId, category, difficulty, onMatchStateChange }: MatchCardProps) {
   const {
     matchState,
-    partnerName,
+    partnerId,
     matchDetails,
     statusMessage,
     isAccepting,
@@ -33,6 +34,8 @@ export function MatchCard({ userId, category, difficulty, onMatchStateChange }: 
     resetBackToIdle,
   );
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     onMatchStateChange?.(matchState);
     // Reset timer when user cancels or returns to idle
@@ -42,6 +45,15 @@ export function MatchCard({ userId, category, difficulty, onMatchStateChange }: 
     // Add 10 seconds when a match is found
     if (matchState === MatchState.Found) {
       addTime(10);
+    }
+    if (matchState === MatchState.Confirmed && matchDetails && partnerId) {
+      navigate("/collabeditor", {
+        state: {
+          matchDetails,
+          userId,
+          partnerId,
+        },
+      });
     }
   }, [matchState]);
 
@@ -70,7 +82,7 @@ export function MatchCard({ userId, category, difficulty, onMatchStateChange }: 
       case MatchState.Found:
         return (
           <MatchFound
-            partnerName={partnerName ?? "Partner"}
+            partnerName={partnerId ?? "Partner"}
             isAccepting={isAccepting}
             statusMessage={statusMessage}
             onAccept={acceptMatch}

@@ -5,12 +5,17 @@ import { WebrtcProvider } from "y-webrtc";
 import Editor, { type OnMount } from "@monaco-editor/react";
 import * as monaco from "monaco-editor";
 
-export function CodeEditor() {
+type CodeEditorProps = {
+  matchDetail: string;
+  userId: string;
+};
+
+export function CodeEditor({ matchDetail, userId }: CodeEditorProps) {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
   useEffect(() => {
     const ydoc = new Y.Doc();
-    const provider = new WebrtcProvider("peerprep-room", ydoc);
+    const provider = new WebrtcProvider(`room-${matchDetail}`, ydoc);
     const ytext = ydoc.getText("monaco");
 
     if (editorRef.current) {
@@ -25,11 +30,18 @@ export function CodeEditor() {
       }
     }
 
+    // save code to localStorage periodically
+    const saveInterval = setInterval(() => {
+      const code = editorRef.current?.getValue() || "";
+      localStorage.setItem("collab_code", code);
+    }, 3000);
+
     return () => {
+      clearInterval(saveInterval);
       provider.destroy();
       ydoc.destroy();
     };
-  }, []);
+  }, [matchDetail]);
 
   const handleEditorDidMount: OnMount = (editor) => {
     editorRef.current = editor;

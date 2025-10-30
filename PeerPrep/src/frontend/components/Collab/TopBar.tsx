@@ -1,4 +1,4 @@
-export function TopBar() {
+export function TopBar({ onExit }: { onExit?: () => void }) {
   return (
     <div className="navbar mb-2">
       <div className="flex">
@@ -11,7 +11,9 @@ export function TopBar() {
         <div className="flex flex-col bg-gray-100 px-4 py-2 rounded-xl">
           <span className="font-medium text-base">Time Elapsed</span>
           <span className="font-extrabold text-4xl">8m 45s</span>
-          <span className="font-medium">Category: Array | Difficulty: Easy</span>
+          <span className="font-medium">
+            Category: Array | Difficulty: Easy
+          </span>
         </div>
 
         <div className="flex flex-col bg-gray-100 px-4 py-2 rounded-xl">
@@ -21,11 +23,8 @@ export function TopBar() {
         </div>
 
         <div className="flex flex-col gap-2">
-          <button className="btn btn-error font-normal">
+          <button onClick={onExit} className="btn btn-error font-normal">
             ➜] Exit
-          </button>
-          <button className="btn btn-primary font-normal">
-            ⇄ Switch
           </button>
         </div>
       </div>

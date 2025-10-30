@@ -1,4 +1,10 @@
-export function ProblemPanel() {
+type Problem = {
+  title: string;
+  description: string;
+};
+
+
+export function ProblemPanel({ problem }: { problem: Problem }) {
     const description = `Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
 You may assume that each input would have exactly one solution, and you may not use the same element twice.
 You can return the answer in any order.
@@ -31,10 +37,10 @@ Only one valid answer exists.
 Follow-up: Can you come up with an algorithm that is less than O(n2) time complexity?`;
   return (
     <>
-      <h2 className="text-4xl font-semibold mb-3">Two Sum</h2>
+      <h2 className="text-4xl font-semibold mb-3">{problem.title}</h2>
 
       <p className="mb-4">
-        {description}
+        {problem.description}
       </p>
     </>
   );

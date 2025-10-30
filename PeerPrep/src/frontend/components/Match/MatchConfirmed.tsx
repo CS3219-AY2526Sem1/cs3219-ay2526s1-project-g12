@@ -6,7 +6,7 @@ export function MatchConfirmed({ matchDetails }: MatchConfirmedProps) {
   return (
     <>
       <p className="text-lg font-normal text-left mb-6">
-        ✅ Match Confirmed!
+        ✅ Match Confirmed! Redirecting to collaboration room...
       </p>
       <div className="border rounded-lg p-5 text-left">
         <h3 className="font-medium mb-2">Match Details</h3>
