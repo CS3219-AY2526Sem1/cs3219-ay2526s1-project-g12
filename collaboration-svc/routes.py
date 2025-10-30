@@ -5,7 +5,7 @@ from controllers.heartbeat_controller import (
     register_heartbeat,
     register_self_as_service,
 )
-from controllers.room_controller import create_room_listener, create_ttl_expire_listener, terminate_match, remove_user, reconnect_user, create_heartbeat_listener, alert_user
+from controllers.room_controller import create_room_listener, create_ttl_expire_listener, terminate_match, remove_user, reconnect_user, create_heartbeat_listener
 from controllers.websocket_controller import WebSocketManager
 from fastapi import FastAPI, Header
 from models.api_models import MatchData
@@ -38,8 +38,6 @@ async def lifespan(app: FastAPI):
     room_listener = asyncio.create_task(create_room_listener(app.state.event_queue_connection, app.state.room_connection, stop_event))
     expired_ttl_listener = asyncio.create_task(create_ttl_expire_listener(INSTANCE_ID, app.state.event_queue_connection, app.state.room_connection, app.state.websocket_manager, stop_event))
     websocket_listner =  asyncio.create_task(create_heartbeat_listener(app.state.room_connection, app.state.websocket_manager, stop_event))
-
-    await alert_user("1", "100", "2", app.state.websocket_manager)
 
     register_self_as_service(app)
     hc_task = register_heartbeat()
