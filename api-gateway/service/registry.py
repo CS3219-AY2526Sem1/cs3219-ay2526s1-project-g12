@@ -224,6 +224,7 @@ class ServiceRegistry:
         counter_key = f"gw:rr:{service_name}"
         try:
             counter = await self.redis.incr(counter_key)
+            await self.redis.expire(counter_key, 3600)  # 1 hour expiration
         except Exception:
             # Fallback to random selection if Redis is unavailable or any
             # error occurs during increment. This ensures the gateway can
