@@ -30,7 +30,7 @@
 name: 'Build and Deploy to Cloud Run'
 
 env:
-  DOCKER_IMAGE_URL: asia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/peerprep/
+  DOCKER_IMAGE_URL: asia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/pp-repository/
 
 on:
   workflow_dispatch:
