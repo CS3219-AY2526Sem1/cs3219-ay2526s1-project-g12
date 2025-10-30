@@ -36,11 +36,7 @@ export default function Verify() {
           setStatus('error');
         } else if (response.data) {
           // Success case
-          setMessage(
-            response.data.message ||
-              response.data.detail ||
-              'Your email has been verified successfully!'
-          );
+          setMessage('Your email has been verified successfully!');
           setStatus('success');
         } else {
           // Unexpected response structure
