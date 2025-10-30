@@ -1,6 +1,8 @@
 import asyncio
 from asyncio import Event
 from controllers.websocket_controller import WebSocketManager
+from fastapi import HTTPException
+from models.api_models import MatchData
 from redis.asyncio import Redis
 from fastapi import HTTPException
 from services.redis_event_queue import (
@@ -9,9 +11,29 @@ from services.redis_event_queue import (
     create_group, retrieve_stream_data,
     acknowlwedge_event
 )
-from services.redis_room_service import create_room, get_partner, is_user_alive, cleanup, add_room_cleanup, get_room_id, check_room_cleanup, update_user_ttl, remove_room_cleanup
+
+from services.redis_room_service import (
+    create_room,
+    get_partner,
+    get_room_information,
+    is_user_alive, cleanup,
+    add_room_cleanup,
+    get_room_id,
+    check_room_cleanup,
+    delete_user_ttl,
+    send_room_for_review,
+    remove_room_cleanup
+)
 from utils.logger import log
-from utils.utils import acquire_lock, release_lock, get_envvar, format_user_room_key, extract_information_from_event, format_heartbeat_key, format_cleanup_key, does_key_exist
+from utils.utils import (
+    acquire_lock, release_lock,
+    get_envvar,
+    format_user_room_key,
+    extract_information_from_event,
+    format_heartbeat_key,
+    format_cleanup_key,
+    does_key_exist
+)
 
 LOCK_KEY = "event_manager_lock"
 
@@ -63,20 +85,15 @@ async def create_ttl_expire_listener(
             event_id, user_id = extract_information_from_event(message)
             log.info(f"Collaboration service, {service_id} is handling event {event_id}")
 
-            room_key = format_user_room_key(user_id)
-
-            room_id = await get_room_id(room_key, room_connection)
-            partner = await get_partner(user_id, room_key, room_connection)
-            partner_heartbeat_key = format_heartbeat_key(partner)
-
-            if (await is_user_alive(partner_heartbeat_key, room_connection)):
-                alert_user(partner, websocket_manager)
-            else:
-                # Fire and foeget this task to check again in 5 minutes if any user joins back
-                asyncio.create_task(start_room_hold_timer(room_id, user_id, room_connection))
+            await check_empty_room (user_id, room_connection, websocket_manager)
             
             await acknowlwedge_event(event_queue_connection, stream_key, group_key, event_id)
             log.info(f"Collaboration service, {service_id} has completed handling event {event_id}")
+
+async def create_heartbeat_listener(room_connection: Redis, websocket_manager: WebSocketManager):
+    """
+    Spawns a worker to periodically check for any heartbeat update request from the user through the websocket.
+    """ 
 
 def alert_user(user_id: str, websocket_manager: WebSocketManager) -> None:
     """
@@ -84,13 +101,45 @@ def alert_user(user_id: str, websocket_manager: WebSocketManager) -> None:
     """
     log.info(f"Sent a notification to {user_id} that their parter has left the mattch")
 
+async def remove_user(user_id: str, room_connection: Redis, websocket_manager: WebSocketManager) -> None:
+    """
+    Removes the user from the room.
+    """
+    heartbeat_key = format_heartbeat_key(user_id)
+
+    if (not does_key_exist(heartbeat_key, room_connection)):
+        raise HTTPException(
+                status_code=400,
+                detail="Cannot leave the match as the user is currently not in a room"
+            )
+
+    await delete_user_ttl(heartbeat_key, room_connection)
+    await check_empty_room(user_id, room_connection, websocket_manager)
+    log.info(f"{user_id} has been removed from their room")
+
+async def check_empty_room(user_id: str, room_connection: Redis, websocket_manager: WebSocketManager) -> None:
+    """
+    Checks if the room is empty. If it is then initate the wait for cleanup.
+    """ 
+    room_key = format_user_room_key(user_id)
+
+    room_id = await get_room_id(room_key, room_connection)
+    partner = await get_partner(user_id, room_key, room_connection)
+    partner_heartbeat_key = format_heartbeat_key(partner)
+
+    if (await is_user_alive(partner_heartbeat_key, room_connection)):
+        alert_user(partner, websocket_manager)
+    else:
+        # Fire and foeget this task to check again in 5 minutes if any user joins back
+        asyncio.create_task(start_room_hold_timer(room_id, user_id, room_connection))
+
 async def start_room_hold_timer(room_id: str, user_id: str, room_connection: Redis) -> None:
     """
     Initates a 2 minute timer to check if anyone has retunred before cleaning up.
     """
     clean_up_key = format_cleanup_key(room_id)
     await add_room_cleanup (clean_up_key, user_id, room_connection)
-    
+    log.info(f"Holding room, {room_id} for 5 minutes due to both players leaving")
     retries = 0
 
     while (retries < 300):
@@ -131,3 +180,33 @@ async def reconnect_user(user_id: str, room_connection: Redis, websocket_manager
     log.info(f"User, {user_id} has reconnected to room, {room_id}")
 
     #TODO : Lastly when collab service has the websocket notify the partner if they are there
+async def terminate_match(user_id: str, room_id: str, match_data: MatchData, room_connection: Redis):
+    """
+    Terminates the match for both parties.
+    """
+    room_key = format_user_room_key(user_id)
+    user_heartbeat_key = format_heartbeat_key(user_id)
+    # Check if user is a valid user with a alive heartbeat
+
+    has_valid_heartbeat = does_key_exist(user_heartbeat_key, room_connection)
+    has_valid_room = does_key_exist(room_key, room_connection)
+
+    if (has_valid_heartbeat and has_valid_room and get_room_id(room_key, room_connection) == room_id):
+        room_informaion = await get_room_information(room_key, room_connection)
+        partner = await get_partner(user_id, room_key, room_connection)
+
+        cleanup_key = format_cleanup_key(room_id)
+        await cleanup(cleanup_key, room_connection)
+
+        partner_heartbeat_key = format_heartbeat_key(partner)
+
+        await delete_user_ttl(user_heartbeat_key, room_connection)
+        await delete_user_ttl(partner_heartbeat_key, room_connection)
+
+        send_room_for_review(user_id, partner, match_data.data, room_informaion)
+        log.info(f"User, {user_id} has terminated room, {room_id}")
+    else:
+        raise HTTPException(
+                status_code=400,
+                detail="Cannot terminate match as user or room id is invalid"
+            )

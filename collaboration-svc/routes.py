@@ -5,9 +5,10 @@ from controllers.heartbeat_controller import (
     register_heartbeat,
     register_self_as_service,
 )
-from controllers.room_controller import create_room_listener, create_ttl_expire_listener, reconnect_user
+from controllers.room_controller import create_room_listener, create_ttl_expire_listener, terminate_match, remove_user
 from controllers.websocket_controller import WebSocketManager
 from fastapi import FastAPI, Header
+from models.api_models import MatchData
 from services.redis_event_queue import connect_to_redis_event_queue
 from services.redis_room_service import connect_to_redis_room_service
 from typing import Annotated
@@ -67,8 +68,10 @@ async def reconnect_user_to_match(x_user_id: Annotated[str, Header()]) -> dict:
 
 @app.post("/exit", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
 async def user_exit_match(x_user_id: Annotated[str, Header()]) -> dict:
+    await remove_user(x_user_id, app.state.room_connection, app.state.websocket_manager)
     return {"message": "Exit match"}
 
-@app.post("/terminate/{match_id}", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
-async def terminate_user_match(match_id: str, x_user_id: Annotated[str, Header()]) -> dict:
-    return {"message": "Terminate match"}
+@app.post("/terminate/{room_id}", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
+async def terminate_user_match(room_id: str, match_data: MatchData, x_user_id: Annotated[str, Header()]) -> dict:
+    await terminate_match(x_user_id, room_id, match_data, app.state.room_connection)
+    return {"message": "match has been terminated"}
