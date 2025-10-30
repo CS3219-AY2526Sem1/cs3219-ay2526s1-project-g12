@@ -37,7 +37,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, linux]
+    runs-on: ubuntu-latest
 
     permissions:
       contents: 'read'
