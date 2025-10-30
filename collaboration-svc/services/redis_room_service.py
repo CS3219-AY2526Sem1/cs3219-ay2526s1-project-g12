@@ -103,7 +103,7 @@ async def add_room_cleanup(clean_up_key: str, user_id: str, room_connection: Red
     """
     Adds a room cleanup item inside redis which is to be checked for clean up.
     """
-    await room_connection.set(cleanup_key, user_id)
+    await room_connection.set(clean_up_key, user_id)
 
 async def remove_room_cleanup(cleanup_key: str, room_connection: Redis) -> None:
     """

@@ -4,7 +4,6 @@ from controllers.websocket_controller import WebSocketManager
 from fastapi import HTTPException
 from models.api_models import MatchData
 from redis.asyncio import Redis
-from fastapi import HTTPException
 from services.redis_event_queue import (
     get_match_confirmation_event,
     remove_match_confirmation_event,
@@ -22,7 +21,8 @@ from services.redis_room_service import (
     check_room_cleanup,
     delete_user_ttl,
     send_room_for_review,
-    remove_room_cleanup
+    remove_room_cleanup,
+    update_user_ttl
 )
 from utils.logger import log
 from utils.utils import (
