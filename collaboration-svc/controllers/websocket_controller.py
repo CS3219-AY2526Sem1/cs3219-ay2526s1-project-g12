@@ -1,26 +1,28 @@
-from fastapi import WebSocket
-from pydantic import BaseModel
+from utils.utils import get_envvar
+from utils.logger import log
+import websockets
 
-class Message(BaseModel):
-        receiver: str
-        content: str
+ENV_API_WEBSOCKET_URL = "GATEWAY_WEBSOCKET_URL"
 
 class WebSocketManager:
     def __init__(self):
-        self.active_connection: WebSocket
+        self.active_connection = None
 
-    def get_websocket_connection(self) -> WebSocket:
+    def get_websocket_connection(self):
         return self.active_connection
 
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connection = websocket
+    async def connect(self):
+        try:
+            self.active_connection = await websockets.connect(get_envvar(ENV_API_WEBSOCKET_URL))
+        except Exception as e:
+            log.error("Unable to establish a WebSocket connection with API gateway")
+            raise
 
-    def disconnect(self):
-        websocket = self.get_websocket_connection()
-        websocket.close()
-        self.active_connections = None
+    async def disconnect(self):
+        if self.active_connection:
+            await self.active_connection.close()
+            self.active_connection = None
 
-    async def send_message(self, message: Message):
-        websocket = self.get_websocket_connection()
-        await websocket.send_text(message)
+    async def send_message(self, message: str):
+        if self.active_connection:
+            await self.active_connection.send(message)
