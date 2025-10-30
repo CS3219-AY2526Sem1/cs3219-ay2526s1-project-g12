@@ -65,49 +65,49 @@ jobs:
         working-directory: ./api-gateway
         run: |
           docker build -t pp-api-gateway:latest .
-          docker push pp-api-gateway:latest
+          docker push asia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/pp-api-gateway:latest
 
       - name: (CS) Build and Push Docker Image
         working-directory: ./collaborationt-svc
         run: |
           docker build -t pp-collaborationt-svc:latest .
-          docker push pp-collaboration-svc:latest     
+          docker push asia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/pp-collaboration-svc:latest     
 
       - name: (ES) Build and Push Docker Image
         working-directory: .expire-observer-svc
         run: |
           docker build -t pp-expire-observer-svc:latest .
-          docker push pp-expire-observer-svc:latest 
+          docker push asia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/pp-expire-observer-svc:latest 
 
       - name: (MS) Build and Push Docker Image
         working-directory: ./matching-svc
         run: |
           docker build -t pp-matching-svc:latest .
-          docker push pp-matching-svc:latest
+          docker push asia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/pp-matching-svc:latest
 
       - name: (QHS) Build and Push Docker Image
         working-directory: ./qns-hist-svc
         run: |
           docker build -t pp-qns-hist-svc:latest .
-          docker push pp-qns-hist-svc:latest
+          docker push asia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/pp-qns-hist-svc:latest
       
       - name: (QS) Build and Push Docker Image
         working-directory: ./qns-svc
         run: |
           docker build -t pp-qns-svc:latest .
-          docker push pp-qns-svc:latest
+          docker push asia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/pp-qns-svc:latest
 
       - name: (US) Build and Push Docker Image
         working-directory: ./user-svc
         run: |
           docker build -t pp-user-svc:latest .
-          docker push pp-user-svc:latest
+          docker push asia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/pp-user-svc:latest
 
       - name: (FE) Build and Push Docker Image
         working-directory: ./PeerPrep
         run: |
           docker build -t pp-fe:latest .
-          docker push pp-fe:latest
+          docker push asia-southeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/pp-fe:latest
 
       # - name: Deploy to Cloud Run
         
