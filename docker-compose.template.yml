@@ -138,6 +138,11 @@ services:
     environment:
       - REDIS_HOST=
       - REDIS_PORT=
+      - REDIS_STREAM_KEY=
+      - REDIS_GROUP=cs_consumers
+      - QUESTION_SERVICE_POOL_URL=
+      - QUESTION_SERVICE_HISTORY_URL=
+      - GATEWAY_WEBSOCKET_URL=
       - APIGATEWAY_URL=http://api-gateway
       - HOST_URL=collaboration-svc
       - HEARTBEAT_PERIOD=270
