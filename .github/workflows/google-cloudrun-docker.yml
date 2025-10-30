@@ -67,49 +67,49 @@ jobs:
       - name: (AG) Build and Push Docker Image
         working-directory: ./api-gateway
         run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-api-gateway:latest .
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-api-gateway:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-api-gateway:latest
 
       - name: (CS) Build and Push Docker Image
         working-directory: ./collaboration-svc
         run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-collaboration-svc:latest .
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-collaboration-svc:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-collaboration-svc:latest     
 
       - name: (ES) Build and Push Docker Image
         working-directory: ./expire-observer-svc
         run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-expire-observer-svc:latest .
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-expire-observer-svc:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-expire-observer-svc:latest 
 
       - name: (MS) Build and Push Docker Image
         working-directory: ./matching-svc
         run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-matching-svc:latest .
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-matching-svc:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-matching-svc:latest
 
       - name: (QHS) Build and Push Docker Image
         working-directory: ./qns-hist-svc
         run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-qns-hist-svc:latest .
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-qns-hist-svc:latest --platform=linux/amd64 .
           docker push  ${{ env.DOCKER_IMAGE_URL }}pp-qns-hist-svc:latest
       
       - name: (QS) Build and Push Docker Image
         working-directory: ./qns-svc
         run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-qns-svc:latest .
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-qns-svc:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-qns-svc:latest
 
       - name: (US) Build and Push Docker Image
         working-directory: ./user-svc
         run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-user-svc:latest .
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-user-svc:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-user-svc:latest
 
       - name: (FE) Build and Push Docker Image
         working-directory: ./PeerPrep
         run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest .
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest
 
       # - name: Deploy to Cloud Run
