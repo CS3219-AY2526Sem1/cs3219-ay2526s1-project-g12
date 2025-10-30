@@ -11,6 +11,7 @@ import NavBar from '../components/NavBar';
 import { NAV_BUTTONS } from '../config/NavConfig';
 import { useAuth } from '../context/AuthContext';
 import { userApi } from '../api/UserApi';
+import { useNavigate } from 'react-router';
 
 interface UpdateUserForm {
   email: string;
@@ -21,7 +22,8 @@ interface UpdateUserForm {
 }
 
 function Account() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   // Local state for form fields
   const [updateUser, setUpdateUser] = useState<UpdateUserForm>({
@@ -129,12 +131,15 @@ function Account() {
       return;
     }
     const updateData: Record<string, string> = {};
+    let emailModified = false;
     if (updateUser.first_name !== user.first_name)
       updateData.first_name = updateUser.first_name;
     if (updateUser.last_name !== user.last_name)
       updateData.last_name = updateUser.last_name;
-    if (editEmail && updateUser.email !== user.email)
+    if (editEmail && updateUser.email !== user.email) {
       updateData.email = updateUser.email;
+      emailModified = true;
+    }
     if (updateUser.password) {
       if (updateUser.password !== updateUser.confirmPassword) {
         setErrorMsg('Passwords do not match');
@@ -166,10 +171,20 @@ function Account() {
       setErrorMsg(error);
       setSubmitting(false);
     } else {
-      setSuccessMsg('Changes saved successfully.');
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+      if (emailModified) {
+        setSuccessMsg(
+          'Changes saved successfully. You will be logged out in 5 seconds. Please check your updated email for a verification link.'
+        );
+        setTimeout(async () => {
+          await logout();
+          navigate('/auth/login');
+        }, 5000);
+      } else {
+        setSuccessMsg('Changes saved successfully.');
+        setTimeout(() => {
+          navigate(0);
+        }, 500);
+      }
     }
   };
 
