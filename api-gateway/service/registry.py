@@ -58,7 +58,7 @@ class ServiceRegistry:
     SERVICE_INSTANCES_KEY = "gw:service:{service_name}:instances"
     HEARTBEAT_KEY = "gw:service:{service_name}:instance:{instance_id}:heartbeat"
 
-    def __init__(self, redis: aioredis.Redis, heartbeat_ttl: int = 30) -> None:
+    def __init__(self, redis: aioredis.Redis, heartbeat_ttl: int = 30, rr_ttl: int = 3600) -> None:
         """Initialize the registry.
 
         Args:
@@ -66,9 +66,11 @@ class ServiceRegistry:
             heartbeat_ttl: Expiration time (in seconds) for heartbeat keys.
                 Each service instance must refresh its heartbeat before
                 the TTL expires to remain registered as healthy.
+            rr_ttl: Expiration time (in seconds) for round-robin counter keys.
         """
         self.redis = redis
         self.heartbeat_ttl = heartbeat_ttl
+        self.rr_ttl = rr_ttl
 
     async def register_service(
         self,
@@ -224,7 +226,7 @@ class ServiceRegistry:
         counter_key = f"gw:rr:{service_name}"
         try:
             counter = await self.redis.incr(counter_key)
-            await self.redis.expire(counter_key, 3600)  # 1 hour expiration
+            await self.redis.expire(counter_key, self.rr_ttl)  # 1 hour expiration
         except Exception:
             # Fallback to random selection if Redis is unavailable or any
             # error occurs during increment. This ensures the gateway can

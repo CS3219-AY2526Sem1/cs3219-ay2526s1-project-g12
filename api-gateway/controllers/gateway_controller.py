@@ -22,10 +22,11 @@ class GatewayController:
         redis: aioredis.Redis,
         token_ttl_seconds: int = int(DEFAULT_COOKIE_MAX_AGE),
         heartbeat_ttl: int = 30,
+        rr_ttl: int = 3600,
     ):
         self.redis = redis
         self.ttl = token_ttl_seconds
-        self.registry = ServiceRegistry(redis, heartbeat_ttl=heartbeat_ttl)
+        self.registry = ServiceRegistry(redis, heartbeat_ttl=heartbeat_ttl, rr_ttl=rr_ttl)
 
     async def _find_existing_token_key(self, user_id: str) -> str | None:
         """Scans for an existing access token key associated with a user ID.
