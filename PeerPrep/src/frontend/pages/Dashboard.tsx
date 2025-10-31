@@ -6,6 +6,7 @@ import {
   questionHistoryApi,
   type QuestionHistory,
 } from '../api/QuestionHistoryApi';
+import Markdown from 'react-markdown';
 
 function Dashboard() {
   const { user } = useAuth();
@@ -126,7 +127,7 @@ function Dashboard() {
       <p className="text-2xl p-2 font-light tracking-widest">
         Your recent matches
       </p>
-      <div className="overflow-x-auto rounded-box shadow-sm border-1 border-base-200">
+      <div className="overflow-x-auto rounded-box shadow-md border-1 border-base-200">
         <div className="join join-vertical bg-base-100">
           <div className="collapse collapse-arrow join-item border-base-300 border">
             <input type="radio" name="my-accordion-4" defaultChecked />
@@ -143,33 +144,45 @@ function Dashboard() {
                   {i + 1}.{e.title}
                 </p>
                 <pre>
-                  Category: {e.category} | Difficulty: {e.difficulty} | Time
-                  Taken: {formatDuration(e.time_elapsed)} | Attempted at:{' '}
+                  Category: {e.category} | Difficulty: {e.difficulty}
+                </pre>
+                <pre>
+                  Time Taken: {formatDuration(e.time_elapsed)} | Attempted at:{' '}
                   {formatDate(e.attempted_at)}
                 </pre>
               </div>
               <div className="collapse-content m-2">
                 <div className="pt-1 pb-1">
-                  <p className="text-lg">Submitted Solution</p>
+                  <div className="badge badge-outline mb-1">
+                    <pre className="text-base">Submitted Solution</pre>
+                  </div>
                   <div className="mockup-code w-full bg-gray-800 text-white">
-                    <pre data-prefix="$">
-                      <code>{e.submitted_solution}</code>
-                    </pre>
+                    {e.submitted_solution.split('\n').map((line, index) => (
+                      <pre data-prefix={index + 1}>
+                        <code>{line}</code>
+                      </pre>
+                    ))}
                   </div>
                 </div>
                 <div className="pt-1 pb-1">
-                  <p className="text-lg">Sample Solution</p>
+                  <div className="badge badge-outline mb-1">
+                    <pre className="text-base">Sample Solution</pre>
+                  </div>
                   <div className="mockup-code w-full  bg-gray-800 text-white">
-                    <pre data-prefix="">
-                      <code>{e.solution_sample}</code>
-                    </pre>
+                    {e.solution_sample.split('\n').map((line, index) => (
+                      <pre data-prefix={index + 1}>
+                        <code>{line}</code>
+                      </pre>
+                    ))}
                   </div>
                 </div>
                 <div className="pt-1 pb-1">
-                  <p className="text-lg mb-0.5">Feedback</p>
+                  <div className="badge badge-outline mb-1">
+                    <pre className="text-base">Feedback</pre>
+                  </div>
                   <div className="mockup-window border border-base-300 w-full">
                     <div className="grid place-content-center border-t border-base-300 h-auto p-3">
-                      <pre className="whitespace-pre-wrap">{e.feedback}</pre>
+                      <Markdown>{e.feedback}</Markdown>
                     </div>
                   </div>
                 </div>
