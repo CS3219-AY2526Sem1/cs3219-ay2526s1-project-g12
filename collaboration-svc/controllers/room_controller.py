@@ -244,7 +244,7 @@ async def terminate_match(user_id: str, room_id: str, match_data: MatchData, roo
                 detail="Cannot terminate match as user or room id is invalid"
             )
 
-async def connect_user(user_id: str, room_id: str, room_connection: Redis):
+async def connect_user(user_id: str, room_id: str, room_connection: Redis) -> dict:
     """
     Connects the user to the room and returns the question assigned to them.
     """
