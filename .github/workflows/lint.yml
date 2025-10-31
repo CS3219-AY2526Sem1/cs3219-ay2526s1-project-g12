@@ -1,0 +1,79 @@
+name: Lint check with Ruff
+
+on:
+  pull_request:
+    branches:
+    - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux]
+    strategy:
+      matrix:
+        python-version:
+        - "3.13"
+        
+    steps:
+    - uses: actions/checkout@v5
+    
+    - name: Install uv and set the Python versions ${{ matrix.python-version }}
+      uses: astral-sh/setup-uv@v6
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: (QS) Run uv sync to install dependencies
+      working-directory: ./qns-svc
+      run: uv sync --locked --all-extras --dev
+
+    - name: (QS) Run ruff lint check
+      working-directory: ./qns-svc
+      run: uv run ruff check
+    
+    - name: (MS) Run uv sync to install dependencies
+      working-directory: ./matching-svc
+      run: uv sync --locked --all-extras --dev
+
+    - name: (MS) Run ruff lint check
+      working-directory: ./matching-svc
+      run: uv run ruff check
+
+    - name: (US) Run uv sync to install dependencies
+      working-directory: ./user-svc
+      run: uv sync --locked --all-extras --dev
+
+    - name: (US) Run ruff lint check
+      working-directory: ./user-svc
+      run: uv run ruff check
+
+    - name: (AG) Run uv sync to install dependencies
+      working-directory: ./api-gateway
+      run: uv sync --locked --all-extras --dev
+
+    - name: (AG) Run ruff lint check
+      working-directory: ./api-gateway
+      run: uv run ruff check
+
+    - name: (QHS) Run uv sync to install dependencies
+      working-directory: ./qns-hist-svc
+      run: uv sync --locked --all-extras --dev
+
+    - name: (QHS) Run ruff lint check
+      working-directory: ./qns-hist-svc
+      run: uv run ruff check
+    
+    - name: (CS) Run uv sync to install dependencies
+      working-directory: ./collaboration-svc
+      run: uv sync --locked --all-extras --dev
+
+    - name: (CS) Run ruff lint check
+      working-directory: ./collaboration-svc
+      run: uv run ruff check
+
+    - name: (EOS) Run uv sync to install dependencies
+      working-directory: ./expire-observer-svc
+      run: uv sync --locked --all-extras --dev
+
+    - name: (EOS) Run ruff lint check
+      working-directory: ./expire-observer-svc
+      run: uv run ruff check

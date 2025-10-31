@@ -1,0 +1,302 @@
+from unittest.mock import AsyncMock, patch
+
+from httpx import ASGITransport, AsyncClient
+
+from models.api_models import (
+    CreateDeleteCategoryModel,
+    CreateDeleteDifficultyModel,
+    CreateQuestionModel,
+    UpdateCategoryModel,
+    UpdateDifficultyModel,
+    UpdateQuestionModel,
+)
+from routes import app
+
+
+class TestRoutes:
+    @classmethod
+    def setup_class(cls):
+        cls.valid_id = 1
+        cls.valid_title = "Test Question"
+        cls.valid_description = "Test Description"
+        cls.valid_difficulty = "Test"
+        cls.valid_code_template = "Code"
+        cls.valid_solution_sample = "Soln"
+        cls.valid_categories = ["Test"]
+
+    @patch("routes.fetch_all_questions", new_callable=AsyncMock)
+    async def test_get_all_questions_success(self, mock_fetch):
+        mock_fetch.return_value = {}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.get("/questions/")
+
+        mock_fetch.assert_called_once()
+
+    @patch("routes.fetch_all_questions", new_callable=AsyncMock)
+    async def test_get_all_questions_with_start_end_params_success(self, mock_fetch):
+        mock_fetch.return_value = {}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.get("/questions/?start=1&end=10")
+
+        mock_fetch.assert_called_once_with(1, 10)
+
+    @patch("routes.fetch_question_details", new_callable=AsyncMock)
+    async def test_get_question_with_valid_id_success(self, mock_fetch):
+        mock_fetch.return_value = {}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.get("/questions/1")
+        mock_fetch.assert_called_once_with(1)
+
+    @patch("routes.fetch_question_details", new_callable=AsyncMock)
+    async def test_get_question_with_invalid_id_failure(self, mock_fetch):
+        mock_fetch.return_value = {}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.get("/questions/invalid")
+        mock_fetch.assert_not_called()
+
+    @patch("routes.create_question_details", new_callable=AsyncMock)
+    async def test_post_create_question_valid_payload_success(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {
+            "title": self.valid_title,
+            "description": self.valid_description,
+            "categories": self.valid_categories,
+            "difficulty": self.valid_difficulty,
+            "code_template": self.valid_code_template,
+            "solution_sample": self.valid_solution_sample,
+        }
+        expected_qns = CreateQuestionModel(**json_payload)
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.post("/questions/", json=json_payload)
+        mock_fetch.assert_called_once_with(expected_qns)
+
+    @patch("routes.create_question_details", new_callable=AsyncMock)
+    async def test_post_create_question_invalid_payload_failure(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {}
+
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.post("/questions/", json=json_payload)
+        mock_fetch.assert_not_called()
+
+    @patch("routes.update_question_details", new_callable=AsyncMock)
+    async def test_put_update_question_valid_payload_success(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {}
+        uqm = UpdateQuestionModel()
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.put("/questions/1", json=json_payload)
+        mock_fetch.assert_called_once_with(1, uqm)
+
+    @patch("routes.update_question_details", new_callable=AsyncMock)
+    async def test_put_update_question_invalid_payload_failure(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {"categories": []}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.put("/questions/1", json=json_payload)
+        mock_fetch.assert_not_called()
+
+    @patch("routes.delete_question_details", new_callable=AsyncMock)
+    async def test_delete_delete_question(self, mock_fetch):
+        mock_fetch.return_value = {}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.delete("/questions/1")
+        mock_fetch.assert_called_once_with(1)
+
+    @patch("routes.fetch_categories", new_callable=AsyncMock)
+    async def test_get_categories(self, mock_fetch):
+        mock_fetch.return_value = {}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.get("/category/")
+        mock_fetch.assert_called_once()
+
+    @patch("routes.create_category", new_callable=AsyncMock)
+    async def test_post_create_category_valid_payload_success(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {"name": "New Cat"}
+        cdcm = CreateDeleteCategoryModel(**json_payload)
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.post("/category/", json=json_payload)
+        mock_fetch.assert_called_once_with(cdcm)
+
+    @patch("routes.create_category", new_callable=AsyncMock)
+    async def test_post_create_category_invalid_payload_failure(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.post("/category/", json=json_payload)
+        mock_fetch.assert_not_called()
+
+    @patch("routes.update_category", new_callable=AsyncMock)
+    async def test_put_update_category_valid_payload_success(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {"name": "Old Cat", "new_name": "New Cat"}
+        cdcm = UpdateCategoryModel(**json_payload)
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.put("/category/", json=json_payload)
+        mock_fetch.assert_called_once_with(cdcm)
+
+    @patch("routes.update_category", new_callable=AsyncMock)
+    async def test_put_update_category_invalid_payload_failure(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.put("/category/", json=json_payload)
+        mock_fetch.assert_not_called()
+
+    @patch("routes.delete_category", new_callable=AsyncMock)
+    async def test_delete_delete_category_valid_payload_success(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {"name": "Del Cat"}
+        cdcm = CreateDeleteCategoryModel(**json_payload)
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            # Have to use underlying .request() instead of delete() since delete() do not support json payload
+            await ac.request(method="DELETE", url="/category/", json=json_payload)
+        mock_fetch.assert_called_once_with(cdcm)
+
+    @patch("routes.delete_category", new_callable=AsyncMock)
+    async def test_delete_delete_category_invalid_payload_failure(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.request(method="DELETE", url="/category/", json=json_payload)
+        mock_fetch.assert_not_called()
+
+    @patch("routes.fetch_difficulty_levels", new_callable=AsyncMock)
+    async def test_get_difficulty_levels(self, mock_fetch):
+        mock_fetch.return_value = {}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.get("/difficulty/")
+        mock_fetch.assert_called_once()
+
+    @patch("routes.create_difficulty_level", new_callable=AsyncMock)
+    async def test_post_create_difficulty_level_valid_payload_success(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {"level": "NewLevel"}
+        cddm = CreateDeleteDifficultyModel(**json_payload)
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.post("/difficulty/", json=json_payload)
+        mock_fetch.assert_called_once_with(cddm)
+
+    @patch("routes.create_difficulty_level", new_callable=AsyncMock)
+    async def test_post_create_difficulty_level_invalid_payload_failure(
+        self, mock_fetch
+    ):
+        mock_fetch.return_value = {}
+        json_payload = {}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.post("/difficulty/", json=json_payload)
+        mock_fetch.assert_not_called()
+
+    @patch("routes.update_difficulty_level", new_callable=AsyncMock)
+    async def test_put_update_difficulty_level_valid_payload_success(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {"level": "OldLevel", "new_level": "UpdatedLevel"}
+        udm = UpdateDifficultyModel(**json_payload)
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.put("/difficulty/", json=json_payload)
+        mock_fetch.assert_called_once_with(udm)
+
+    @patch("routes.update_difficulty_level", new_callable=AsyncMock)
+    async def test_put_update_difficulty_level_invalid_payload_failure(
+        self, mock_fetch
+    ):
+        mock_fetch.return_value = {}
+        json_payload = {}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.put("/difficulty/", json=json_payload)
+        mock_fetch.assert_not_called()
+
+    @patch("routes.delete_difficulty_level", new_callable=AsyncMock)
+    async def test_delete_difficulty_level_valid_payload_success(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {"level": "OldLevel"}
+        cddm = CreateDeleteDifficultyModel(**json_payload)
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.request(method="DELETE", url="/difficulty/", json=json_payload)
+        mock_fetch.assert_called_once_with(cddm)
+
+    @patch("routes.delete_difficulty_level", new_callable=AsyncMock)
+    async def test_delete_difficulty_level_invalid_payload_failure(self, mock_fetch):
+        mock_fetch.return_value = {}
+        json_payload = {}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.request(method="DELETE", url="/difficulty/", json=json_payload)
+        mock_fetch.assert_not_called()
+
+    @patch("routes.fetch_question_bank_categories", new_callable=AsyncMock)
+    async def test_get_question_pool_categories(self, mock_fetch):
+        mock_fetch.return_value = {}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.get("/pool/category/")
+        mock_fetch.assert_called_once()
+
+    @patch(
+        "routes.fetch_question_bank_category_difficulty_levels", new_callable=AsyncMock
+    )
+    async def test_get_question_pool_category_difficulty_levels(self, mock_fetch):
+        mock_fetch.return_value = {}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.get(f"/pool/{self.valid_categories[0]}/difficulty/")
+        mock_fetch.assert_called_once_with(self.valid_categories[0])
+
+    @patch("routes.fetch_single_question_from_bank", new_callable=AsyncMock)
+    async def test_get_single_question_from_bank(self, mock_fetch):
+        mock_fetch.return_value = {}
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            await ac.get(f"/pool/{self.valid_categories[0]}/{self.valid_difficulty}/")
+        mock_fetch.assert_called_once_with(
+            self.valid_categories[0], self.valid_difficulty
+        )
