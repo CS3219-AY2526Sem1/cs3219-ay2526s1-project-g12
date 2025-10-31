@@ -90,10 +90,12 @@ function Dashboard() {
         <div className="flex p-2 gap-6">
           <div className="stats stats-vertical lg:stats-horizontal shadow-md border-1 border-base-200">
             <div className="stat">
-              <div className="stat-title text-lg">Total Interviews Done</div>
+              <div className="stat-title text-lg">
+                Total Interviews Completed
+              </div>
               <div className="stat-value"> {userAttemptHistory.length}</div>
               <div className="stat-desc">
-                <div className="badge badge-success m-0.5">
+                <div className="badge badge-soft badge-success m-0.5">
                   {
                     userAttemptHistory.filter(
                       (attempt) => attempt.difficulty === 'Easy'
@@ -101,7 +103,7 @@ function Dashboard() {
                   }{' '}
                   Easy
                 </div>
-                <div className="badge badge-warning m-0.5">
+                <div className="badge badge-soft badge-warning m-0.5">
                   {
                     userAttemptHistory.filter(
                       (attempt) => attempt.difficulty === 'Medium'
@@ -109,7 +111,7 @@ function Dashboard() {
                   }{' '}
                   Medium
                 </div>
-                <div className="badge badge-error m-0.5">
+                <div className="badge badge-soft badge-error m-0.5">
                   {
                     userAttemptHistory.filter(
                       (attempt) => attempt.difficulty === 'Hard'
@@ -125,6 +127,7 @@ function Dashboard() {
               <div className="stat-value">
                 {summariseTotalTime(userAttemptHistory)}
               </div>
+              <div className="stat-desc">&nbsp;</div>
             </div>
           </div>
         </div>
@@ -185,7 +188,7 @@ function Dashboard() {
                 </div>
                 <div className="pt-1 pb-1">
                   <div className="badge badge-outline mb-1">
-                    <pre className="text-base">Feedback</pre>
+                    <pre className="text-base">AI Assisted Feedback</pre>
                   </div>
                   <div className="mockup-window border border-base-300 w-full">
                     <div className="grid place-content-center border-t border-base-300 h-auto p-3">
