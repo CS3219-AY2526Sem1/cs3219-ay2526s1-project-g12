@@ -1,8 +1,10 @@
+import asyncio
 from datetime import datetime
 from redis.asyncio import Redis
 import requests
 from utils.logger import log
 from utils.utils import get_envvar, format_user_room_key, format_heartbeat_key
+import aiohttp
 
 ENV_REDIS_HOST_KEY = "REDIS_HOST"
 ENV_REDIS_PORT_KEY = "REDIS_PORT"
@@ -29,8 +31,20 @@ async def create_room(match_data: dict, room_connection: Redis) -> None:
     """
     Creates a room given the match data received.
     """
-    response = requests.get(f"{get_envvar(ENV_QN_SVC_POOL_ENDPOINT)}/{match_data["category"]}/{match_data["difficulty"]}")
-    data = response.json()
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"{get_envvar(ENV_QN_SVC_POOL_ENDPOINT)}/{match_data["category"]}/{match_data["difficulty"]}/") as response:
+                result = await response.json()
+                if asyncio.iscoroutine(result):
+                    result = await result
+                data = result
+    except aiohttp.ClientConnectorError as e:
+        log.info(f"ERROR, Connection failed: {e}")
+    except aiohttp.ClientError as e:
+        log.info(f"ERROR, Client error: {e}")
+    except Exception as e:
+        log.info(f"ERROR, Unexpected: {e}")
 
     # Question data is already in a dictionary so append the rest of the details there
     for key, value in match_data.items():
@@ -166,12 +180,12 @@ async def get_room_question(room_key: str, room_connection: Redis) -> dict:
     Retrieves the question assigned to this room.
     """
     question_data = {
-        "title" : room_connection.hget(room_key, "title"),
-        "description": room_connection.hget(room_key, "description"),
-        "code_template": room_connection.hget(room_key, "code_template"),
-        "solution_sample": room_connection.hget(room_key, "solution_sample"),
-        "difficulty": room_connection.hget(room_key, "difficulty"),
-        "category": room_connection.hget(room_key, "category")
+        "title" : await room_connection.hget(room_key, "title"),
+        "description": await room_connection.hget(room_key, "description"),
+        "code_template": await room_connection.hget(room_key, "code_template"),
+        "solution_sample": await room_connection.hget(room_key, "solution_sample"),
+        "difficulty": await room_connection.hget(room_key, "difficulty"),
+        "category": await room_connection.hget(room_key, "category")
     }
 
     return question_data

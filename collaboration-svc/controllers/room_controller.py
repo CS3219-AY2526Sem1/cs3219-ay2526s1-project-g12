@@ -56,8 +56,8 @@ async def create_room_listener(event_queue_connection: Redis, room_connection: R
         match_details = await get_match_confirmation_event(event_queue_connection)
 
         if (match_details):
-                await create_room(match_details, room_connection)
-        
+            await create_room(match_details, room_connection)
+
         await remove_match_confirmation_event(event_queue_connection)
 
         await release_lock(lock)
@@ -133,7 +133,7 @@ async def check_empty_room(user_id: str, room_connection: Redis, websocket_manag
     partner_heartbeat_key = format_heartbeat_key(partner)
 
     if (await is_user_alive(partner_heartbeat_key, room_connection)):
-        alert_partner_left(partner, room_id, user_id, websocket_manager)
+        await alert_partner_left(partner, room_id, user_id, websocket_manager)
     else:
         # Fire and foeget this task to check again in 5 minutes if any user joins back
         asyncio.create_task(start_room_hold_timer(room_id, user_id, room_connection))
@@ -212,7 +212,6 @@ async def reconnect_user(user_id: str, room_connection: Redis, websocket_manager
     if (is_partner_in_room):
         await alert_partner_rejoined(partner, room_id, user_id, websocket_manager)
 
-    #TODO : Lastly when collab service has the websocket notify the partner if they are there
 async def terminate_match(user_id: str, room_id: str, match_data: MatchData, room_connection: Redis):
     """
     Terminates the match for both parties.
@@ -250,7 +249,7 @@ async def connect_user(user_id: str, room_id: str, room_connection: Redis) -> di
     """
     room_key = format_user_room_key(user_id)
 
-    if (not does_key_exist(room_key, room_connection) or await get_room_id(room_key, room_connection) != room_id):
+    if (not await does_key_exist(room_key, room_connection) or await get_room_id(room_key, room_connection) != room_id):
         raise HTTPException(
             status_code=400,
             detail="User is not assigned to a room or the room does not exist"
