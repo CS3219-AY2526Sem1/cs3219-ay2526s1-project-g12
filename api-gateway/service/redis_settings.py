@@ -12,6 +12,7 @@ REDIS_URL = get_envvar("REDIS_URL")
 TOKEN_EXPIRE_HOURS = int(get_envvar("TOKEN_EXPIRE_HOURS"))
 TOKEN_EXPIRE_SECONDS = int(TOKEN_EXPIRE_HOURS * 3600)
 HEARTBEAT_TTL = int(get_envvar("HEARTBEAT_TTL"))
+RR_TTL = int(get_envvar("RR_TTL"))
 
 # Singletons bound during app lifespan
 _redis: aioredis.Redis
@@ -48,4 +49,5 @@ async def get_gateway(
         redis=redis,
         token_ttl_seconds=TOKEN_EXPIRE_SECONDS,
         heartbeat_ttl=HEARTBEAT_TTL,
+        rr_ttl=RR_TTL,
     )
