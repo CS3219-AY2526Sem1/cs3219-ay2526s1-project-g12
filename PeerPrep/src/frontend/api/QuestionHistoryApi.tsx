@@ -11,7 +11,7 @@ export interface QuestionHistory {
   category: string;
   time_elapsed: number;
   submitted_solution: string;
-  attempted_at: Date;
+  attempted_at: string;
   feedback: string;
 }
 

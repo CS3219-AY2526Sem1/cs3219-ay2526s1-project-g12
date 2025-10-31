@@ -34,13 +34,22 @@ function Dashboard() {
     fetchAttempts();
   }, []);
 
-  const summariseTime = (uah: QuestionHistory[]) => {
+  const summariseTotalTime = (uah: QuestionHistory[]) => {
     const totalTime: number = uah
       .map((attempt) => attempt.time_elapsed)
       .reduce((a, b) => a + b, 0);
-    const hours = totalTime / 60 / 60;
-    const minutes = (totalTime / 60) % 60;
+    return formatDuration(totalTime);
+  };
+
+  const formatDuration = (duration: number) => {
+    const hours = duration / 60 / 60;
+    const minutes = (duration / 60) % 60;
     return `${hours.toFixed(0)}h ${minutes.toFixed(0)}m`;
+  };
+
+  const formatDate = (date: string) => {
+    const d = new Date(date);
+    return d.toLocaleString();
   };
 
   return (
@@ -106,7 +115,7 @@ function Dashboard() {
             <div className="card-body p-4 gap-0.5">
               <h2 className="font-medium text-base">Total Time Spent</h2>
               <h2 className="font-extrabold text-4xl">
-                {summariseTime(userAttemptHistory)}
+                {summariseTotalTime(userAttemptHistory)}
               </h2>
             </div>
           </div>
@@ -118,43 +127,56 @@ function Dashboard() {
         Your recent matches
       </p>
       <div className="overflow-x-auto rounded-box shadow-sm border-1 border-base-200">
-        <table className="table">
-          {/* Table Head */}
-          <thead>
-            <tr>
-              <th></th>
-              <th>Category</th>
-              <th>Difficulty</th>
-              <th>Title</th>
-              <th>Description</th>
-              <th>Time Elapsed</th>
-              <th>Attempted At</th>
-              <th>Submitted Solution</th>
-              <th>Sample Solution</th>
-              <th>Feedback</th>
-            </tr>
-          </thead>
-
-          {/* Table Body */}
-          <tbody>
-            {userAttemptHistory.map((e, i) => (
-              <tr>
-                <td className="font-semibold">{i + 1}</td>
-                <td className="font-semibold">{e.category}</td>
-                <td className="font-semibold">{e.difficulty}</td>
-                <td className="font-semibold">{e.title}</td>
-                <td className="font-semibold">{e.description}</td>
-                <td className="font-semibold">{e.time_elapsed}</td>
-                <td className="font-semibold">
-                  {e.attempted_at.toLocaleString()}
-                </td>
-                <td className="font-semibold">{e.submitted_solution}</td>
-                <td className="font-semibold">{e.solution_sample}</td>
-                <td className="font-semibold">{e.feedback}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="join join-vertical bg-base-100">
+          <div className="collapse collapse-arrow join-item border-base-300 border">
+            <input type="radio" name="my-accordion-4" defaultChecked />
+            <div className="collapse-title font-semibold">Attempts</div>
+            <div className="collapse-content text-sm">
+              View the list of your recent matches below.
+            </div>
+          </div>
+          {userAttemptHistory.map((e, i) => (
+            <div className="collapse collapse-arrow join-item border-base-300 border">
+              <input type="radio" name="my-accordion-4" />
+              <div className="collapse-title">
+                <p className="font-semibold text-lg">
+                  {i + 1}.{e.title}
+                </p>
+                <pre>
+                  Category: {e.category} | Difficulty: {e.difficulty} | Time
+                  Taken: {formatDuration(e.time_elapsed)} | Attempted at:{' '}
+                  {formatDate(e.attempted_at)}
+                </pre>
+              </div>
+              <div className="collapse-content m-2">
+                <div className="pt-1 pb-1">
+                  <p className="text-lg">Submitted Solution</p>
+                  <div className="mockup-code w-full bg-gray-800 text-white">
+                    <pre data-prefix="$">
+                      <code>{e.submitted_solution}</code>
+                    </pre>
+                  </div>
+                </div>
+                <div className="pt-1 pb-1">
+                  <p className="text-lg">Sample Solution</p>
+                  <div className="mockup-code w-full  bg-gray-800 text-white">
+                    <pre data-prefix="">
+                      <code>{e.solution_sample}</code>
+                    </pre>
+                  </div>
+                </div>
+                <div className="pt-1 pb-1">
+                  <p className="text-lg mb-0.5">Feedback</p>
+                  <div className="mockup-window border border-base-300 w-full">
+                    <div className="grid place-content-center border-t border-base-300 h-auto p-3">
+                      <pre className="whitespace-pre-wrap">{e.feedback}</pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
