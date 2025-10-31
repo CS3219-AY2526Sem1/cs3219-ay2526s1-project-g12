@@ -250,7 +250,7 @@ async def connect_user(user_id: str, room_id: str, room_connection: Redis) -> di
     """
     room_key = format_user_room_key(user_id)
 
-    if (not does_key_exist(room_key) or await get_room_id(room_key, room_connection) != room_id):
+    if (not does_key_exist(room_key, room_connection) or await get_room_id(room_key, room_connection) != room_id):
         raise HTTPException(
             status_code=400,
             detail="User is not assigned to a room or the room does not exist"
