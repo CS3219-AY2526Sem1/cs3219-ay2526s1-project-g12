@@ -1,13 +1,17 @@
-import NavBar from "../components/NavBar";
-import { NAV_BUTTONS } from "../config/NavConfig";
+import NavBar from '../components/NavBar';
+import { NAV_BUTTONS } from '../config/NavConfig';
+import { useAuth } from '../context/AuthContext';
 
 function Dashboard() {
+  const { user } = useAuth();
   return (
     <div className="min-h-screen px-20 py-10">
       <NavBar buttons={NAV_BUTTONS} />
 
       {/* Welcome Section */}
-      <h1 className="text-6xl font-semibold p-2">Welcome, John Doe</h1>
+      <h1 className="text-6xl font-semibold p-2">
+        Welcome, {user?.first_name} {user?.last_name}
+      </h1>
       <p className="text-2xl p-2 font-light tracking-widest">For your review</p>
       <div className="flex p-2 gap-6">
         <div className="card w-72 card-xs shadow-sm border-1 border-base-200">

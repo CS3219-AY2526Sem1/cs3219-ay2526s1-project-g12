@@ -1,4 +1,10 @@
-export function TimerDisplay({ minutes, seconds }: { minutes: string; seconds: string }) {
+export function TimerDisplay({
+  minutes,
+  seconds,
+}: {
+  minutes: string;
+  seconds: string;
+}) {
   return (
     <>
       <div className="bg-success px-6 py-3 rounded">

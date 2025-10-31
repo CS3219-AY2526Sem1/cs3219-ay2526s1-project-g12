@@ -1,4 +1,4 @@
-import { TimerDisplay } from "./TimerDisplay";
+import { TimerDisplay } from './TimerDisplay';
 
 interface MatchSearchingProps {
   minutes: string;

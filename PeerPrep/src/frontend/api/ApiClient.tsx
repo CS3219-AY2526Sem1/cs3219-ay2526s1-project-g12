@@ -12,13 +12,13 @@ export class ApiClient {
 
   async request<T>(
     endpoint: string,
-    options: RequestInit = {},
+    options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     try {
       const response = await fetch(`${this.baseURL}${endpoint}`, {
-        credentials: "include", // for cookie-based auth
+        credentials: 'include', // for cookie-based auth
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           ...options.headers,
         },
         ...options,
@@ -31,14 +31,14 @@ export class ApiClient {
 
       const text = await response.text();
       if (response.status > 299) {
-        let errMsg = "";
+        let errMsg = '';
         try {
           const errData = JSON.parse(text);
-          if (typeof errData === "string") errMsg = errData;
-          else if (typeof errData?.detail === "string") errMsg = errData.detail;
+          if (typeof errData === 'string') errMsg = errData;
+          else if (typeof errData?.detail === 'string') errMsg = errData.detail;
           else if (
-            typeof errData?.detail === "object" &&
-            "detail" in errData.detail
+            typeof errData?.detail === 'object' &&
+            'detail' in errData.detail
           )
             errMsg = String(errData.detail.detail);
           else errMsg = JSON.stringify(errData);
@@ -51,14 +51,14 @@ export class ApiClient {
       const data = text ? JSON.parse(text) : null;
       return { data };
     } catch (err) {
-      return { error: err instanceof Error ? err.message : "Unknown error" };
+      return { error: err instanceof Error ? err.message : 'Unknown error' };
     }
   }
 
   async getProtectedData(): Promise<ApiResponse<string>> {
-    return this.request("/protected-route");
+    return this.request('/protected-route');
   }
 }
 
 // Singleton instance (shared across services)
-export const apiClient = new ApiClient("http://localhost:8000");
+export const apiClient = new ApiClient('http://localhost:8000');

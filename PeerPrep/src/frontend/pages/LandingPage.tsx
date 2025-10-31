@@ -1,5 +1,5 @@
-import { Link } from "react-router";
-import LandingImg from "../assets/Images/landing_page_img.png";
+import { Link } from 'react-router';
+import LandingImg from '../assets/Images/landing_page_img.png';
 
 function LandingPage() {
   return (

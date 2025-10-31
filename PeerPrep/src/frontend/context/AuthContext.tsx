@@ -1,17 +1,7 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import type { ReactNode } from "react";
-import { userApi } from "../api/UserApi";
-
-interface User {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  role_id: number;
-  is_active: boolean;
-  is_superuser: boolean;
-  is_verified: boolean;
-}
+import { createContext, useContext, useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
+import { userApi } from '../api/UserApi';
+import type { User } from '../types/User.tsx';
 
 interface AuthContextType {
   user: User | null;
@@ -40,7 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const fetchUser = async () => {
       const { data, error } = await userApi.getCurrentUser();
       if (data) setUser(data);
-      else if (error) console.warn("User not authenticated:", error);
+      else if (error) console.warn('User not authenticated:', error);
       setIsLoading(false);
     };
     fetchUser();
@@ -73,13 +63,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     last_name: string;
   }) => {
     const { data, error } = await userApi.register(userData);
-    if (error) {
-      setError(error);
-      return false;
-    } else {
+    if (data) {
       setUser(data);
       return true;
     }
+    if (error) {
+      setError(error);
+    }
+    return false;
   };
 
   const logout = async () => {
@@ -101,6 +92,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 };
