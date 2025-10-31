@@ -1,4 +1,5 @@
 import asyncio
+from asyncio.exceptions import TimeoutError
 from asyncio import Event
 from controllers.websocket_controller import WebSocketManager
 from fastapi import HTTPException
@@ -88,18 +89,21 @@ async def create_ttl_expire_listener(
             await check_empty_room (user_id, room_connection, websocket_manager)
             
             await acknowlwedge_event(event_queue_connection, stream_key, group_key, event_id)
-            log.info(f"Collaboration service, {service_id} has completed handling event {event_id}")
+            log.info(f"Collaboration service, {service_id} has completed handling event {event_id}")    
 
-async def create_heartbeat_listener(room_connection: Redis, websocket_manager: WebSocketManager):
+async def alert_partner_left(user_id: str, room_id: str, partner: str,  websocket_manager: WebSocketManager) -> None:
     """
-    Spawns a worker to periodically check for any heartbeat update request from the user through the websocket.
-    """ 
-
-def alert_user(user_id: str, websocket_manager: WebSocketManager) -> None:
+    Sends a message to the user altering them that their partner has left.
     """
-    Sends a message to the user altering them that.
-    """
+    await websocket_manager.send_message(user_id, room_id, f"user_{partner}_has_left_the_room")
     log.info(f"Sent a notification to {user_id} that their parter has left the mattch")
+
+async def alert_partner_rejoined(user_id: str, room_id: str, partner: str,  websocket_manager: WebSocketManager) -> None:
+    """
+    Sends a message to the partner that the user has rejoined the room.
+    """
+    await websocket_manager.send_message(user_id, room_id, f"user_{partner}_has_joined_the_room")
+    log.info(f"Sent a notification to {user_id} that their parter has joined the room")
 
 async def remove_user(user_id: str, room_connection: Redis, websocket_manager: WebSocketManager) -> None:
     """
@@ -128,7 +132,7 @@ async def check_empty_room(user_id: str, room_connection: Redis, websocket_manag
     partner_heartbeat_key = format_heartbeat_key(partner)
 
     if (await is_user_alive(partner_heartbeat_key, room_connection)):
-        alert_user(partner, websocket_manager)
+        alert_partner_left(partner, room_id, user_id, websocket_manager)
     else:
         # Fire and foeget this task to check again in 5 minutes if any user joins back
         asyncio.create_task(start_room_hold_timer(room_id, user_id, room_connection))
@@ -152,10 +156,31 @@ async def start_room_hold_timer(room_id: str, user_id: str, room_connection: Red
     await cleanup(clean_up_key, room_connection)
     log.info(f"Data for {room_id} is cleared due to inactivity")
 
-async def create_heartbeat_listner(room_connection: Redis, websocket_manager: WebSocketManager):
+async def create_heartbeat_listener(room_connection: Redis, websocket_manager: WebSocketManager, stop_event: Event):
     """
     Spawns a worker to periodically check for any heartbeat update request from the user through the websocket.
     """ 
+    while True:
+        if (stop_event.is_set()):
+            break
+        
+        # This is here because receive_message is blocking. So on shutdown it will not be able to because of this blocking task
+        # So I will let it block for 10 seconds before retrying again
+        try:
+            message = await asyncio.wait_for(websocket_manager.receive_message(), timeout=10)
+        except TimeoutError:
+            message = None
+
+        if (message):
+            user_id = message["user_id"]
+            command = message["message"]
+            match (command):
+                case "heartbeat":
+                    heartbeat_key = format_heartbeat_key(user_id)
+                    await update_user_ttl(heartbeat_key, room_connection)
+                    log.info(f"User, {user_id} has refreshed their time to live")
+                case _:
+                    log.warning(f"Disregarding invalid command, {command}")
 
 async def reconnect_user(user_id: str, room_connection: Redis, websocket_manager: WebSocketManager) -> None:
     """
@@ -178,6 +203,13 @@ async def reconnect_user(user_id: str, room_connection: Redis, websocket_manager
     await update_user_ttl(heartbeat_key, room_connection)
 
     log.info(f"User, {user_id} has reconnected to room, {room_id}")
+
+    partner = get_partner(user_id, room_key, room_connection)
+    partner_heartbeat_key = format_heartbeat_key(partner)
+    is_partner_in_room = does_key_exist(partner_heartbeat_key)
+
+    if (is_partner_in_room):
+        await alert_partner_rejoined(partner, room_id, user_id, websocket_manager)
 
     #TODO : Lastly when collab service has the websocket notify the partner if they are there
 async def terminate_match(user_id: str, room_id: str, match_data: MatchData, room_connection: Redis):
