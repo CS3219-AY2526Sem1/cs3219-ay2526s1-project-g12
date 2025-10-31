@@ -65,59 +65,66 @@ function Dashboard() {
 
       {loading ? (
         <div className="flex p-2 gap-6">
-          <div className="card w-72 card-xs shadow-sm border-1 border-base-200">
-            <div className="card-body p-4 gap-0.5">
-              <h2 className="font-extrabold text-4xl">Loading...</h2>
+          <div className="stats stats-vertical lg:stats-horizontal shadow-md border-1 border-base-200">
+            <div className="stat">
+              <div className="stat-value">
+                <span className="loading loading-spinner loading-xl"></span>
+              </div>
             </div>
           </div>
         </div>
       ) : error ? (
         <div className="flex p-2 gap-6">
-          <div className="card w-72 card-xs shadow-sm border-1 border-base-200">
-            <div className="card-body p-4 gap-0.5">
-              <h2 className="font-extrabold text-4xl">
+          <div className="stats stats-vertical lg:stats-horizontal shadow-md border-1 border-base-200">
+            <div className="stat">
+              <div className="stat-title text-lg">
+                <div className="badge badge-error">Error</div>
+              </div>
+              <div className="stat-value">
                 Unable to access your attempt history currently
-              </h2>
+              </div>
             </div>
           </div>
         </div>
       ) : (
         <div className="flex p-2 gap-6">
-          <div className="card w-72 card-xs shadow-sm border-1 border-base-200">
-            <div className="card-body p-4 gap-0.5">
-              <h2 className="font-medium text-base">Total Interviews Done</h2>
-              <h2 className="font-extrabold text-4xl">
-                {userAttemptHistory.length}
-              </h2>
-              <p className="font-medium">
-                {
-                  userAttemptHistory.filter(
-                    (attempt) => attempt.difficulty === 'Easy'
-                  ).length
-                }{' '}
-                Easy |{' '}
-                {
-                  userAttemptHistory.filter(
-                    (attempt) => attempt.difficulty === 'Medium'
-                  ).length
-                }{' '}
-                Medium |{' '}
-                {
-                  userAttemptHistory.filter(
-                    (attempt) => attempt.difficulty === 'Hard'
-                  ).length
-                }{' '}
-                Hard
-              </p>
+          <div className="stats stats-vertical lg:stats-horizontal shadow-md border-1 border-base-200">
+            <div className="stat">
+              <div className="stat-title text-lg">Total Interviews Done</div>
+              <div className="stat-value"> {userAttemptHistory.length}</div>
+              <div className="stat-desc">
+                <div className="badge badge-success m-0.5">
+                  {
+                    userAttemptHistory.filter(
+                      (attempt) => attempt.difficulty === 'Easy'
+                    ).length
+                  }{' '}
+                  Easy
+                </div>
+                <div className="badge badge-warning m-0.5">
+                  {
+                    userAttemptHistory.filter(
+                      (attempt) => attempt.difficulty === 'Medium'
+                    ).length
+                  }{' '}
+                  Medium
+                </div>
+                <div className="badge badge-error m-0.5">
+                  {
+                    userAttemptHistory.filter(
+                      (attempt) => attempt.difficulty === 'Hard'
+                    ).length
+                  }{' '}
+                  Hard
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div className="card w-72 card-xs shadow-sm border-1 border-base-200">
-            <div className="card-body p-4 gap-0.5">
-              <h2 className="font-medium text-base">Total Time Spent</h2>
-              <h2 className="font-extrabold text-4xl">
+            <div className="stat">
+              <div className="stat-title text-lg">Total Time Spent</div>
+              <div className="stat-value">
                 {summariseTotalTime(userAttemptHistory)}
-              </h2>
+              </div>
             </div>
           </div>
         </div>
@@ -128,7 +135,7 @@ function Dashboard() {
         Your recent matches
       </p>
       <div className="overflow-x-auto rounded-box shadow-md border-1 border-base-200">
-        <div className="join join-vertical bg-base-100">
+        <div className="join join-vertical bg-base-100 w-full">
           <div className="collapse collapse-arrow join-item border-base-300 border">
             <input type="radio" name="my-accordion-4" defaultChecked />
             <div className="collapse-title font-semibold">Attempts</div>
