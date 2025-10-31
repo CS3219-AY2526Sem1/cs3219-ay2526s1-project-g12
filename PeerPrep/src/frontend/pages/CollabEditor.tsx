@@ -1,9 +1,14 @@
-import { useLocation, useNavigate } from "react-router-dom";
-import { CodeEditor } from "../components/Collab/CodeEditor";
-import { ProblemPanel } from "../components/Collab/ProblemPanel";
-import { TopBar } from "../components/Collab/TopBar";
-import { ToastContainer, toast } from "react-toastify";
-import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from 'react-router-dom';
+import { CodeEditor } from '../components/Collab/CodeEditor';
+import { ProblemPanel } from '../components/Collab/ProblemPanel';
+import { TopBar } from '../components/Collab/TopBar';
+import { ToastContainer, toast } from 'react-toastify';
+import { useEffect, useRef, useState } from 'react';
+import { apiClient } from '../api/ApiClient';
+
+interface ConnectResponse {
+  message: string;
+}
 
 export default function CollabEditor() {
   const navigate = useNavigate();
@@ -13,8 +18,8 @@ export default function CollabEditor() {
     | undefined;
 
   if (!matchState || !matchState.matchDetails || !matchState.userId) {
-    toast.error("Missing match data. Returning to lobby...");
-    navigate("/matching");
+    toast.error('Missing match data. Returning to lobby...');
+    navigate('/matching');
     return null;
   }
 
@@ -23,8 +28,12 @@ export default function CollabEditor() {
   const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [problem, setProblem] = useState({
-    title: "Loading...",
-    description: "",
+    title: 'Loading...',
+    description: '',
+    code_template: '',
+    solution_sample: '',
+    difficulty: '',
+    category: '',
   });
 
   const reconnectRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -36,40 +45,57 @@ export default function CollabEditor() {
 
     const connectWS = () => {
       try {
-        const ws = new WebSocket("ws://localhost:8000/ws/fe");
+        const ws = new WebSocket('ws://localhost:8000/ws/fe');
         wsRef.current = ws;
 
         ws.onopen = async () => {
           retryCountRef.current = 0;
-          toast.dismiss("reconnect-toast");
+          toast.dismiss('reconnect-toast');
 
           if (isReconnecting) {
-            toast.success("✅ Reconnected successfully!");
+            toast.success('✅ Reconnected successfully!');
+            // Notify backend of reconnection
+            console.log('User id:', userId);
+            await fetch('http://localhost:8000/cs/reconnect', {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-User-ID': userId,
+              },
+            }).catch(() => console.warn('Reconnect API failed (ignored)'));
             setIsReconnecting(false);
           } else {
-            toast.success("Connected to collaboration room");
+            toast.success('Connected to collaboration room');
           }
 
-          // Notify backend of reconnection
-          await fetch("http://localhost:8000/cs/reconnect", {
-            method: "POST",
-            headers: { "X-User-ID": userId },
-          }).catch(() => console.warn("Reconnect API failed (ignored)"));
+          const res = await apiClient.request<ConnectResponse>(
+            `/cs/connect/${matchDetails}`,
+            {
+              credentials: 'include',
+              method: 'GET',
+              headers: { 'X-User-ID': userId },
+            }
+          );
+          if (res.data && res.data.message) {
+            try {
+              const message = JSON.parse(res.data.message);
+              console.log('Problem data:', message);
+              setProblem(message);
+            } catch {
+              console.warn('Invalid problem JSON');
+            }
+          }
 
           startHeartbeat();
         };
 
         ws.onmessage = (e) => {
           const data = JSON.parse(e.data);
-          console.log("📩 Message:", data);
+          console.log('📩 Message:', data);
 
-          if (data.message === "partner_left") {
-            toast.error("Your partner left the session");
-          } else if (data.message === "problem_data") {
-            setProblem({
-              title: data.title || "Problem",
-              description: data.description || "",
-            });
+          if (data.message === 'partner_left') {
+            toast.error('Your partner left the session');
           }
         };
 
@@ -78,7 +104,7 @@ export default function CollabEditor() {
           if (!isUnmounted) handleReconnect();
         };
       } catch (error) {
-        console.error("WebSocket connection error:", error);
+        console.error('WebSocket connection error:', error);
         handleReconnect();
       }
     };
@@ -86,9 +112,9 @@ export default function CollabEditor() {
     const handleReconnect = () => {
       if (retryCountRef.current >= 5) {
         toast.error(
-          "Failed to reconnect after several attempts. Returning to lobby...",
+          'Failed to reconnect after several attempts. Returning to lobby...'
         );
-        navigate("/matching");
+        navigate('/matching');
         return;
       }
 
@@ -96,25 +122,25 @@ export default function CollabEditor() {
       const delay = 5000; // 5 seconds
       setIsReconnecting(true);
 
-      if (!toast.isActive("reconnect-toast")) {
+      if (!toast.isActive('reconnect-toast')) {
         toast.info(
           `Connection lost. Reconnecting in ${delay / 1000}s... (Attempt ${retryCountRef.current}/5)`,
           {
-            toastId: "reconnect-toast",
+            toastId: 'reconnect-toast',
             autoClose: false,
             closeOnClick: false,
             draggable: false,
-            position: "top-center",
-          },
+            position: 'top-center',
+          }
         );
       } else {
-        toast.update("reconnect-toast", {
+        toast.update('reconnect-toast', {
           render: `Connection lost. Reconnecting in ${delay / 1000}s... (Attempt ${retryCountRef.current}/5)`,
         });
       }
 
       reconnectRef.current = setTimeout(() => {
-        toast.dismiss("reconnect-toast");
+        toast.dismiss('reconnect-toast');
         connectWS();
       }, delay);
     };
@@ -135,8 +161,8 @@ export default function CollabEditor() {
         JSON.stringify({
           user_id: userId,
           match_id: matchDetails,
-          message: "heartbeat",
-        }),
+          message: 'heartbeat',
+        })
       );
     }, 60_000);
   };
@@ -151,19 +177,20 @@ export default function CollabEditor() {
   const handleExit = async () => {
     try {
       await fetch(`http://localhost:8000/cs/terminate/${matchDetails}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-User-ID": userId },
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-User-ID': userId },
         body: JSON.stringify({
           user_id: userId,
           match_id: matchDetails,
-          message: "terminate",
-          code: localStorage.getItem("collab_code") || "",
+          message: 'terminate',
+          code: localStorage.getItem('collab_code') || '',
         }),
       });
-      toast.success("Session ended");
-      navigate("/matching");
+      toast.success('Session ended');
+      navigate('/matching');
     } catch {
-      toast.error("Error exiting session");
+      toast.error('Error exiting session');
     }
   };
 
@@ -184,7 +211,12 @@ export default function CollabEditor() {
 
         <div className="col-span-2 card shadow-sm border-1 border-base-200 p-10">
           <div className="w-full overflow-visible">
-            <CodeEditor matchDetail={matchDetails} userId={userId} />
+            <CodeEditor
+              matchDetail={matchDetails}
+              userId={userId}
+              defaultCode={problem.code_template}
+              isReconnecting={isReconnecting}
+            />
           </div>
         </div>
       </div>
