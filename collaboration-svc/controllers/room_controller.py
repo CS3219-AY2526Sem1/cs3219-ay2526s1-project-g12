@@ -23,7 +23,8 @@ from services.redis_room_service import (
     delete_user_ttl,
     send_room_for_review,
     remove_room_cleanup,
-    update_user_ttl
+    update_user_ttl,
+    get_room_question
 )
 from utils.logger import log
 from utils.utils import (
@@ -223,7 +224,7 @@ async def terminate_match(user_id: str, room_id: str, match_data: MatchData, roo
     has_valid_heartbeat = does_key_exist(user_heartbeat_key, room_connection)
     has_valid_room = does_key_exist(room_key, room_connection)
 
-    if (has_valid_heartbeat and has_valid_room and get_room_id(room_key, room_connection) == room_id):
+    if (has_valid_heartbeat and has_valid_room and await get_room_id(room_key, room_connection) == room_id):
         room_informaion = await get_room_information(room_key, room_connection)
         partner = await get_partner(user_id, room_key, room_connection)
 
@@ -242,3 +243,17 @@ async def terminate_match(user_id: str, room_id: str, match_data: MatchData, roo
                 status_code=400,
                 detail="Cannot terminate match as user or room id is invalid"
             )
+
+async def connect_user(user_id: str, room_id: str, room_connection: Redis):
+    """
+    Connects the user to the room and returns the question assigned to them.
+    """
+    room_key = format_user_room_key(user_id)
+
+    if (not does_key_exist(room_key) or await get_room_id(room_key, room_connection) != room_id):
+        raise HTTPException(
+            status_code=400,
+            detail="User is not assigned to a room or the room does not exist"
+        )
+    
+    return await get_room_question(room_key, room_connection)

@@ -5,7 +5,7 @@ from controllers.heartbeat_controller import (
     register_heartbeat,
     register_self_as_service,
 )
-from controllers.room_controller import create_room_listener, create_ttl_expire_listener, terminate_match, remove_user, reconnect_user, create_heartbeat_listener
+from controllers.room_controller import create_room_listener, create_ttl_expire_listener, terminate_match, remove_user, reconnect_user, create_heartbeat_listener, connect_user
 from controllers.websocket_controller import WebSocketManager
 from fastapi import FastAPI, Header
 from models.api_models import MatchData
@@ -72,6 +72,11 @@ app = FastAPI(title="PeerPrep Collaboration Service", lifespan=lifespan)
 @app.get("/")
 async def root() -> dict:
     return {"status": "working"}
+
+@app.get("/connect/{room_id}", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
+async def connect(room_id: str, x_user_id: Annotated[str, Header()]):
+    question_data = await connect_user(x_user_id, room_id,  app.state.room_connection) # Dictionary
+    return {"message": question_data}
 
 @app.post("/reconnect", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
 async def reconnect_user_to_match(x_user_id: Annotated[str, Header()]) -> dict:

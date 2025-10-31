@@ -57,6 +57,11 @@ async def get_match_partner(user_id: str, match_key: str, confirmation_conn: Red
     """
     Retrieves the user's partner user id for that match.
     """
+    log.debug("get_match_partner function execution: ")
+    log.debug(await confirmation_conn.hget(match_key, "user_one") == user_id)
+    log.debug(await confirmation_conn.hget(match_key, "user_two"))
+    log.debug(await confirmation_conn.hget(match_key, "user_two"))
+
     if (await confirmation_conn.hget(match_key, "user_one") == user_id):
         return await confirmation_conn.hget(match_key, "user_two")
     else:
@@ -85,7 +90,9 @@ async def is_match_confirmed(match_key: str, confirmation_conn: Redis) -> bool:
     Checks if both users have accepted the match.
     """
     has_user_one_comfirm = await confirmation_conn.hget(match_key, "user_one_confirmation") == "1"
+    log.debug(f"User 1 status: {has_user_one_comfirm}")
     has_user_two_comfirm = await confirmation_conn.hget(match_key, "user_two_confirmation") == "1"
+    log.debug(f"User 2 status: {has_user_two_comfirm}")
 
     if ( has_user_one_comfirm and has_user_two_comfirm):
         return True

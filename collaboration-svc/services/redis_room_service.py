@@ -160,3 +160,18 @@ def send_room_for_review(user_one: str, user_two: str, submitted_solution: str, 
         }
 
         requests.get(f"{get_envvar(ENV_QN_SVC_HISTORY_ENDPOINT)}", json= body)
+
+async def get_room_question(room_key: str, room_connection: Redis) -> dict:
+    """
+    Retrieves the question assigned to this room.
+    """
+    question_data = {
+        "title" : room_connection.hget(room_key, "title"),
+        "description": room_connection.hget(room_key, "description"),
+        "code_template": room_connection.hget(room_key, "code_template"),
+        "solution_sample": room_connection.hget(room_key, "solution_sample"),
+        "difficulty": room_connection.hget(room_key, "difficulty"),
+        "category": room_connection.hget(room_key, "category")
+    }
+
+    return question_data

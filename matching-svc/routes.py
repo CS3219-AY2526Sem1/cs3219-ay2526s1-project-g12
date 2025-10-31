@@ -99,6 +99,7 @@ async def terminate(cancel_request: MatchRequest):
     "/confirm_match/{match_id}", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]}
 )
 async def confirm_user_match(match_id: str, confirm_request: MatchConfirmRequest):
+    log.debug("Confirm match endpoint called")
     return await confirm_match(
         match_id,
         confirm_request,

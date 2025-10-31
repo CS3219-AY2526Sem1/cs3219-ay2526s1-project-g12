@@ -287,9 +287,10 @@ async def confirm_match(
 
     try:
         await update_user_confirmation(match_key, user_id, confirmation_conn)
+        log.debug("Checking both parties")
         # The other user has accepted
         if (await is_match_confirmed(match_key, confirmation_conn)):
-            
+            log.debug("Confirmed")
             partner = await get_match_partner(user_id, match_key, confirmation_conn)
             message_key = format_match_accepted_key(partner)
             await send_match_finalised_message(message_key, match_id, message_conn)
@@ -320,9 +321,12 @@ async def wait_for_confirmation(
     user_id = confirm_request.user_id
     message_key = format_match_accepted_key(user_id)
     # Set timeout to be 15 seconds in case the redis server goes down it will return a response
+    log.debug("Waiting for message")
     message = await wait_for_message(message_key, message_conn, timeout=15)
+    log.debug("Message received")
 
     if message is None or message[1] == "":
+        log.debug("Got a empty or no message")
         log.info(f"The partner for user id, {user_id} has failed to accept the match")
         return {"message": "partner failed to accept the match"}
     else:
