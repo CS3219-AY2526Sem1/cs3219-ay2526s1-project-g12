@@ -132,8 +132,8 @@ export const userApi = {
    * @param email
    * @returns ApiResponse indicating success or failure.
    */
-  async forgetPassword(email: string): Promise<ApiResponse<null>> {
-    return apiClient.request('/us/auth/forget-password', {
+  async forgotPassword(email: string): Promise<ApiResponse<null>> {
+    return apiClient.request('/us/auth/forgot-password', {
       method: 'POST',
       body: JSON.stringify({
         email: email,

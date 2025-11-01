@@ -72,7 +72,19 @@ export default function Login() {
                 d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <span>{error}</span>
+            {error == 'LOGIN_USER_NOT_VERIFIED' ? (
+              <>
+                <span>Your email has not been verified.</span>
+                <Link
+                  to="/auth/requestverify"
+                  className="font-light text-sm underline"
+                >
+                  Resend verification email
+                </Link>
+              </>
+            ) : (
+              <span>{error}</span>
+            )}
           </div>
         )}
 
@@ -110,7 +122,7 @@ export default function Login() {
           />
 
           <Link
-            to="/auth/forgetpassword"
+            to="/auth/forgotpassword"
             className="font-light text-sm underline"
           >
             Forgot your password?
