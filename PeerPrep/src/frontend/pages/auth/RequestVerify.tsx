@@ -19,7 +19,6 @@ export default function RequestVerify() {
 
     const response = await userApi.requestVerifyEmail(email);
 
-    console.log('response:', response);
     if (response.error) {
       setError('Please enter a valid email.');
       setSubmitting(false);
