@@ -43,6 +43,14 @@ export default function ResetPassword() {
       [name]: value,
     }));
 
+    // Empty token handling
+    if (!token) {
+      setSubmitting(true);
+      setError(
+        'Missing token. Please use the link provided in your password reset email.'
+      );
+    }
+
     // Validate password in real-time
     if (name === 'password') {
       validatePassword(value);
