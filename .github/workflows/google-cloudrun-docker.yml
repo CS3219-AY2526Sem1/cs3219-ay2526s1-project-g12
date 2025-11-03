@@ -64,7 +64,7 @@ jobs:
         run: |
           gcloud auth configure-docker asia-southeast1-docker.pkg.dev
       
-      - name: (AG) Make Cloud Run compatible Docker Image build configuration
+      - name: (AG) Make Cloud Run build configuration changes
         working-directory: ./api-gateway
         run: |
           sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
@@ -74,6 +74,11 @@ jobs:
         run: |
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-api-gateway:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-api-gateway:latest
+
+      - name: (CS) Make Cloud Run build configuration changes
+        working-directory: ./collaboration-svc
+        run: |
+          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
 
       - name: (CS) Build and Push Docker Image
         working-directory: ./collaboration-svc
@@ -87,11 +92,21 @@ jobs:
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-expire-observer-svc:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-expire-observer-svc:latest 
 
+      - name: (MS) Make Cloud Run build configuration changes
+        working-directory: ./matching-svc
+        run: |
+          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
+
       - name: (MS) Build and Push Docker Image
         working-directory: ./matching-svc
         run: |
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-matching-svc:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-matching-svc:latest
+
+      - name: (QHS) Make Cloud Run build configuration changes
+        working-directory: ./qns-hist-svc
+        run: |
+          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
 
       - name: (QHS) Build and Push Docker Image
         working-directory: ./qns-hist-svc
@@ -99,11 +114,21 @@ jobs:
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-qns-hist-svc:latest --platform=linux/amd64 .
           docker push  ${{ env.DOCKER_IMAGE_URL }}pp-qns-hist-svc:latest
       
+      - name: (QS) Make Cloud Run build configuration changes
+        working-directory: ./qns-svc
+        run: |
+          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
+
       - name: (QS) Build and Push Docker Image
         working-directory: ./qns-svc
         run: |
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-qns-svc:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-qns-svc:latest
+
+      - name: (US) Make Cloud Run build configuration changes
+        working-directory: ./user-svc
+        run: |
+          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
 
       - name: (US) Build and Push Docker Image
         working-directory: ./user-svc
@@ -111,7 +136,7 @@ jobs:
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-user-svc:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-user-svc:latest
 
-      - name: (FE) Make Cloud Run compatible Docker Image build configuration
+      - name: (FE) Make Cloud Run build configuration changes
         working-directory: ./PeerPrep
         run: |
           sed -i 's/EXPOSE 80/EXPOSE 8080/' ./Dockerfile
