@@ -258,9 +258,10 @@ class GatewayController:
                     body = r.json()
                 except Exception:
                     body = r.text
+                    log.error(f"Forwarding error [httpx int Exception]: {body}")
                 return r.status_code, body
         except httpx.TimeoutException:
             return 504, {"detail": "Gateway timeout"}
         except httpx.RequestError as e:
-            log.error(f"Forwarding error: {e}")
+            log.error(f"Forwarding error [RequestError]: {e}")
             return 502, {"detail": "Bad gateway"}
