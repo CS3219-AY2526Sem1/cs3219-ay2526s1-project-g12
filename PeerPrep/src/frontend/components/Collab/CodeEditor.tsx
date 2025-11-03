@@ -86,25 +86,6 @@ export function CodeEditor({
       provider.awareness
     );
 
-    // Debug listeners
-    // provider.on("status", (event: { status: string }) => {
-    //   console.log(`[y-webrtc] Status: ${event.status}`);
-    // });
-    provider.on('peers', (event: { added: string[]; removed: string[] }) => {
-      console.log(
-        `[y-webrtc] Peers changed. Added:`,
-        event.added,
-        'Removed:',
-        event.removed
-      );
-    });
-    provider.awareness.on(
-      'update',
-      (event: { added: any[]; updated: any[]; removed: any[] }) => {
-        console.log('[y-webrtc] Awareness update:', event);
-      }
-    );
-
     // Periodically save current code to localStorage every 3s
     saveIntervalRef.current = setInterval(() => {
       const code = editor.getValue() || '';
@@ -126,7 +107,7 @@ export function CodeEditor({
       height="70vh"
       theme="light"
       language="python"
-      // defaultValue={`class Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        `}
+      defaultValue={defaultCode ?? ""}
       onMount={handleEditorDidMount}
       options={{
         scrollBeyondLastLine: false,

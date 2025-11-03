@@ -5,10 +5,8 @@ import { TopBar } from '../components/Collab/TopBar';
 import { ToastContainer, toast } from 'react-toastify';
 import { useEffect, useRef, useState } from 'react';
 import { apiClient } from '../api/ApiClient';
-
-interface ConnectResponse {
-  message: string;
-}
+import { useMatchTimer } from '../hooks/useMatchTimer';
+import { collabApi } from '../api/CollaborationApi';
 
 export default function CollabEditor() {
   const navigate = useNavigate();
@@ -39,6 +37,7 @@ export default function CollabEditor() {
   const reconnectRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const retryCountRef = useRef<number>(0);
   const [isReconnecting, setIsReconnecting] = useState(false);
+  const { minutes, seconds } = useMatchTimer(true, 0, undefined, false);
 
   useEffect(() => {
     let isUnmounted = false;
@@ -53,30 +52,17 @@ export default function CollabEditor() {
           toast.dismiss('reconnect-toast');
 
           if (isReconnecting) {
-            toast.success('✅ Reconnected successfully!');
+            toast.success('Reconnected successfully!');
             // Notify backend of reconnection
             console.log('User id:', userId);
-            await fetch('http://localhost:8000/cs/reconnect', {
-              method: 'POST',
-              credentials: 'include',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-User-ID': userId,
-              },
-            }).catch(() => console.warn('Reconnect API failed (ignored)'));
+            const res = await collabApi.reconnect();
+            if (res.error) console.warn('Reconnect API failed:', res.error);
             setIsReconnecting(false);
           } else {
             toast.success('Connected to collaboration room');
           }
 
-          const res = await apiClient.request<ConnectResponse>(
-            `/cs/connect/${matchDetails}`,
-            {
-              credentials: 'include',
-              method: 'GET',
-              headers: { 'X-User-ID': userId },
-            }
-          );
+          const res = await collabApi.connect(matchDetails);
           if (res.data && res.data.message) {
             try {
               const message = JSON.parse(res.data.message);
@@ -86,13 +72,14 @@ export default function CollabEditor() {
               console.warn('Invalid problem JSON');
             }
           }
+          if (res.error) console.warn('Connect API failed:', res.error);
 
           startHeartbeat();
         };
 
         ws.onmessage = (e) => {
           const data = JSON.parse(e.data);
-          console.log('📩 Message:', data);
+          console.log('Message:', data);
 
           if (data.message === 'partner_left') {
             toast.error('Your partner left the session');
@@ -176,17 +163,15 @@ export default function CollabEditor() {
 
   const handleExit = async () => {
     try {
-      await fetch(`http://localhost:8000/cs/terminate/${matchDetails}`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json', 'X-User-ID': userId },
-        body: JSON.stringify({
-          user_id: userId,
-          match_id: matchDetails,
-          message: 'terminate',
-          code: localStorage.getItem('collab_code') || '',
-        }),
-      });
+      const code = localStorage.getItem('collab_code') || '';
+      const res = await collabApi.terminate(userId, matchDetails, code);
+
+      if (res.error) {
+        console.error('Terminate failed:', res.error);
+        toast.error('Error exiting session');
+        return;
+      }
+      localStorage.removeItem('collab_code');
       toast.success('Session ended');
       navigate('/matching');
     } catch {
@@ -196,7 +181,13 @@ export default function CollabEditor() {
 
   return (
     <div className="min-h-screen flex flex-col px-20 py-10">
-      <TopBar onExit={handleExit} />
+      <TopBar
+        onExit={handleExit}
+        category={problem.category}
+        difficulty={problem.difficulty}
+        minutes={minutes}
+        seconds={seconds}
+      />
 
       {isReconnecting && (
         <div className="bg-yellow-100 text-yellow-800 text-center p-2 rounded mb-4 animate-pulse">
@@ -206,7 +197,10 @@ export default function CollabEditor() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-10 justify-center overflow-hidden">
         <div className="card shadow-sm border-1 border-base-200 p-10 overflow-y-auto">
-          <ProblemPanel problem={problem} />
+          <ProblemPanel
+            title={problem.title}
+            description={problem.description}
+          />
         </div>
 
         <div className="col-span-2 card shadow-sm border-1 border-base-200 p-10">
