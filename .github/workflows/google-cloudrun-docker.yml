@@ -64,6 +64,11 @@ jobs:
         run: |
           gcloud auth configure-docker asia-southeast1-docker.pkg.dev
       
+      - name: (AG) Make Cloud Run compatible Docker Image build configuration
+        working-directory: ./api-gateway
+        run: |
+          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
+
       - name: (AG) Build and Push Docker Image
         working-directory: ./api-gateway
         run: |
