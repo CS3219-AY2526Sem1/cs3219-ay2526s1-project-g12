@@ -1,12 +1,12 @@
-import { lazy, Suspense } from "react";
-import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import "./assets/styles.css";
-import type { LazyExoticComponent, ReactNode } from "react";
-import { getLayout, isProtectedRoute } from "./config/RouteConfig";
-import { ProtectedRoute } from "./components/ProtectedRoute";
-import { AuthProvider } from "./context/AuthContext";
-import NotFoundRedirect from "./components/NotFoundRedirect";
+import { lazy, Suspense } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import './assets/styles.css';
+import type { LazyExoticComponent, ReactNode } from 'react';
+import { getLayout, isProtectedRoute } from './config/RouteConfig';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { AuthProvider } from './context/AuthContext';
+import NotFoundRedirect from './components/NotFoundRedirect';
 
 // Type for our route object
 type RouteType = {
@@ -16,21 +16,21 @@ type RouteType = {
 };
 
 // Dynamically import all pages
-const modules = import.meta.glob("./pages/**/*.tsx");
+const modules = import.meta.glob('./pages/**/*.tsx');
 
 // Convert to route objects
 const routes: RouteType[] = Object.keys(modules).map((path) => {
   const Component = lazy(
-    modules[path] as () => Promise<{ default: React.ComponentType<unknown> }>,
+    modules[path] as () => Promise<{ default: React.ComponentType<unknown> }>
   );
 
   // Derive route path
   const routePath = path
-    .replace("./pages", "")
-    .replace(".tsx", "")
+    .replace('./pages', '')
+    .replace('.tsx', '')
     .toLowerCase();
 
-  const formattedPath = routePath === "/landingpage" ? "/" : routePath;
+  const formattedPath = routePath === '/landingpage' ? '/' : routePath;
   const Layout = getLayout(formattedPath);
 
   return {
@@ -70,4 +70,4 @@ export default function AppRouter() {
   );
 }
 
-createRoot(document.getElementById("root")!).render(<AppRouter />);
+createRoot(document.getElementById('root')!).render(<AppRouter />);

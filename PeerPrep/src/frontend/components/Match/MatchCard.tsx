@@ -15,7 +15,12 @@ interface MatchCardProps {
   onMatchStateChange?: (state: MatchState) => void;
 }
 
-export function MatchCard({ userId, category, difficulty, onMatchStateChange }: MatchCardProps) {
+export function MatchCard({
+  userId,
+  category,
+  difficulty,
+  onMatchStateChange,
+}: MatchCardProps) {
   const {
     matchState,
     partnerId,
@@ -31,7 +36,7 @@ export function MatchCard({ userId, category, difficulty, onMatchStateChange }: 
   const { minutes, seconds, reset, addTime } = useMatchTimer(
     matchState === MatchState.Searching || matchState === MatchState.Found,
     180,
-    resetBackToIdle,
+    resetBackToIdle
   );
 
   const navigate = useNavigate();
@@ -91,7 +96,7 @@ export function MatchCard({ userId, category, difficulty, onMatchStateChange }: 
         );
 
       case MatchState.Confirmed:
-        return <MatchConfirmed matchDetails={matchDetails ?? "No details"} />;
+        return <MatchConfirmed matchDetails={matchDetails ?? 'No details'} />;
 
       default:
         return null;

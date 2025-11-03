@@ -1,9 +1,13 @@
 // hooks/useMatching.ts
-import { useState } from "react";
-import { matchingApi } from "../api/MatchingApi";
-import { MatchState } from "../types/MatchState";
+import { useState } from 'react';
+import { matchingApi } from '../api/MatchingApi';
+import { MatchState } from '../types/MatchState';
 
-export function useMatching(userId: string, category: string, difficulty: string) {
+export function useMatching(
+  userId: string,
+  category: string,
+  difficulty: string
+) {
   const [matchState, setMatchState] = useState<MatchState>(MatchState.Idle);
   const [matchId, setMatchId] = useState<string | null>(null);
   const [partnerId, setPartnerId] = useState<string | null>(null);
@@ -24,7 +28,7 @@ export function useMatching(userId: string, category: string, difficulty: string
       });
 
       if (res.error) {
-        console.error("Find match error:", res.error);
+        console.error('Find match error:', res.error);
         setStatusMessage(res.error);
         setMatchState(MatchState.Idle);
         return;
@@ -36,8 +40,8 @@ export function useMatching(userId: string, category: string, difficulty: string
         setPartnerId(res.data.partner_id || "Your partner");
       }
     } catch (err) {
-      console.error("Find match exception:", err);
-      setStatusMessage("Failed to start matching.");
+      console.error('Find match exception:', err);
+      setStatusMessage('Failed to start matching.');
       setMatchState(MatchState.Idle);
     }
   };
@@ -45,12 +49,16 @@ export function useMatching(userId: string, category: string, difficulty: string
   /** Cancel current matching session */
   const cancelMatch = async () => {
     try {
-      const res = await matchingApi.terminateMatch({ user_id: userId, category, difficulty });
+      const res = await matchingApi.terminateMatch({
+        user_id: userId,
+        category,
+        difficulty,
+      });
       if (res.error) {
-        console.error("Terminate error:", res.error);
+        console.error('Terminate error:', res.error);
         setStatusMessage(res.error);
       }
-      console.log("Matchmaking cancelled:", res);
+      console.log('Matchmaking cancelled:', res);
     } finally {
       setMatchState(MatchState.Idle);
       setMatchId(null);
@@ -67,24 +75,24 @@ export function useMatching(userId: string, category: string, difficulty: string
       const res = await matchingApi.confirmMatch(matchId, { user_id: userId });
 
       if (res.error) {
-        console.error("Accept match error:", res.error);
+        console.error('Accept match error:', res.error);
         setStatusMessage(res.error);
         return;
       }
 
-      if (res.data?.message === "partner failed to accept the match") {
-        console.log("Partner failed to accept.");
-        setStatusMessage("Partner failed to accept.");
+      if (res.data?.message === 'partner failed to accept the match') {
+        console.log('Partner failed to accept.');
+        setStatusMessage('Partner failed to accept.');
         setMatchState(MatchState.Idle);
       } else if (res.data?.match_details) {
         setMatchDetails(res.data.match_details);
         setMatchState(MatchState.Confirmed);
       } else {
-        setStatusMessage("Unexpected response during match acceptance.");
+        setStatusMessage('Unexpected response during match acceptance.');
       }
     } catch (err) {
       console.error(err);
-      setStatusMessage("Error accepting match.");
+      setStatusMessage('Error accepting match.');
     } finally {
       setIsAccepting(false);
     }
@@ -92,7 +100,7 @@ export function useMatching(userId: string, category: string, difficulty: string
 
   /** Used in forfeit matching, and timer ends */
   const resetBackToIdle = async () => {
-      setMatchState(MatchState.Idle);
+    setMatchState(MatchState.Idle);
   };
 
   return {

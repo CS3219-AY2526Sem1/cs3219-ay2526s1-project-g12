@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from "react";
-import GitHubLogo from "../../assets/Images/github-logo.png";
-import { Link, useNavigate } from "react-router";
-import { useAuth } from "../../context/AuthContext";
+import React, { useState, useEffect } from 'react';
+import GitHubLogo from '../../assets/Images/github-logo.png';
+import { Link, useNavigate } from 'react-router';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { user, login, error, clearError, isLoading } = useAuth();
   const navigate = useNavigate();
 
   // Redirect authenticated user to dashboard
   useEffect(() => {
-    if (user && user.is_verified) navigate("/dashboard");
+    if (user && user.is_verified) navigate('/dashboard');
   }, [user]);
 
   // Clear auth error when user starts typing again
@@ -24,13 +24,13 @@ export default function Login() {
     e.preventDefault();
     setSubmitting(true);
 
-    console.log("Login attempt:", email);
+    console.log('Login attempt:', email);
 
     const success = await login(email, password);
     if (success) {
-      setEmail("");
-      setPassword("");
-      navigate("/dashboard");
+      setEmail('');
+      setPassword('');
+      navigate('/dashboard');
     }
 
     setSubmitting(false);
@@ -112,7 +112,7 @@ export default function Login() {
               Signing in...
             </>
           ) : (
-            "Sign In"
+            'Sign In'
           )}
         </button>
 

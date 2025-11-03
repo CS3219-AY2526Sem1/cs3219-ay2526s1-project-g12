@@ -1,12 +1,12 @@
-import AuthLayout from "../layouts/AuthLayout";
-import MainLayout from "../layouts/MainLayout";
+import AuthLayout from '../layouts/AuthLayout';
+import MainLayout from '../layouts/MainLayout';
 
 export const routeSettings = {
-  public: ["/auth/login", "/auth/register", "/verify", "/"],
+  public: ['/auth/login', '/auth/register', '/verify', '/'],
 };
 
 export const getLayout = (path: string) => {
-  if (path.startsWith("/auth")) return AuthLayout;
+  if (path.startsWith('/auth')) return AuthLayout;
   return MainLayout;
 };
 

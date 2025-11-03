@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
 export function useMatchTimer(
     active: boolean,
@@ -6,8 +6,8 @@ export function useMatchTimer(
     onTimeout?: () => void,
     countDown = true,
 ) {
-    const [timeLeft, setTimeLeft] = useState(initialTime);
-    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [timeLeft, setTimeLeft] = useState(initialTime);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     useEffect(() => {
         if (active) {
@@ -24,16 +24,16 @@ export function useMatchTimer(
         if (countDown && active && timeLeft === 0 && onTimeout) onTimeout();
     }, [timeLeft, countDown]);
 
-    const reset = (seconds = initialTime) => setTimeLeft(seconds);
-    const stop = () => {
-        if (timerRef.current) clearInterval(timerRef.current);
-    };
-    const addTime = (seconds: number) => setTimeLeft((prev) => prev + seconds);
+  const reset = (seconds = initialTime) => setTimeLeft(seconds);
+  const stop = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+  };
+  const addTime = (seconds: number) => setTimeLeft((prev) => prev + seconds);
 
-    const minutes = Math.floor(timeLeft / 60)
-        .toString()
-        .padStart(2, "0");
-    const seconds = (timeLeft % 60).toString().padStart(2, "0");
+  const minutes = Math.floor(timeLeft / 60)
+    .toString()
+    .padStart(2, '0');
+  const seconds = (timeLeft % 60).toString().padStart(2, '0');
 
-    return { timeLeft, minutes, seconds, reset, addTime, stop };
+  return { timeLeft, minutes, seconds, reset, addTime, stop };
 }

@@ -16,7 +16,7 @@ export function MatchFound({
   return (
     <>
       <p className="text-lg font-normal mb-4">
-        Matching found! <br /> Your partner is:{" "}
+        Matching found! <br /> Your partner is:{' '}
         <span className="font-semibold">{partnerName}</span>
       </p>
       <div className="flex flex-col gap-3">
@@ -24,7 +24,7 @@ export function MatchFound({
           onClick={onAccept}
           disabled={isAccepting}
           className={`btn font-normal ${
-            isAccepting ? "bg-gray-400 cursor-not-allowed" : "btn-primary"
+            isAccepting ? 'bg-gray-400 cursor-not-allowed' : 'btn-primary'
           }`}
         >
           {isAccepting ? (
@@ -33,7 +33,7 @@ export function MatchFound({
               Accepting...
             </>
           ) : (
-            "✅ Accept"
+            '✅ Accept'
           )}
         </button>
         <button
