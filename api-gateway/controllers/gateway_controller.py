@@ -26,7 +26,9 @@ class GatewayController:
     ):
         self.redis = redis
         self.ttl = token_ttl_seconds
-        self.registry = ServiceRegistry(redis, heartbeat_ttl=heartbeat_ttl, rr_ttl=rr_ttl)
+        self.registry = ServiceRegistry(
+            redis, heartbeat_ttl=heartbeat_ttl, rr_ttl=rr_ttl
+        )
 
     async def _find_existing_token_key(self, user_id: str) -> str | None:
         """Scans for an existing access token key associated with a user ID.
@@ -233,7 +235,7 @@ class GatewayController:
             )
             return 503, {"detail": "Service unavailable"}
 
-        url = f"http://{address}{internal_path}"
+        url = f"{address}{internal_path}"
 
         log.info(f"Forwarding request: {method} {path} → [{service_name}] {url}")
 
