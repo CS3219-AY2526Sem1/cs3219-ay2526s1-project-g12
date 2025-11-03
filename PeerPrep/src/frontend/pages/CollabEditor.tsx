@@ -64,7 +64,7 @@ export default function CollabEditor() {
           const res = await collabApi.connect(matchDetails);
           if (res.data && res.data.message) {
             try {
-              const message = JSON.parse(res.data.message);
+              const message = res.data.message;
               console.log('Problem data:', message);
               setProblem(message);
             } catch {
