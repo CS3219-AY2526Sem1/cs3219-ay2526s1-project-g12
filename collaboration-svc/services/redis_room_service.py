@@ -1,5 +1,6 @@
 import asyncio
 from datetime import datetime
+import json
 from redis.asyncio import Redis
 import requests
 from utils.logger import log
@@ -31,20 +32,20 @@ async def create_room(match_data: dict, room_connection: Redis) -> None:
     """
     Creates a room given the match data received.
     """
+    url = f"{get_envvar(ENV_QN_SVC_POOL_ENDPOINT)}/{match_data['category']}/{match_data['difficulty']}"
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(f"{get_envvar(ENV_QN_SVC_POOL_ENDPOINT)}/{match_data["category"]}/{match_data["difficulty"]}/") as response:
-                result = await response.json()
-                if asyncio.iscoroutine(result):
-                    result = await result
-                data = result
-    except aiohttp.ClientConnectorError as e:
-        log.info(f"ERROR, Connection failed: {e}")
-    except aiohttp.ClientError as e:
-        log.info(f"ERROR, Client error: {e}")
+            async with session.get(url, ssl=False, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                data = await response.text()
     except Exception as e:
-        log.info(f"ERROR, Unexpected: {e}")
+            log.info(f"ERROR: {e}")
+
+    try:
+        data = json.loads(data)
+        log.info(f"INFO: {data}")
+    except Exception as e:
+        log.info("ERROR: Cannot convert to JSON")
 
     # Question data is already in a dictionary so append the rest of the details there
     for key, value in match_data.items():

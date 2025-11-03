@@ -43,7 +43,7 @@ class WebSocketManager:
         message = {
             "user_id": receiver,
             "room_id": room_id,
-            "event": body
+            "message": body
         }
 
         if self.active_connection:

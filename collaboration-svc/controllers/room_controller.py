@@ -92,18 +92,18 @@ async def create_ttl_expire_listener(
             await acknowlwedge_event(event_queue_connection, stream_key, group_key, event_id)
             log.info(f"Collaboration service, {service_id} has completed handling event {event_id}")    
 
-async def alert_partner_left(user_id: str, room_id: str, partner: str,  websocket_manager: WebSocketManager) -> None:
+async def alert_partner_left(user_id: str, room_id: str,  websocket_manager: WebSocketManager) -> None:
     """
     Sends a message to the user altering them that their partner has left.
     """
-    await websocket_manager.send_message(user_id, room_id, f"user_{partner}_has_left_the_room")
+    await websocket_manager.send_message(user_id, room_id, f"partner_left")
     log.info(f"Sent a notification to {user_id} that their parter has left the mattch")
 
-async def alert_partner_rejoined(user_id: str, room_id: str, partner: str,  websocket_manager: WebSocketManager) -> None:
+async def alert_partner_rejoined(user_id: str, room_id: str,  websocket_manager: WebSocketManager) -> None:
     """
     Sends a message to the partner that the user has rejoined the room.
     """
-    await websocket_manager.send_message(user_id, room_id, f"user_{partner}_has_joined_the_room")
+    await websocket_manager.send_message(user_id, room_id, f"partner_join")
     log.info(f"Sent a notification to {user_id} that their parter has joined the room")
 
 async def remove_user(user_id: str, room_connection: Redis, websocket_manager: WebSocketManager) -> None:
@@ -133,7 +133,7 @@ async def check_empty_room(user_id: str, room_connection: Redis, websocket_manag
     partner_heartbeat_key = format_heartbeat_key(partner)
 
     if (await is_user_alive(partner_heartbeat_key, room_connection)):
-        await alert_partner_left(partner, room_id, user_id, websocket_manager)
+        await alert_partner_left(partner, room_id, websocket_manager)
     else:
         # Fire and foeget this task to check again in 5 minutes if any user joins back
         asyncio.create_task(start_room_hold_timer(room_id, user_id, room_connection))
@@ -210,7 +210,7 @@ async def reconnect_user(user_id: str, room_connection: Redis, websocket_manager
     is_partner_in_room = does_key_exist(partner_heartbeat_key)
 
     if (is_partner_in_room):
-        await alert_partner_rejoined(partner, room_id, user_id, websocket_manager)
+        await alert_partner_rejoined(partner, room_id, websocket_manager)
 
 async def terminate_match(user_id: str, room_id: str, match_data: MatchData, room_connection: Redis):
     """
