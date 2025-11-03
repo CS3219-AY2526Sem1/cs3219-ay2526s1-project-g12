@@ -4,7 +4,6 @@ import { ProblemPanel } from '../components/Collab/ProblemPanel';
 import { TopBar } from '../components/Collab/TopBar';
 import { ToastContainer, toast } from 'react-toastify';
 import { useEffect, useRef, useState } from 'react';
-import { apiClient } from '../api/ApiClient';
 import { useMatchTimer } from '../hooks/useMatchTimer';
 import { collabApi } from '../api/CollaborationApi';
 
