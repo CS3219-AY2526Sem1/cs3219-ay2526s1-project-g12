@@ -65,7 +65,6 @@ export default function CollabEditor() {
           if (res.data && res.data.message) {
             try {
               const message = res.data.message;
-              console.log('Problem data:', message);
               setProblem(message);
             } catch {
               console.warn('Invalid problem JSON');
@@ -163,7 +162,7 @@ export default function CollabEditor() {
   const handleExit = async () => {
     try {
       const code = localStorage.getItem('collab_code') || '';
-      const res = await collabApi.terminate(userId, matchDetails, code);
+      const res = await collabApi.terminate(userId, code);
 
       if (res.error) {
         console.error('Terminate failed:', res.error);

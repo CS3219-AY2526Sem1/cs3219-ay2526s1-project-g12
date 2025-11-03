@@ -34,6 +34,15 @@ export function CodeEditor({
     };
   }, []);
 
+  useEffect(() => {
+    if (editorRef.current && defaultCode) {
+      const currentValue = editorRef.current.getValue();
+      if (!currentValue?.trim()) {
+        editorRef.current.setValue(defaultCode);
+      }
+    }
+  }, [defaultCode]);
+
   const handleEditorDidMount: OnMount = (editor, monacoNs) => {
     editorRef.current = editor;
 
