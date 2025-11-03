@@ -5,8 +5,19 @@ interface CollabResponse {
   message: string;
 }
 
+interface CollabQnResponse {
+    message: {
+        title: string;
+        description: string;
+        code_template: string;
+        solution_sample: string;
+        difficulty: string;
+        category: string;
+    }
+}
+
 export const collabApi = {
-  async connect(matchId: string): Promise<ApiResponse<CollabResponse>> {
+  async connect(matchId: string): Promise<ApiResponse<CollabQnResponse>> {
     return apiClient.request(`/cs/connect/${matchId}`, {
       method: 'GET',
     });

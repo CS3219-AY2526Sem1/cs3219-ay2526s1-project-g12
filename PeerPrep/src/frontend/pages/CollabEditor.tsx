@@ -4,7 +4,6 @@ import { ProblemPanel } from '../components/Collab/ProblemPanel';
 import { TopBar } from '../components/Collab/TopBar';
 import { ToastContainer, toast } from 'react-toastify';
 import { useEffect, useRef, useState } from 'react';
-import { apiClient } from '../api/ApiClient';
 import { useMatchTimer } from '../hooks/useMatchTimer';
 import { collabApi } from '../api/CollaborationApi';
 
@@ -65,7 +64,7 @@ export default function CollabEditor() {
           const res = await collabApi.connect(matchDetails);
           if (res.data && res.data.message) {
             try {
-              const message = JSON.parse(res.data.message);
+              const message = res.data.message;
               console.log('Problem data:', message);
               setProblem(message);
             } catch {

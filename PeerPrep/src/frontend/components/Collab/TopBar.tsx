@@ -27,7 +27,6 @@ export function TopBar({ onExit, category, difficulty, minutes, seconds }: TopBa
         <div className="flex flex-col bg-gray-100 px-4 py-2 rounded-xl">
           <span className="font-medium text-base">Your matched partner</span>
           <span className="font-extrabold text-4xl">Gavin Sin</span>
-          <span className="text-success font-medium">CONNECTED</span>
         </div>
 
         <div className="flex flex-col gap-2">

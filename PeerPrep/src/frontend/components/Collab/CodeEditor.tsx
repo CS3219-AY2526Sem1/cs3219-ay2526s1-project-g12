@@ -61,8 +61,7 @@ export function CodeEditor({
     // Initialize WebRTC provider
     const provider = new WebrtcProvider(`room-${matchDetail}`, ydoc, {
       signaling: [
-        'ws://localhost:4444', // local signaling server
-        // "ws://pp-signaling-svc:4444" // docker network
+        'ws://localhost:4444',
       ],
       peerOpts: {
         config: {
