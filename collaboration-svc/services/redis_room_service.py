@@ -159,7 +159,7 @@ def send_room_for_review(user_one: str, user_two: str, submitted_solution: str, 
         """
         start_time = datetime.fromisoformat(room_infoamtion["start_time"])
         end_time = datetime.now()
-        elapsed_seconds = (end_time - start_time).total_seconds()
+        elapsed_seconds = int((end_time - start_time).total_seconds())
 
         # Formar the body for the HTTP request
         body = {
@@ -174,7 +174,8 @@ def send_room_for_review(user_one: str, user_two: str, submitted_solution: str, 
             "users": [user_one, user_two]
         }
 
-        requests.get(f"{get_envvar(ENV_QN_SVC_HISTORY_ENDPOINT)}", json= body)
+        r = requests.post(f"{get_envvar(ENV_QN_SVC_HISTORY_ENDPOINT)}", json= body)
+        log.info("INFO: Match attempt sent to question history")
 
 async def get_room_question(room_key: str, room_connection: Redis) -> dict:
     """

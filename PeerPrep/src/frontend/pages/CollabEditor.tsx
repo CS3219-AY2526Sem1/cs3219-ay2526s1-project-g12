@@ -162,7 +162,7 @@ export default function CollabEditor() {
   const handleExit = async () => {
     try {
       const code = localStorage.getItem('collab_code') || '';
-      const res = await collabApi.terminate(userId, code);
+      const res = await collabApi.terminate(matchDetails, code);
 
       if (res.error) {
         console.error('Terminate failed:', res.error);

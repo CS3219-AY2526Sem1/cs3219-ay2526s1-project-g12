@@ -112,7 +112,7 @@ async def remove_user(user_id: str, room_connection: Redis, websocket_manager: W
     """
     heartbeat_key = format_heartbeat_key(user_id)
 
-    if (not does_key_exist(heartbeat_key, room_connection)):
+    if (not await does_key_exist(heartbeat_key, room_connection)):
         raise HTTPException(
                 status_code=400,
                 detail="Cannot leave the match as the user is currently not in a room"
@@ -189,7 +189,7 @@ async def reconnect_user(user_id: str, room_connection: Redis, websocket_manager
     """
     room_key = format_user_room_key(user_id)
 
-    if (not does_key_exist(room_key)):
+    if (not await does_key_exist(room_key)):
         raise HTTPException(
                 status_code=400,
                 detail="User is not assiged a room or the room has expired",
@@ -207,25 +207,27 @@ async def reconnect_user(user_id: str, room_connection: Redis, websocket_manager
 
     partner = get_partner(user_id, room_key, room_connection)
     partner_heartbeat_key = format_heartbeat_key(partner)
-    is_partner_in_room = does_key_exist(partner_heartbeat_key)
+    is_partner_in_room = await does_key_exist(partner_heartbeat_key)
 
     if (is_partner_in_room):
         await alert_partner_rejoined(partner, room_id, websocket_manager)
 
-async def terminate_match(user_id: str, room_id: str, match_data: MatchData, room_connection: Redis):
+async def terminate_match(user_id: str, room_id: str, match_data: MatchData, room_connection: Redis, websocket_manager: WebSocketManager):
     """
     Terminates the match for both parties.
     """
     room_key = format_user_room_key(user_id)
     user_heartbeat_key = format_heartbeat_key(user_id)
-    # Check if user is a valid user with a alive heartbeat
 
-    has_valid_heartbeat = does_key_exist(user_heartbeat_key, room_connection)
-    has_valid_room = does_key_exist(room_key, room_connection)
+    # Check if user is a valid user with a alive heartbeat
+    has_valid_heartbeat = await does_key_exist(user_heartbeat_key, room_connection)
+    has_valid_room = await does_key_exist(room_key, room_connection)
 
     if (has_valid_heartbeat and has_valid_room and await get_room_id(room_key, room_connection) == room_id):
         room_informaion = await get_room_information(room_key, room_connection)
         partner = await get_partner(user_id, room_key, room_connection)
+
+        await websocket_manager.send_message(partner, room_id, "match_terminate")
 
         cleanup_key = format_cleanup_key(room_id)
         await cleanup(cleanup_key, room_connection)
@@ -238,6 +240,7 @@ async def terminate_match(user_id: str, room_id: str, match_data: MatchData, roo
         send_room_for_review(user_id, partner, match_data.data, room_informaion)
         log.info(f"User, {user_id} has terminated room, {room_id}")
     else:
+        log.info(f"WARNING: Invalid request to terminate match, {user_id}, {room_id}")
         raise HTTPException(
                 status_code=400,
                 detail="Cannot terminate match as user or room id is invalid"
