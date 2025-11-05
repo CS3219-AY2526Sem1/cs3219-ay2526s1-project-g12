@@ -2,6 +2,10 @@ import { apiClient } from './ApiClient';
 import type { ApiResponse } from './ApiClient';
 import type { Question } from '../types/Question.tsx';
 
+export interface QuestionsResponse {
+  questions: Question[];
+}
+
 export interface PoolQuestion extends Question {
   id: number;
 }
@@ -20,7 +24,7 @@ export const questionApi = {
   async getAllQuestions(
     start: number = 1,
     end: number = 10
-  ): Promise<ApiResponse<Question[]>> {
+  ): Promise<ApiResponse<QuestionsResponse>> {
     return apiClient.request(`/qs/questions/?start=${start}&end=${end}`, {
       method: 'GET',
     });

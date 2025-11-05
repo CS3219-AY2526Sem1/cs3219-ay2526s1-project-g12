@@ -9,11 +9,12 @@ import NavBar from '../components/NavBar';
 import { NAV_BUTTONS } from '../config/NavConfig';
 import QuestionList from '../components/QuestionList.tsx';
 import { useEffect, useState } from 'react';
-import type { Question } from '../types/Question.tsx';
-import { questionApi } from '../api/QuestionApi.tsx';
+import { questionApi, type QuestionsResponse } from '../api/QuestionApi.tsx';
 
 function Questions() {
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<QuestionsResponse>({
+    questions: [],
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,7 +45,7 @@ function Questions() {
               <span>{error}</span>
             </div>
           ) : (
-            <QuestionList questions={questions} />
+            <QuestionList questions={questions.questions} />
           )}
         </div>
       </main>
