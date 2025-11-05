@@ -75,8 +75,8 @@ async def root() -> dict:
 
 @app.get("/connect/{room_id}", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
 async def connect(room_id: str, x_user_id: Annotated[str, Header()]):
-    question_data = await connect_user(x_user_id, room_id,  app.state.room_connection) # Dictionary
-    return {"message": question_data}
+    data = await connect_user(x_user_id, room_id,  app.state.room_connection) # Dictionary
+    return {"message": data}
 
 @app.post("/reconnect", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
 async def reconnect_user_to_match(x_user_id: Annotated[str, Header()]) -> dict:
