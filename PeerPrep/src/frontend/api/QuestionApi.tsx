@@ -1,14 +1,6 @@
 import { apiClient } from './ApiClient';
 import type { ApiResponse } from './ApiClient';
-
-export interface Question {
-  title: string;
-  description: string;
-  difficulty: string;
-  code_template: string;
-  solution_sample: string;
-  categories: Array<string>;
-}
+import type { Question } from '../types/Question.tsx';
 
 export interface PoolQuestion extends Question {
   id: number;
