@@ -24,7 +24,8 @@ from services.redis_room_service import (
     send_room_for_review,
     remove_room_cleanup,
     update_user_ttl,
-    get_room_question
+    get_room_question,
+    get_partner_name
 )
 from utils.logger import log
 from utils.utils import (
@@ -258,4 +259,7 @@ async def connect_user(user_id: str, room_id: str, room_connection: Redis) -> di
             detail="User is not assigned to a room or the room does not exist"
         )
     
-    return await get_room_question(room_key, room_connection)
+    question = await get_room_question(room_key, room_connection)
+    partner_name = await get_partner_name(room_key, user_id, room_connection)
+
+    return {"question" : question, "partner_name": partner_name}

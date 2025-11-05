@@ -177,6 +177,16 @@ def send_room_for_review(user_one: str, user_two: str, submitted_solution: str, 
         r = requests.post(f"{get_envvar(ENV_QN_SVC_HISTORY_ENDPOINT)}", json= body)
         log.info("INFO: Match attempt sent to question history")
 
+async def get_partner_name(room_key: str, user_id: str, room_connection: Redis) -> str:
+    """
+    Retrieves the question assigned to this room.
+    """
+    
+    if (await room_connection.hget(room_key, "user_one") == user_id):
+        return await room_connection.hget(room_key, "user_two_name")
+    else:
+        return await room_connection.hget(room_key, "user_one_name")
+
 async def get_room_question(room_key: str, room_connection: Redis) -> dict:
     """
     Retrieves the question assigned to this room.
