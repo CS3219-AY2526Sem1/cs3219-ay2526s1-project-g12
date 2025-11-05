@@ -15,7 +15,7 @@ def connect_to_redis_confirmation_service() -> Redis:
     log.info("Connected to redis messaging server.")
     return Redis(host=host, port=redis_port, decode_responses=True, db=2)
 
-async def setup_match_confirmation(match_key: str, user_one: str, user_two: str, difficulty: str, category: str, confirmation_conn: Redis) -> None:
+async def setup_match_confirmation(match_key: str, user_one: str, user_one_name: str, user_two: str, user_two_name: str, difficulty: str, category: str, confirmation_conn: Redis) -> None:
     """
     Creates a match confirmation table in redis to keep track on who has and has not comfirm their match.
     """
@@ -23,7 +23,9 @@ async def setup_match_confirmation(match_key: str, user_one: str, user_two: str,
         "user_one_confirmation": 0,
         "user_two_confirmation": 0,
         "user_one": user_one,
+        "user_one_name": user_one_name,
         "user_two": user_two,
+        "user_two_name": user_two_name,
         "difficulty": difficulty,
         "category": category,
     }
@@ -57,11 +59,6 @@ async def get_match_partner(user_id: str, match_key: str, confirmation_conn: Red
     """
     Retrieves the user's partner user id for that match.
     """
-    log.debug("get_match_partner function execution: ")
-    log.debug(await confirmation_conn.hget(match_key, "user_one") == user_id)
-    log.debug(await confirmation_conn.hget(match_key, "user_two"))
-    log.debug(await confirmation_conn.hget(match_key, "user_two"))
-
     if (await confirmation_conn.hget(match_key, "user_one") == user_id):
         return await confirmation_conn.hget(match_key, "user_two")
     else:
