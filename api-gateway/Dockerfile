@@ -12,6 +12,7 @@ COPY . /app
 WORKDIR /app
 RUN uv sync --frozen --no-cache
 
+EXPOSE 80
 # Run the application.
 ENTRYPOINT ["/app/.venv/bin/fastapi", "run", "/app/main.py"]
 CMD ["--port", "80", "--host", "0.0.0.0"]
