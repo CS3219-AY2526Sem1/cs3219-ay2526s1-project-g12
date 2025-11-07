@@ -1,11 +1,10 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { CodeEditor } from '../components/Collab/CodeEditor';
-import { ProblemPanel } from '../components/Collab/ProblemPanel';
-import { TopBar } from '../components/Collab/TopBar';
 import { ToastContainer, toast } from 'react-toastify';
 import { useEffect, useRef, useState } from 'react';
 import { useMatchTimer } from '../hooks/useMatchTimer';
 import { collabApi } from '../api/CollaborationApi';
+import { CollabProvider } from '../context/CollabProviderContext';
+import { CollabSession } from '../components/Collab/CollabSession';
 
 export default function CollabEditor() {
   const navigate = useNavigate();
@@ -66,6 +65,7 @@ export default function CollabEditor() {
           const res = await collabApi.connect(matchDetails);
           if (res.data) {
             try {
+              console.log('Problem data:', res.data);
               const question = res.data.question;
               const partner = res.data.partner_name;
               setProblem(question);
@@ -182,43 +182,17 @@ export default function CollabEditor() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col px-20 py-10">
-      <TopBar
-        onExit={handleExit}
-        category={problem.category ?? ""}
-        difficulty={problem.difficulty ?? ""}
+    <CollabProvider roomId={matchDetails}>
+      <CollabSession
+        userId={userId}
+        problem={problem}
+        partnerName={partnerName}
+        isReconnecting={isReconnecting}
+        handleExit={handleExit}
         minutes={minutes}
         seconds={seconds}
-        partnerName={partnerName}
       />
-
-      {isReconnecting && (
-        <div className="bg-yellow-100 text-yellow-800 text-center p-2 rounded mb-4 animate-pulse">
-          ⚠️ Connection lost — attempting to reconnect...
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-10 justify-center overflow-hidden">
-        <div className="card shadow-sm border-1 border-base-200 p-10 overflow-y-auto">
-          <ProblemPanel
-            title={problem.title}
-            description={problem.description}
-          />
-        </div>
-
-        <div className="col-span-2 card shadow-sm border-1 border-base-200 p-10">
-          <div className="w-full overflow-visible">
-            <CodeEditor
-              matchDetail={matchDetails}
-              userId={userId}
-              defaultCode={problem.code_template}
-              isReconnecting={isReconnecting}
-            />
-          </div>
-        </div>
-      </div>
-
       <ToastContainer />
-    </div>
+    </CollabProvider>
   );
 }
