@@ -187,6 +187,16 @@ class GatewayController:
         user_id = user_data.get("user_id")
         role = user_data.get("role")
 
+        log.info(f"Method: {method}")
+        log.info(f"Path: {path}")
+        if headers:
+            log.info(f"Headers: {headers}")
+        if params:
+            log.info(f"Params: {params}")
+        if data is not None:
+            log.info(f"Data: {data}")
+        log.info(f"User Data: {user_data}")
+
         # Find the service responsible for this path
         matched_route = await self.registry.find_route(path)
         if not matched_route:
@@ -254,6 +264,9 @@ class GatewayController:
                 r = await client.request(
                     method, url, headers=headers, params=params or {}, data=data
                 )
+                log.info(f"Received HTTP response with status code: {r.status_code}")
+                log.info(f"Response URL: {r.url}")
+                log.info(f"Response Headers: {r.headers}")
                 try:
                     body = r.json()
                 except Exception:
