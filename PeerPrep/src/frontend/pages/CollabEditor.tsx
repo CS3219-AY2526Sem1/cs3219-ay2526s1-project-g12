@@ -185,8 +185,8 @@ export default function CollabEditor() {
     <div className="min-h-screen flex flex-col px-20 py-10">
       <TopBar
         onExit={handleExit}
-        category={problem.category}
-        difficulty={problem.difficulty}
+        category={problem.category ?? ""}
+        difficulty={problem.difficulty ?? ""}
         minutes={minutes}
         seconds={seconds}
         partnerName={partnerName}
