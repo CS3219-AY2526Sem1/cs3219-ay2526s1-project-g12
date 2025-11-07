@@ -23,7 +23,9 @@ function NavBar({ buttons }: NavBarProps) {
   return (
     <div className="navbar">
       <div className="flex-1">
-        <span className="peerprep-logo mt-[5%]">PeerPrep</span>
+        <Link to="/dashboard" className="peerprep-logo mt-[5%]">
+          PeerPrep
+        </Link>
       </div>
 
       <div className="flex gap-2">

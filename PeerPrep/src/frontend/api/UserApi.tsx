@@ -16,6 +16,11 @@ type UserUpdate = {
   readonly password?: string;
 };
 
+type UserResetPassword = {
+  readonly token: string;
+  readonly password: string;
+};
+
 type LoginResponse = {
   readonly access_token: string;
 };
@@ -77,6 +82,36 @@ export const userApi = {
   },
 
   /**
+   * Update the current user's profile. Accepts a partial set of fields to update
+   * and sends a PATCH request to the user service. Note that only the
+   * authenticated user can update their own information (via the `/users/me` endpoint).
+   *
+   * @param {UserUpdate} updateData Partial user data to update.
+   * @returns ApiResponse with updated user information if successful.
+   */
+  async updateUser(updateData: UserUpdate): Promise<ApiResponse<User>> {
+    return apiClient.request('/us/users/me', {
+      method: 'PATCH',
+      body: JSON.stringify(updateData),
+    });
+  },
+
+  /**
+   * Request email verification by making a POST request to the verification token endpoint.
+   *
+   * @param email
+   * @returns ApiResponse indicating success or failure.
+   */
+  async requestVerifyEmail(email: string): Promise<ApiResponse<null>> {
+    return apiClient.request('/us/auth/request-verify-token', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: email,
+      }),
+    });
+  },
+
+  /**
    * Verify the user's email using the provided token by making a POST request to the verification endpoint.
    *
    * @param token
@@ -92,17 +127,30 @@ export const userApi = {
   },
 
   /**
-   * Update the current user's profile. Accepts a partial set of fields to update
-   * and sends a PATCH request to the user service. Note that only the
-   * authenticated user can update their own information (via the `/users/me` endpoint).
+   * Request a password reset email by making a POST request to the forget-password endpoint.
    *
-   * @param {UserUpdate} updateData Partial user data to update.
-   * @returns ApiResponse with updated user information if successful.
+   * @param email
+   * @returns ApiResponse indicating success or failure.
    */
-  async updateUser(updateData: UserUpdate): Promise<ApiResponse<User>> {
-    return apiClient.request('/us/users/me', {
-      method: 'PATCH',
-      body: JSON.stringify(updateData),
+  async forgotPassword(email: string): Promise<ApiResponse<null>> {
+    return apiClient.request('/us/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: email,
+      }),
+    });
+  },
+
+  /**
+   * Reset the user's password using the provided token and new password.
+   *
+   * @param data
+   * @returns ApiResponse indicating success or failure.
+   */
+  async resetPassword(data: UserResetPassword): Promise<ApiResponse<null>> {
+    return apiClient.request('/us/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
     });
   },
 
