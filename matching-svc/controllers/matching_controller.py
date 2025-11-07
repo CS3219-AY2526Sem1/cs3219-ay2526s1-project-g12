@@ -215,10 +215,10 @@ async def terminate_previous_match_request(
 
     # Just call terminate match
     old_match_request = MatchRequest(
-        user_id=user_id, difficulty=difficulty, category=category
+        difficulty=difficulty, category=category
     )
     await terminate_match(
-        old_match_request, matchmaking_conn, message_conn, is_new_request=True
+        user_id, old_match_request, matchmaking_conn, message_conn, is_new_request=True
     )
 
     return True

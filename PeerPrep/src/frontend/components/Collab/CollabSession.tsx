@@ -263,8 +263,8 @@ export function CollabSession({
     <div className="min-h-screen flex flex-col px-20 py-10">
       <TopBar
         onExit={handleExit}
-        category={problem.category ?? ''}
-        difficulty={problem.difficulty ?? ''}
+        category={problem? problem.category : ""}
+        difficulty={problem? problem.difficulty : ""}
         minutes={minutes}
         seconds={seconds}
         partnerName={partnerName}
@@ -282,8 +282,8 @@ export function CollabSession({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-10 justify-center overflow-hidden">
         <div className="card shadow-sm border-1 border-base-200 p-10 overflow-y-auto">
           <ProblemPanel
-            title={problem.title}
-            description={problem.description}
+            title={problem ? problem.title : ""}
+            description={problem? problem.description : ""}
           />
         </div>
 
@@ -291,7 +291,7 @@ export function CollabSession({
           <div className="w-full overflow-visible">
             <CodeEditor
               userId={userId}
-              defaultCode={problem.code_template}
+              defaultCode={problem ? problem.code_template : ""}
               isReconnecting={isReconnecting}
             />
           </div>
