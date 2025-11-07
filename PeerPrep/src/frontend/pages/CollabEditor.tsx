@@ -11,7 +11,7 @@ export default function CollabEditor() {
   const navigate = useNavigate();
   const location = useLocation();
   const matchState = location.state as
-    | { matchDetails: string; userId: string; partnerId: string }
+    | { matchDetails: string; userId: string }
     | undefined;
 
   if (!matchState || !matchState.matchDetails || !matchState.userId) {
@@ -20,7 +20,7 @@ export default function CollabEditor() {
     return null;
   }
 
-  const { matchDetails, userId, partnerId } = matchState;
+  const { matchDetails, userId } = matchState;
   const wsRef = useRef<WebSocket | null>(null);
   const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -32,6 +32,7 @@ export default function CollabEditor() {
     difficulty: '',
     category: '',
   });
+  const [partnerName, setPartnerName] = useState('Your Partner');
 
   const reconnectRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const retryCountRef = useRef<number>(0);
@@ -55,6 +56,7 @@ export default function CollabEditor() {
             // Notify backend of reconnection
             console.log('User id:', userId);
             const res = await collabApi.reconnect();
+            console.log('Reconnect response:', res);
             if (res.error) console.warn('Reconnect API failed:', res.error);
             setIsReconnecting(false);
           } else {
@@ -62,10 +64,12 @@ export default function CollabEditor() {
           }
 
           const res = await collabApi.connect(matchDetails);
-          if (res.data && res.data.message) {
+          if (res.data) {
             try {
-              const message = res.data.message;
-              setProblem(message);
+              const question = res.data.question;
+              const partner = res.data.partner_name;
+              setProblem(question);
+              setPartnerName(partner);
             } catch {
               console.warn('Invalid problem JSON');
             }
@@ -185,6 +189,7 @@ export default function CollabEditor() {
         difficulty={problem.difficulty}
         minutes={minutes}
         seconds={seconds}
+        partnerName={partnerName}
       />
 
       {isReconnecting && (

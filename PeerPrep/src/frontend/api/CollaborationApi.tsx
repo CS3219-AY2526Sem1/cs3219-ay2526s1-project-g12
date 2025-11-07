@@ -6,14 +6,15 @@ interface CollabResponse {
 }
 
 interface CollabQnResponse {
-    message: {
-        title: string;
-        description: string;
-        code_template: string;
-        solution_sample: string;
-        difficulty: string;
-        category: string;
-    }
+  question: {
+    title: string;
+    description: string;
+    code_template: string;
+    solution_sample: string;
+    difficulty: string;
+    category: string;
+  };
+  partner_name: string;
 }
 
 export const collabApi = {

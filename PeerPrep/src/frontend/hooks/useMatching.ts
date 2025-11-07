@@ -10,7 +10,7 @@ export function useMatching(
 ) {
   const [matchState, setMatchState] = useState<MatchState>(MatchState.Idle);
   const [matchId, setMatchId] = useState<string | null>(null);
-  const [partnerId, setPartnerId] = useState<string | null>(null);
+  const [partnerName, setPartnerName] = useState<string | null>(null);
   const [matchDetails, setMatchDetails] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isAccepting, setIsAccepting] = useState(false);
@@ -34,10 +34,10 @@ export function useMatching(
         return;
       }
 
-      if (res.data?.match_id) {
+      if (res.data?.message === 'match has been found') {
         setMatchState(MatchState.Found);
         setMatchId(res.data.match_id);
-        setPartnerId(res.data.partner_id || "Your partner");
+        setPartnerName(res.data.partner_name || "Your partner");
       }
     } catch (err) {
       console.error('Find match exception:', err);
@@ -62,7 +62,7 @@ export function useMatching(
     } finally {
       setMatchState(MatchState.Idle);
       setMatchId(null);
-      setPartnerId(null);
+      setPartnerName(null);
     }
   };
 
@@ -106,7 +106,7 @@ export function useMatching(
   return {
     matchState,
     matchId,
-    partnerId,
+    partnerName,
     matchDetails,
     statusMessage,
     isAccepting,

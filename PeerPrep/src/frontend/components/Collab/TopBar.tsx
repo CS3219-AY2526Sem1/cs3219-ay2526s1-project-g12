@@ -4,9 +4,10 @@ interface TopBarProps {
   difficulty: string;
   minutes: string;
   seconds: string;
+  partnerName: string;
 }
 
-export function TopBar({ onExit, category, difficulty, minutes, seconds }: TopBarProps) {
+export function TopBar({ onExit, category, difficulty, minutes, seconds, partnerName }: TopBarProps) {
   return (
     <div className="navbar mb-2">
       <div className="flex">
@@ -26,7 +27,7 @@ export function TopBar({ onExit, category, difficulty, minutes, seconds }: TopBa
 
         <div className="flex flex-col bg-gray-100 px-4 py-2 rounded-xl">
           <span className="font-medium text-base">Your matched partner</span>
-          <span className="font-extrabold text-4xl">Gavin Sin</span>
+          <span className="font-extrabold text-4xl">{partnerName}</span>
         </div>
 
         <div className="flex flex-col gap-2">

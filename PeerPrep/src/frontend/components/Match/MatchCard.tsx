@@ -23,7 +23,7 @@ export function MatchCard({
 }: MatchCardProps) {
   const {
     matchState,
-    partnerId,
+    partnerName,
     matchDetails,
     statusMessage,
     isAccepting,
@@ -51,12 +51,11 @@ export function MatchCard({
     if (matchState === MatchState.Found) {
       addTime(10);
     }
-    if (matchState === MatchState.Confirmed && matchDetails && partnerId) {
+    if (matchState === MatchState.Confirmed && matchDetails) {
       navigate("/collabeditor", {
         state: {
           matchDetails,
-          userId,
-          partnerId,
+          userId
         },
       });
     }
@@ -87,7 +86,7 @@ export function MatchCard({
       case MatchState.Found:
         return (
           <MatchFound
-            partnerName={partnerId ?? "Partner"}
+            partnerName={partnerName ?? "Your Partner"}
             isAccepting={isAccepting}
             statusMessage={statusMessage}
             onAccept={acceptMatch}
