@@ -35,7 +35,6 @@ from models.api_models import (
 )
 from service.database_svc import register_database
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # pragma: no cover
     register_self_as_service(app)
@@ -153,4 +152,4 @@ async def get_question_pool_category_difficulty_levels(category: str):
     "/pool/{category}/{difficulty}/", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]}
 )
 async def get_single_question_from_pool(category: str, difficulty: str):
-    return await fetch_single_question_from_bank(category, difficulty)
+    return  await fetch_single_question_from_bank(category, difficulty)

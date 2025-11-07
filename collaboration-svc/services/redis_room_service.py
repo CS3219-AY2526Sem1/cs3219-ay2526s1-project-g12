@@ -5,7 +5,7 @@ from redis.asyncio import Redis
 import requests
 from utils.logger import log
 from utils.utils import get_envvar, format_user_room_key, format_heartbeat_key
-import aiohttp
+import aiohttp 
 
 ENV_REDIS_HOST_KEY = "REDIS_HOST"
 ENV_REDIS_PORT_KEY = "REDIS_PORT"
@@ -34,16 +34,30 @@ async def create_room(match_data: dict, room_connection: Redis) -> None:
     """
     url = f"{get_envvar(ENV_QN_SVC_POOL_ENDPOINT)}/{match_data['category']}/{match_data['difficulty']}"
 
+    log.info(f"INFO: Sending request to {url}")
+
+    # try:
+    #     async with aiohttp.ClientSession(
+    #         limit=100,
+    #         limit_per_host=30,
+    #         ttl_dns_cache=300,
+    #         force_close=False,
+    #         enable_cleanup_closed=True
+    #     ) as session:
+    #         async with session.get(url, ssl=False, timeout=aiohttp.ClientTimeout(total=10)) as response:
+    #             data = await response.text()
+    # except Exception as e:
+    #         log.info(f"ERROR: {e}")
+
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, ssl=False, timeout=aiohttp.ClientTimeout(total=10)) as response:
-                data = await response.text()
+        response = requests.get(url, timeout=10)
+        data = response.text
     except Exception as e:
-            log.info(f"ERROR: {e}")
+        log.info(f"ERROR: {e}")
 
     try:
         data = json.loads(data)
-        log.info(f"INFO: {data}")
+        log.info(data)
     except Exception as e:
         log.info("ERROR: Cannot convert to JSON")
 
