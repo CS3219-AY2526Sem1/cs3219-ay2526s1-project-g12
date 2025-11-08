@@ -10,6 +10,8 @@ from service.redis_settings import get_redis, lifespan
 from utils.utils import get_envvar
 
 FRONT_END_URL = get_envvar("FRONT_END_URL")
+API_GATEWAY_URL = get_envvar("API_GATEWAY_URL")
+FRONT_END_URL2 = get_envvar("FRONT_END_URL2")
 app = FastAPI(title="API Gateway", lifespan=lifespan)
 
 app.include_router(auth_router)
@@ -71,7 +73,7 @@ app.include_router(dynamic_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONT_END_URL],
+    allow_origins=[FRONT_END_URL,API_GATEWAY_URL,FRONT_END_URL2],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
