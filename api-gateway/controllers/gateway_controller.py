@@ -251,6 +251,7 @@ class GatewayController:
 
         try:
             async with httpx.AsyncClient(timeout=190.0) as client:
+                log.info(f"Forwarding HTTP request to URL: {url}")
                 r = await client.request(
                     method,
                     url,

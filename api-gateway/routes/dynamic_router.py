@@ -27,16 +27,11 @@ async def auth_user(
     """Validates and extends the TTL of the access token if present.
     Returns user data if valid, or an empty dict if unauthenticated.
     """
-    log.info("[AUTH_USER] Starting authentication")
-    log.info(
-        f"[AUTH_USER] Received access_token: {access_token[:20] if access_token else 'None'}..."
-    )
 
     if not access_token:
         log.info("[AUTH_USER] No access token provided, returning empty dict")
         return {}
 
-    log.info("[AUTH_USER] Attempting to validate token")
     try:
         result = await gateway.validate_token(access_token)
         log.info(f"[AUTH_USER] Token validation successful: {result}")
