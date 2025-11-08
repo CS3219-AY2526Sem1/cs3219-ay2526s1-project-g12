@@ -60,7 +60,7 @@ async def dynamic_forward(
     cannot resolve the path to a service, a 404 error is returned.
     """
     method = request.method
-    log.info(f"[DYNAMIC_FORWARD] Incoming request: {method} /{path}")
+    log.info(f"[DYNAMIC_FORWARD] HOST: {request.client.host} Incoming request: {method} /{path}")
     log.info(f"[DYNAMIC_FORWARD] User data: {user_data}")
     
     headers = dict(request.headers)
