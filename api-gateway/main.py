@@ -1,7 +1,10 @@
-import redis.asyncio as aioredis
-from fastapi import Depends, FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from typing import Any, Optional
 
+from pydantic import BaseModel
+import redis.asyncio as aioredis
+from fastapi import Depends, FastAPI, requests
+from fastapi.middleware.cors import CORSMiddleware
+from utils.logger import log
 from routes.auth_router import router as auth_router
 from routes.dynamic_router import router as dynamic_router
 from routes.registry_router import router as registry_router
@@ -68,7 +71,17 @@ async def flush_all_redis(r: aioredis = Depends(get_redis)):
     except Exception as e:
         return {"error": f"Failed to flush Redis: {str(e)}"}
 
+class SendRequest(BaseModel):
+    method: str
+    url: str
+    payload: Optional[Any] = None
 
+
+@app.get("/send")
+async def send_request_onhalf(request: SendRequest):
+    log.info(request)
+    res = requests.request(method=request.method, url=request.url, data=request.payload)
+    return {"status": res.status_code, "message": res.text}
 app.include_router(dynamic_router)
 
 app.add_middleware(
