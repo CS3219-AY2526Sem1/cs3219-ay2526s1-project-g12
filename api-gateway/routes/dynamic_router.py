@@ -7,6 +7,7 @@ This router must be included after all other routers so that specific
 routes defined elsewhere take precedence.
 """
 
+from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 
@@ -27,8 +28,10 @@ async def auth_user(
     Returns user data if valid, or an empty dict if unauthenticated.
     """
     log.info("[AUTH_USER] Starting authentication")
-    log.info(f"[AUTH_USER] Received access_token: {access_token[:20] if access_token else 'None'}...")
-    
+    log.info(
+        f"[AUTH_USER] Received access_token: {access_token[:20] if access_token else 'None'}..."
+    )
+
     if not access_token:
         log.info("[AUTH_USER] No access token provided, returning empty dict")
         return {}
@@ -39,7 +42,9 @@ async def auth_user(
         log.info(f"[AUTH_USER] Token validation successful: {result}")
         return result
     except Exception as e:
-        log.error(f"[AUTH_USER] Token validation failed with error: {str(e)}", exc_info=True)
+        log.error(
+            f"[AUTH_USER] Token validation failed with error: {str(e)}", exc_info=True
+        )
         raise
 
 
@@ -59,26 +64,29 @@ async def dynamic_forward(
     GatewayController for resolution.  If the registry
     cannot resolve the path to a service, a 404 error is returned.
     """
+    request_id = uuid4()
     method = request.method
-    log.info(f"[DYNAMIC_FORWARD] HOST: {request.client.host} Incoming request: {method} /{path}")
-    log.info(f"[DYNAMIC_FORWARD] User data: {user_data}")
-    
+    log.info(
+        f"{request_id} [DYNAMIC_FORWARD]  HOST: {request.client.host} Incoming request: {method} /{path}"
+    )
+    log.info(f"{request_id} [DYNAMIC_FORWARD] User data: {user_data}")
+
     headers = dict(request.headers)
-    log.debug(f"[DYNAMIC_FORWARD] Headers: {headers}")
-    
+    log.debug(f"{request_id} [DYNAMIC_FORWARD] Headers: {headers}")
+
     params = dict(request.query_params)
-    log.debug(f"[DYNAMIC_FORWARD] Query params: {params}")
-    
+    log.debug(f"{request_id} [DYNAMIC_FORWARD] Query params: {params}")
+
     body = await request.body()
-    log.debug(f"[DYNAMIC_FORWARD] Request body length: {len(body)} bytes")
+    log.debug(f" {request_id}[DYNAMIC_FORWARD] Request body length: {len(body)} bytes")
     if body:
         try:
-            log.debug(f"[DYNAMIC_FORWARD] Request body: {body[:200]}")
+            log.debug(f"{request_id} [DYNAMIC_FORWARD] Request body: {body[:200]}")
         except Exception as e:
-            log.debug(f"[DYNAMIC_FORWARD] Could not log body: {str(e)}")
+            log.debug(f"{request_id} [DYNAMIC_FORWARD] Could not log body: {str(e)}")
 
-    log.info(f"[DYNAMIC_FORWARD] Forwarding to gateway: {method} /{path}")
-    
+    log.info(f"{request_id} [DYNAMIC_FORWARD] Forwarding to gateway: {method} /{path}")
+
     try:
         code, data = await gateway.forward(
             method,
@@ -88,20 +96,27 @@ async def dynamic_forward(
             data=body,
             user_data=user_data,
         )
-        log.info(f"[DYNAMIC_FORWARD] Gateway returned status code: {code}")
-        log.debug(f"[DYNAMIC_FORWARD] Gateway response data: {data}")
-        
+        log.info(f"{request_id} [DYNAMIC_FORWARD] Gateway returned status code: {code}")
+        log.debug(f"{request_id} [DYNAMIC_FORWARD] Gateway response data: {data}")
+
     except Exception as e:
-        log.error(f"[DYNAMIC_FORWARD] Gateway forward failed: {str(e)}", exc_info=True)
+        log.error(
+            f"{request_id} [DYNAMIC_FORWARD] Gateway forward failed: {str(e)}",
+            exc_info=True,
+        )
         raise
 
     if not (200 <= code < 300):
-        log.warning(f"[DYNAMIC_FORWARD] Non-success status code: {code}")
+        log.warning(f"{request_id} [DYNAMIC_FORWARD] Non-success status code: {code}")
         if isinstance(data, dict) and "detail" in data:
-            log.warning(f"[DYNAMIC_FORWARD] Error detail: {data['detail']}")
+            log.warning(
+                f"{request_id} [DYNAMIC_FORWARD] Error detail: {data['detail']}"
+            )
             if data["detail"]:
                 data = data["detail"]
         raise HTTPException(status_code=code, detail=data)
-    
-    log.info(f"[DYNAMIC_FORWARD] Returning successful response with status {code}")
+
+    log.info(
+        f"{request_id} [DYNAMIC_FORWARD] Returning successful response with status {code}"
+    )
     return JSONResponse(content=data, status_code=code)
