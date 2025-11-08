@@ -1,6 +1,6 @@
 import uuid
 from typing import Annotated, Optional
-
+from utils.logger import log
 from fastapi import Depends, Header, HTTPException, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
@@ -134,8 +134,9 @@ class UuidAuthenticator(Authenticator[models.UP, models.ID]):
                     and not user.is_superuser
                 ):
                     user = None
-
+                log.info(f"Authenticated user: {user.id}")
             if not user and not optional:
+                log.info(f"Authentication failed. Raising HTTP {status_code}.")
                 raise HTTPException(status_code=status_code)
             return user
 
