@@ -77,7 +77,7 @@ class SendRequest(BaseModel):
     payload: Optional[Any] = None
 
 
-@app.get("/send")
+@app.post("/send")
 async def send_request_onhalf(request: SendRequest):
     log.info(request)
     res = requests.request(method=request.method, url=request.url, data=request.payload)
