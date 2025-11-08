@@ -2,7 +2,8 @@ from typing import Any, Optional
 
 from pydantic import BaseModel
 import redis.asyncio as aioredis
-from fastapi import Depends, FastAPI, requests
+from fastapi import Depends, FastAPI
+import requests
 from fastapi.middleware.cors import CORSMiddleware
 from utils.logger import log
 from routes.auth_router import router as auth_router
