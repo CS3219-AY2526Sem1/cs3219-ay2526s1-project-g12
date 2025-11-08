@@ -32,9 +32,9 @@ async def create_room(match_data: dict, room_connection: Redis) -> None:
     """
     Creates a room given the match data received.
     """
-    url = f"{get_envvar(ENV_QN_SVC_POOL_ENDPOINT)}/{match_data['category']}/{match_data['difficulty']}"
+    # url = f"{get_envvar(ENV_QN_SVC_POOL_ENDPOINT)}/{match_data['category']}/{match_data['difficulty']}"
 
-    log.info(f"INFO: Sending request to {url}")
+    # log.info(f"INFO: Sending request to {url}")
 
     # try:
     #     async with aiohttp.ClientSession(
@@ -49,24 +49,24 @@ async def create_room(match_data: dict, room_connection: Redis) -> None:
     # except Exception as e:
     #         log.info(f"ERROR: {e}")
 
-    try:
-        response = requests.get(url, timeout=10)
-        data = response.text
-    except Exception as e:
-        log.info(f"ERROR: {e}")
+    # try:
+    #     response = requests.get(url, timeout=10)
+    #     data = response.text
+    # except Exception as e:
+    #     log.info(f"ERROR: {e}")
 
-    try:
-        data = json.loads(data)
-        log.info(data)
-    except Exception as e:
-        log.info("ERROR: Cannot convert to JSON")
+    # try:
+    #     data = json.loads(data)
+    #     log.info(data)
+    # except Exception as e:
+    #     log.info("ERROR: Cannot convert to JSON")
 
     # Question data is already in a dictionary so append the rest of the details there
-    for key, value in match_data.items():
-        data[key] = value
+    # for key, value in match_data.items():
+    #     data[key] = value
 
-    data["start_time"] = str(datetime.now())
-    del(data["categories"])
+    match_data["start_time"] = str(datetime.now())
+    # del(data["categories"])
 
     user_one_id = match_data["user_one"]
     user_one_key = format_user_room_key(user_one_id)
@@ -80,8 +80,8 @@ async def create_room(match_data: dict, room_connection: Redis) -> None:
     await room_connection.set(user_one_heartbeat_key, str(datetime.now()), TTL)
     await room_connection.set(user_two_heartbeat_key, str(datetime.now()), TTL)
 
-    await room_connection.hset(user_one_key, mapping= data)
-    await room_connection.hset(user_two_key, mapping= data)
+    await room_connection.hset(user_one_key, mapping= match_data)
+    await room_connection.hset(user_two_key, mapping= match_data)
 
     log.info(f"Room has been created for match ID, {match_data["match_id"]}")
 
@@ -201,10 +201,30 @@ async def get_partner_name(room_key: str, user_id: str, room_connection: Redis) 
     else:
         return await room_connection.hget(room_key, "user_one_name")
 
-async def get_room_question(room_key: str, room_connection: Redis) -> dict:
+async def get_room_question(room_key: str, user_id: str, room_connection: Redis) -> dict:
     """
     Retrieves the question assigned to this room.
     """
+
+    # The question has not been assigned yet
+    if (not await room_connection.hexists(room_key, "id")):
+        difficulty = await room_connection.hget(room_key, "difficulty")
+        category = await room_connection.hget(room_key, "category")
+
+        url = f"{get_envvar(ENV_QN_SVC_POOL_ENDPOINT)}/{category}/{difficulty}"
+        log.info(f"INFO: Sending request to {url}")
+        response = requests.get(url, timeout=10)
+
+        data = response.json()
+        log.info(f"INFO: Data received from question service, {data}")
+        del(data["categories"])
+        await room_connection.hset(room_key, mapping= data)
+
+        #Set the question for the partner also
+        partner = await get_partner(user_id, room_key, room_connection)
+        partner_room_key = format_user_room_key(partner)
+        await room_connection.hset(partner_room_key, mapping= data)
+
     question_data = {
         "title" : await room_connection.hget(room_key, "title"),
         "description": await room_connection.hget(room_key, "description"),

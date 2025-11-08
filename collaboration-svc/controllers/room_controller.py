@@ -29,13 +29,15 @@ from services.redis_room_service import (
 )
 from utils.logger import log
 from utils.utils import (
-    acquire_lock, release_lock,
+    acquire_lock, 
+    release_lock,
     get_envvar,
     format_user_room_key,
     extract_information_from_event,
     format_heartbeat_key,
     format_cleanup_key,
-    does_key_exist
+    does_key_exist,
+    format_lock_key,
 )
 
 LOCK_KEY = "event_manager_lock"
@@ -232,12 +234,10 @@ async def terminate_match(user_id: str, room_id: str, match_data: MatchData, roo
 
         cleanup_key = format_cleanup_key(room_id)
         await cleanup(cleanup_key, room_connection)
-
         partner_heartbeat_key = format_heartbeat_key(partner)
 
         await delete_user_ttl(user_heartbeat_key, room_connection)
         await delete_user_ttl(partner_heartbeat_key, room_connection)
-
         send_room_for_review(user_id, partner, match_data.data, room_informaion)
         log.info(f"User, {user_id} has terminated room, {room_id}")
     else:
@@ -259,7 +259,11 @@ async def connect_user(user_id: str, room_id: str, room_connection: Redis) -> di
             detail="User is not assigned to a room or the room does not exist"
         )
     
-    question = await get_room_question(room_key, room_connection)
+    lock_key = format_lock_key(room_id)
+    lock = await acquire_lock(lock_key, room_connection)
+
+    question = await get_room_question(room_key, user_id, room_connection)
+    await release_lock(lock)
     partner_name = await get_partner_name(room_key, user_id, room_connection)
 
     return {"question" : question, "partner_name": partner_name}
