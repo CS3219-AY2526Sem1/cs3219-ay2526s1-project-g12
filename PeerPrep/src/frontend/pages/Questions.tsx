@@ -18,6 +18,7 @@ function Questions() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [questions, setQuestions] = useState<QuestionsResponse>({
     questions: [],
+    total: 0,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,13 +39,8 @@ function Questions() {
   }, [page, pageSize]);
 
   useEffect(() => {
-    const nextParams = new URLSearchParams(searchParams);
-    if (!searchParams.has('page')) nextParams.set('page', String(page));
-    if (!searchParams.has('pageSize'))
-      nextParams.set('pageSize', String(pageSize));
-    if (nextParams.toString() !== searchParams.toString()) {
-      setSearchParams(nextParams);
-      return;
+    if (!searchParams.has('page') || !searchParams.has('pageSize')) {
+      setSearchParams({ page: page.toString(), pageSize: pageSize.toString() });
     }
 
     let cancelled = false;
@@ -72,7 +68,8 @@ function Questions() {
     };
   }, [page, pageSize]);
 
-  const totalPages = Math.max(1, Math.ceil(TOTAL_QUESTIONS / pageSize));
+  const total = questions.total | TOTAL_QUESTIONS;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const canPrev = page > 1;
   const canNext = page < totalPages;
@@ -108,7 +105,7 @@ function Questions() {
   }, [page, totalPages]);
 
   const showingStart = start;
-  const showingEnd = Math.min(end, TOTAL_QUESTIONS);
+  const showingEnd = Math.min(end, total);
 
   return (
     <div className="min-h-screen px-20 py-10">
@@ -120,7 +117,7 @@ function Questions() {
           <div className="flex items-center justify-between gap-4">
             <div className="text-sm opacity-70">
               Showing <b>{showingStart}</b>–<b>{showingEnd}</b> of{' '}
-              <b>{TOTAL_QUESTIONS}</b>
+              <b>{total}</b>
             </div>
 
             <div className="flex items-center gap-3">
@@ -143,7 +140,9 @@ function Questions() {
 
           {/* Content */}
           {loading ? (
-            <span className="loading loading-dots loading-xl"></span>
+            <div className="flex justify-center py-10">
+              <span className="loading loading-dots loading-xl" />
+            </div>
           ) : error ? (
             <div className="alert alert-error alert-soft">
               <span>{error}</span>

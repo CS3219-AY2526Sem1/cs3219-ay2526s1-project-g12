@@ -258,14 +258,14 @@ function EditQuestion() {
             </div>
           )}
           {loading === 'loading' ? (
-            <>
-              <span className="loading loading-dots loading-xl"></span>
-              <p className="mt-4">Loading question data...</p>
-            </>
+            <div className="flex justify-center py-10">
+              <span className="loading loading-dots loading-xl" />
+              <p className="ml-4 mt-2"> Loading question data...</p>
+            </div>
           ) : (
             <>
               <fieldset className="px-2">
-                <label htmlFor="title" className="label font-normal">
+                <label htmlFor="title" className="fieldset-legend font-normal">
                   Title
                 </label>
                 <input
@@ -279,7 +279,10 @@ function EditQuestion() {
                   onChange={handleInputChange}
                   disabled={submission.allowSubmit === 'loading'}
                 />
-                <label htmlFor="description" className="label font-normal">
+                <label
+                  htmlFor="description"
+                  className="fieldset-legend font-normal"
+                >
                   Description
                 </label>
                 <textarea
@@ -292,7 +295,10 @@ function EditQuestion() {
                   onChange={handleInputChange}
                   disabled={submission.allowSubmit === 'loading'}
                 />
-                <label htmlFor="difficulty" className="label font-normal">
+                <label
+                  htmlFor="difficulty"
+                  className="fieldset-legend font-normal"
+                >
                   Difficulty
                 </label>
                 <select
@@ -314,7 +320,10 @@ function EditQuestion() {
                     </option>
                   ))}
                 </select>
-                <label htmlFor="code_template" className="label font-normal">
+                <label
+                  htmlFor="code_template"
+                  className="fieldset-legend font-normal"
+                >
                   Code template
                 </label>
                 <textarea
@@ -327,7 +336,10 @@ function EditQuestion() {
                   onChange={handleInputChange}
                   disabled={submission.allowSubmit === 'loading'}
                 />
-                <label htmlFor="solution_sample" className="label font-normal">
+                <label
+                  htmlFor="solution_sample"
+                  className="fieldset-legend font-normal"
+                >
                   Sample solution
                 </label>
                 <textarea
@@ -340,7 +352,10 @@ function EditQuestion() {
                   onChange={handleInputChange}
                   disabled={submission.allowSubmit === 'loading'}
                 />
-                <label htmlFor="categories" className="label font-normal">
+                <label
+                  htmlFor="categories"
+                  className="fieldset-legend font-normal"
+                >
                   Categories
                 </label>
                 <select
