@@ -257,7 +257,7 @@ class GatewayController:
                     headers=headers,
                     params=params or {},
                     data=data,
-                    allow_redirects=False,
+                    follow_redirects=False,
                 )
                 log.info(f"Received HTTP response with status code: {r.status_code}")
                 log.info(f"Response URL: {r.url}")
