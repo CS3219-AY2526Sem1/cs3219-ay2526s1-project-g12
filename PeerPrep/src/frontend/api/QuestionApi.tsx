@@ -4,6 +4,7 @@ import type { Question } from '../types/Question.tsx';
 
 export interface QuestionsResponse {
   questions: Question[];
+  total: number;
 }
 
 export interface PoolQuestion extends Question {
@@ -37,7 +38,7 @@ export const questionApi = {
   },
 
   async createQuestion(
-    data: Question
+    data: Omit<Question, 'id'>
   ): Promise<ApiResponse<{ message: string }>> {
     return apiClient.request('/qs/questions/', {
       method: 'POST',

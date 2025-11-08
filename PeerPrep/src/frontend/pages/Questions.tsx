@@ -12,7 +12,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { questionApi, type QuestionsResponse } from '../api/QuestionApi.tsx';
 import { useSearchParams } from 'react-router';
 
-const TOTAL_QUESTIONS = 2641;
+const TOTAL_QUESTIONS = 2650;
 
 function Questions() {
   const [searchParams, setSearchParams] = useSearchParams();
