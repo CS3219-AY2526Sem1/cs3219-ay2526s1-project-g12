@@ -13,7 +13,7 @@ export interface Question {
   /** Code template provided for the question */
   readonly code_template: string;
   /** Sample solution for the question */
-  readonly solution_sample: boolean;
+  readonly solution_sample: string;
   /** Categories associated with the question */
   readonly categories: string[];
 }
