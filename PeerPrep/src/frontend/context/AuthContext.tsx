@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { userApi } from '../api/UserApi';
 import type { User } from '../types/User.tsx';
-import { useLocation } from 'react-router-dom';
+// import { useLocation } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const location = useLocation();
+  // const location = useLocation();
 
   // Load user on mount (if logged in)
   useEffect(() => {
@@ -40,9 +40,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   // clear error whenever route changes
-  useEffect(() => {
-    setError(null);
-  }, [location.pathname]);
+  // useEffect(() => {
+  //   setError(null);
+  // }, [location.pathname]);
 
   const login = async (email: string, password: string) => {
     const { error } = await userApi.login(email, password);
