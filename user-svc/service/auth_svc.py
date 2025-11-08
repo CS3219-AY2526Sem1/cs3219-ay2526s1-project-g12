@@ -113,6 +113,7 @@ class UuidAuthenticator(Authenticator[models.UP, models.ID]):
             x_user_id: Annotated[uuid.UUID | None, Header(alias="X-User-ID")] = None,
             user_manager=Depends(self.get_user_manager),
         ):
+            log.info(f"Retrieving current user with X-User-ID: {x_user_id}")
             user: Optional[models.UP] = None
             if x_user_id is not None:
                 try:
