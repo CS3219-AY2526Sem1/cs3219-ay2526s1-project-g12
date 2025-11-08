@@ -1,21 +1,20 @@
 from typing import Any, Optional
 
-from pydantic import BaseModel
 import redis.asyncio as aioredis
-from fastapi import Depends, FastAPI
 import requests
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from utils.logger import log
+from pydantic import BaseModel
+
 from routes.auth_router import router as auth_router
 from routes.dynamic_router import router as dynamic_router
 from routes.registry_router import router as registry_router
 from routes.websocket_router import router as websocket_router
 from service.redis_settings import get_redis, lifespan
+from utils.logger import log
 from utils.utils import get_envvar
 
 FRONT_END_URL = get_envvar("FRONT_END_URL")
-API_GATEWAY_URL = get_envvar("API_GATEWAY_URL")
-FRONT_END_URL2 = get_envvar("FRONT_END_URL2")
 app = FastAPI(title="API Gateway", lifespan=lifespan)
 
 app.include_router(auth_router)
@@ -87,7 +86,7 @@ app.include_router(dynamic_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONT_END_URL,API_GATEWAY_URL,FRONT_END_URL2],
+    allow_origins=[FRONT_END_URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
