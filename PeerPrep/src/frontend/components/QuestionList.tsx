@@ -25,7 +25,7 @@ const QuestionList: React.FC<Props> = ({ questions }) => {
       <div className="join join-vertical">
         {questions.map((question, i) => (
           <QuestionItem
-            key={i}
+            key={question.id}
             question={question}
             color={i % 2 === 1 ? 'base-100' : 'base-200'}
           />

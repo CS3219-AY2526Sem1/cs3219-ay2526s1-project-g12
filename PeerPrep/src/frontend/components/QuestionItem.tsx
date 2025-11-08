@@ -56,8 +56,8 @@ const QuestionItem: React.FC<Props> = ({ question, color }) => {
         <div>{question.title}</div>
         <div>{question.difficulty}</div>
         <div className="flex flex-wrap gap-2 ">
-          {question.categories.map((category, i) => (
-            <CategoryChip key={i} name={category} />
+          {question.categories.map((category) => (
+            <CategoryChip key={category} name={category} />
           ))}
         </div>
         <div>
