@@ -22,7 +22,6 @@ const arraysHaveSameElements = <T,>(arr1: T[], arr2: T[]): boolean => {
 function EditQuestion() {
   const [searchParams] = useSearchParams();
   const questionId = searchParams.get('id');
-  let questionIdNum: number = 0;
 
   const [loading, setLoading] = useState<'loading' | 'success' | 'error'>(
     'success'
@@ -48,6 +47,8 @@ function EditQuestion() {
   useEffect(() => {
     setLoading('loading');
     setError(null);
+
+    let questionIdNum: number = 0;
     // Cast questionId to number
     if (!questionId) {
       setError('No question ID provided in the URL.');
