@@ -42,8 +42,9 @@ const routes: RouteType[] = Object.keys(modules).map((path) => {
 
 export default function AppRouter() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <BrowserRouter>
+
+      <AuthProvider>
         <Suspense fallback={<div>Loading...</div>}>
           <Routes>
             {routes.map(({ path, Component, Layout }) => {
@@ -65,8 +66,9 @@ export default function AppRouter() {
             <Route path="*" element={<NotFoundRedirect />} />
           </Routes>
         </Suspense>
-      </BrowserRouter>
-    </AuthProvider>
+      </AuthProvider>
+    </BrowserRouter>
+
   );
 }
 
