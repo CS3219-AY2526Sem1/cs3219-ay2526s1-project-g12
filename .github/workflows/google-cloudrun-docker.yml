@@ -64,6 +64,17 @@ jobs:
         run: |
           gcloud auth configure-docker asia-southeast1-docker.pkg.dev
 
+      - name: (US) Make Cloud Run build configuration changes
+        working-directory: ./user-svc
+        run: |
+          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
+
+      - name: (US) Build and Push Docker Image
+        working-directory: ./user-svc
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-user-svc:latest --platform=linux/amd64 .
+          docker push ${{ env.DOCKER_IMAGE_URL }}pp-user-svc:latest
+          
       - name: (AG) Make Cloud Run build configuration changes
         working-directory: ./api-gateway
         run: |
@@ -136,17 +147,6 @@ jobs:
         run: |
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-qns-svc:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-qns-svc:latest
-
-      - name: (US) Make Cloud Run build configuration changes
-        working-directory: ./user-svc
-        run: |
-          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
-
-      - name: (US) Build and Push Docker Image
-        working-directory: ./user-svc
-        run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-user-svc:latest --platform=linux/amd64 .
-          docker push ${{ env.DOCKER_IMAGE_URL }}pp-user-svc:latest
 
       # - name: Deploy to Cloud Run
 
