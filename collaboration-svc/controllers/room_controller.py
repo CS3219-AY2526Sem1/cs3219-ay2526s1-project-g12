@@ -7,6 +7,7 @@ from models.api_models import MatchData
 from redis.asyncio import Redis
 from services.redis_event_queue import (
     get_match_confirmation_event,
+    get_match_confirmation_event_data,
     remove_match_confirmation_event,
     create_group, retrieve_stream_data,
     acknowlwedge_event
@@ -56,14 +57,15 @@ async def create_room_listener(event_queue_connection: Redis, room_connection: R
 
         lock = await acquire_lock(LOCK_KEY, event_queue_connection)
 
-        match_details = await get_match_confirmation_event(event_queue_connection)
-
-        if (match_details):
-            await create_room(match_details, room_connection)
-
-        await remove_match_confirmation_event(event_queue_connection)
+        room_id = await get_match_confirmation_event(event_queue_connection)
 
         await release_lock(lock)
+
+        if (room_id):
+            match_details = await get_match_confirmation_event_data(room_id, event_queue_connection)
+            log.info(f"INFO: Room ID : {room_id}, match details : {match_details}")
+            await create_room(match_details, room_connection)
+            await remove_match_confirmation_event(event_queue_connection)
 
 async def create_ttl_expire_listener(
     service_id: str,

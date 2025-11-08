@@ -31,7 +31,8 @@ async def send_match_confirmed_event(match_id : str, user1: str, user1_name: str
         "category": category
     }
 
-    await redis_connection.hset("create_room", mapping = data)
+    await redis_connection.hset(match_id, mapping = data)
+    await redis_connection.rpush("create_room", match_id)
     await sever_connection(redis_connection)
 
     log.info("Match confirmed event has been sent")
