@@ -68,7 +68,7 @@ function Questions() {
     };
   }, [page, pageSize]);
 
-  const total = questions.total | TOTAL_QUESTIONS;
+  const total = questions.total || TOTAL_QUESTIONS;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const canPrev = page > 1;
