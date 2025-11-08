@@ -10,7 +10,7 @@ import { NAV_BUTTONS } from '../config/NavConfig';
 import QuestionList from '../components/QuestionList.tsx';
 import { useEffect, useMemo, useState } from 'react';
 import { questionApi, type QuestionsResponse } from '../api/QuestionApi.tsx';
-import { useSearchParams } from 'react-router';
+import {Link, useSearchParams} from 'react-router';
 
 const TOTAL_QUESTIONS = 2650;
 
@@ -110,7 +110,20 @@ function Questions() {
   return (
     <div className="min-h-screen px-20 py-10">
       <NavBar buttons={NAV_BUTTONS} />
-      <h1 className="text-6xl font-semibold p-2">Questions administration</h1>
+      <div className="flex items-center justify-between p-2">
+        <h1 className="text-6xl font-semibold">Questions administration</h1>
+        <Link to="/newquestion" className="btn btn-primary gap-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="size-5"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d="M11 11V5a1 1 0 1 1 2 0v6h6a1 1 0 1 1 0 2h-6v6a1 1 0 1 1-2 0v-6H5a1 1 0 1 1 0-2h6z" />
+          </svg>
+          New question
+        </Link>
+      </div>
       <main>
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           {/* Top toolbar */}
