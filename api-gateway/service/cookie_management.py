@@ -20,7 +20,7 @@ def _manage_access_token_cookie(
         value=token,
         httponly=True,  # Makes the cookie inaccessible to JavaScript
         secure=True,  # TODO: Set to True in production (requires HTTPS)
-        samesite="lax",  # "strict" is more secure but can affect UX
+        samesite="none",  # "strict" is more secure but can affect UX
         max_age=int(expiration_seconds), 
     )
 
