@@ -56,14 +56,14 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          
+
       - name: Set up Cloud SDK
         uses: 'google-github-actions/setup-gcloud@v2'
-      
+
       - name: Configure Docker
         run: |
           gcloud auth configure-docker asia-southeast1-docker.pkg.dev
-      
+
       - name: (AG) Make Cloud Run build configuration changes
         working-directory: ./api-gateway
         run: |
@@ -74,6 +74,18 @@ jobs:
         run: |
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-api-gateway:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-api-gateway:latest
+      - name: (FE) Make Cloud Run build configuration changes
+        working-directory: ./PeerPrep
+        run: |
+          sed -i 's/EXPOSE 80/EXPOSE 8080/' ./Dockerfile
+          sed -i 's/listen 80;/listen 8080;/' ./nginx.conf
+          sed -i 's/localhost/_/' ./nginx.conf
+
+      - name: (FE) Build and Push Docker Image
+        working-directory: ./PeerPrep
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest --platform=linux/amd64 .
+          docker push ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest
 
       - name: (CS) Make Cloud Run build configuration changes
         working-directory: ./collaboration-svc
@@ -84,13 +96,13 @@ jobs:
         working-directory: ./collaboration-svc
         run: |
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-collaboration-svc:latest --platform=linux/amd64 .
-          docker push ${{ env.DOCKER_IMAGE_URL }}pp-collaboration-svc:latest     
+          docker push ${{ env.DOCKER_IMAGE_URL }}pp-collaboration-svc:latest
 
       - name: (ES) Build and Push Docker Image
         working-directory: ./expire-observer-svc
         run: |
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-expire-observer-svc:latest --platform=linux/amd64 .
-          docker push ${{ env.DOCKER_IMAGE_URL }}pp-expire-observer-svc:latest 
+          docker push ${{ env.DOCKER_IMAGE_URL }}pp-expire-observer-svc:latest
 
       - name: (MS) Make Cloud Run build configuration changes
         working-directory: ./matching-svc
@@ -113,7 +125,7 @@ jobs:
         run: |
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-qns-hist-svc:latest --platform=linux/amd64 .
           docker push  ${{ env.DOCKER_IMAGE_URL }}pp-qns-hist-svc:latest
-      
+
       - name: (QS) Make Cloud Run build configuration changes
         working-directory: ./qns-svc
         run: |
@@ -136,21 +148,8 @@ jobs:
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-user-svc:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-user-svc:latest
 
-      - name: (FE) Make Cloud Run build configuration changes
-        working-directory: ./PeerPrep
-        run: |
-          sed -i 's/EXPOSE 80/EXPOSE 8080/' ./Dockerfile
-          sed -i 's/listen 80;/listen 8080;/' ./nginx.conf
-          sed -i 's/localhost/_/' ./nginx.conf
-
-      - name: (FE) Build and Push Docker Image
-        working-directory: ./PeerPrep
-        run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest --platform=linux/amd64 .
-          docker push ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest
-
       # - name: Deploy to Cloud Run
-        
+
       #   run: |
       #     echo SERVICE_NAME $SERVICE_NAME
       #     gcloud run deploy $SERVICE_NAME \
@@ -158,7 +157,7 @@ jobs:
       #       --platform managed \
       #       --region asia-southeast1 \
       #       --allow-unauthenticated
-            
+
       # If required, use the Cloud Run URL output in later steps
       - name: 'Show output'
         run: |2-
