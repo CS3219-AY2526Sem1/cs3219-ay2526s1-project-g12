@@ -226,7 +226,9 @@ function NewQuestion() {
                   onChange={handleInputChange}
                   disabled={submission.allowSubmit === 'loading'}
                 >
-                  <option disabled>Choose a level</option>
+                  <option disabled selected>
+                    Choose a level
+                  </option>
                   {difficultyLevels.map((level) => (
                     <option
                       key={level}
