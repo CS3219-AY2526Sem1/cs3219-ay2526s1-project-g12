@@ -20,6 +20,7 @@ async def collab_websocket_endpoint(
 ):
     """WebSocket endpoint for Collab service to connect"""
     connection_id = "collab" # Can change to use instance ID if needed
+    log.info(f"Attempting to connect Collab service from: {websocket.client.host}:{websocket.client.port}")
 
     # Store connection info in Redis
     client_url = f"{websocket.client.host}:{websocket.client.port}"
@@ -30,6 +31,7 @@ async def collab_websocket_endpoint(
             "type": "collab",
         },
     )
+    log.debug(f"Redis: Stored connection info for {connection_id}: url={client_url}, type=collab")
 
     await manager.connect(websocket, connection_id)
     log.info(f"Collab service connected from: {client_url}")
