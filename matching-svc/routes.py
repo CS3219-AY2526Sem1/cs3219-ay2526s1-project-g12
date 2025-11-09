@@ -115,6 +115,22 @@ if ENVIROMENT =="DEV":
         and returns them. Also prints them to the server console.
         """
         result = {}
+        try:
+            await app.state.redis_message_queue.ping()
+            log.info("Redis q connection successful.")
+        except Exception as e:
+            log.info(f"Redis q connection error: {e}")
+        try:
+            await app.state.redis_message_service.ping()
+            log.info("Redis m connection successful.")
+        except Exception as e:
+            log.info(f"Redis m connection error: {e}")
+        try:
+            await app.state.redis_confirmation_service.ping()
+            log.info("Redis c connection successful.")
+        except Exception as e:
+            log.info(f"Redis c connection error: {e}")
+
         r = app.state.redis_message_queue
 
         async for key in r.scan_iter("*"):
