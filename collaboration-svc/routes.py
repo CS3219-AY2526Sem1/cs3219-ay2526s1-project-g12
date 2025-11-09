@@ -7,6 +7,7 @@ from controllers.heartbeat_controller import (
 )
 from controllers.room_controller import create_room_listener, create_ttl_expire_listener, terminate_match, remove_user, reconnect_user, create_heartbeat_listener
 from controllers.websocket_controller import WebSocketManager
+import websockets
 from fastapi import FastAPI, Header
 from models.api_models import MatchData
 from services.redis_event_queue import connect_to_redis_event_queue
@@ -30,7 +31,7 @@ async def lifespan(app: FastAPI):
     """
     app.state.event_queue_connection = connect_to_redis_event_queue()
     app.state.room_connection = await connect_to_redis_room_service()
-    app.state.websocket_manager = WebSocketManager() 
+    # app.state.websocket_manager = WebSocketManager() 
 
     await app.state.websocket_manager.connect()
 
@@ -68,6 +69,16 @@ async def lifespan(app: FastAPI):
     hc_task.cancel()
 
 app = FastAPI(title="PeerPrep Collaboration Service", lifespan=lifespan)
+
+@app.get("/test")
+async def test():
+    try:
+        async with websockets.connect('ws://api.gateway.cloud/ws/collab') as ws:
+            await ws.send("test")
+            print(await ws.recv())
+    except Exception as e:
+        print(f"Error: {e}")
+
 
 @app.get("/")
 async def root() -> dict:
