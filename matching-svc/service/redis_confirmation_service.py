@@ -5,25 +5,15 @@ from utils.utils import get_envvar
 ENV_REDIS_HOST_KEY = "REDIS_HOST"
 ENV_REDIS_PORT_KEY = "REDIS_PORT"
 
-async def connect_to_redis_confirmation_service() -> Redis:
+def connect_to_redis_confirmation_service() -> Redis:
     """
     Establishes a connection with redis message queue.
     """
     redis_port = get_envvar(ENV_REDIS_PORT_KEY)
     host = get_envvar(ENV_REDIS_HOST_KEY)
-    try:
-        client = await Redis.from_url(
-            f"redis://{host}:{redis_port}",
-            decode_responses=True,
-        )
-        
-        await client.ping()
-        log.info("Connected to redis Confirmation service.")
-        return client
-    except Exception as e:
-        log.error(f"Failed to connect to Redis Confirmation: {e}")
-        raise
-    
+    # decode_responses = True is to allow redis to automatically decode responses
+    log.info("Connected to redis messaging server.")
+    return Redis(host=host, port=redis_port, decode_responses=True, db=2)
 
 async def setup_match_confirmation(match_key: str, user_one: str, user_two: str, difficulty: str, category: str, confirmation_conn: Redis) -> None:
     """

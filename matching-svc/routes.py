@@ -32,9 +32,9 @@ async def lifespan(app: FastAPI):
     """
     Set up variables for the matching service.
     """
-    app.state.redis_matchmaking_service = await connect_to_redis_matchmaking_service()
-    app.state.redis_message_service = await connect_to_redis_message_service()
-    app.state.redis_confirmation_service = await connect_to_redis_confirmation_service()
+    app.state.redis_matchmaking_service = connect_to_redis_matchmaking_service()
+    app.state.redis_message_service = connect_to_redis_message_service()
+    app.state.redis_confirmation_service = connect_to_redis_confirmation_service()
     log.info("Matching service is Up.")
     register_self_as_service(app)
     hc_task = register_heartbeat()
@@ -106,8 +106,7 @@ async def confirm_user_match(match_id: str, confirm_request: MatchConfirmRequest
         app.state.redis_confirmation_service,
     )
 
-
-if ENVIROMENT == "DEV":
+if ENVIROMENT =="DEV":
     # --- Redis Debugging Endpoints
     @app.get("/print-all")
     async def print_all_from_redis_aioredis():
@@ -155,6 +154,7 @@ if ENVIROMENT == "DEV":
 
         return result
 
+
     @app.delete("/flush-all")
     async def flush_all_redis():
         """
@@ -174,15 +174,16 @@ if ENVIROMENT == "DEV":
             matchmaking_ping = await app.state.redis_matchmaking_service.ping()
             message_ping = await app.state.redis_message_service.ping()
             confirmation_ping = await app.state.redis_confirmation_service.ping()
-
+            
             return {
                 "status": "healthy",
                 "redis_connections": {
                     "matchmaking": matchmaking_ping,
                     "message": message_ping,
-                    "confirmation": confirmation_ping,
-                },
+                    "confirmation": confirmation_ping
+                }
             }
         except Exception as e:
             log.error(f"Health check failed: {e}")
             return {"status": "unhealthy", "error": str(e)}, 503
+
