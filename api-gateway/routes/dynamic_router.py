@@ -67,7 +67,7 @@ async def dynamic_forward(
     log.info(
         f"{request_id} [DYNAMIC_FORWARD]  HOST: {request.client.host} Incoming request: {method} /{path}"
     )
-    log.info(f"{request_id} [DYNAMIC_FORWARD] Path: /{path=="/us/users/me"}")
+    log.info(f"{request_id} [DYNAMIC_FORWARD] Path: /{path=="us/users/me"}")
     log.info(f"{request_id} [DYNAMIC_FORWARD] User data: {user_data}")
 
     headers = dict(request.headers)
