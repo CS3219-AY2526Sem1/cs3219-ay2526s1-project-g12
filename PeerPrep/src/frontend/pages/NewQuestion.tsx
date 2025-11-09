@@ -3,6 +3,7 @@ import { questionApi } from '../api/QuestionApi.tsx';
 import type { Question } from '../types/Question.tsx';
 import NavBar from '../components/NavBar.tsx';
 import { NAV_BUTTONS } from '../config/NavConfig.tsx';
+import { useNavigate } from 'react-router';
 
 type SubmitState = {
   buttonText: string;
@@ -30,6 +31,7 @@ function NewQuestion() {
   });
   const [difficultyLevels, setDifficultyLevels] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setLoading('loading');
@@ -58,6 +60,16 @@ function NewQuestion() {
       .then(() => setLoading('success'));
   }, []);
 
+  useEffect(() => {
+    if (submission.success) {
+      const timer = setTimeout(() => {
+        navigate('/questions');
+      }, 3000); // 3000 ms = 3 seconds
+
+      return () => clearTimeout(timer); // cleanup in case component unmounts
+    }
+  }, [submission, navigate]);
+
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -82,19 +94,19 @@ function NewQuestion() {
 
     // Clear error when user starts typing
     if (error) setError(null);
-    setSubmission({
+    setSubmission((prev) => ({
+      ...prev,
       buttonText: 'Submit',
       allowSubmit: 'allow',
-      success: false,
-    });
+    }));
   };
 
   const handleSubmit = async () => {
-    setSubmission({
+    setSubmission((prev) => ({
+      ...prev,
       buttonText: 'Submitting...',
       allowSubmit: 'loading',
-      success: false,
-    });
+    }));
     if (
       !newQuestionData.title ||
       !newQuestionData.description ||
@@ -104,22 +116,22 @@ function NewQuestion() {
       newQuestionData.categories.length === 0
     ) {
       setError('Fields cannot be empty!');
-      setSubmission({
+      setSubmission((prev) => ({
+        ...prev,
         buttonText: 'Submit',
         allowSubmit: 'block',
-        success: false,
-      });
+      }));
       return;
     }
 
     const { error } = await questionApi.createQuestion(newQuestionData);
     if (error) {
       setError(error);
-      setSubmission({
+      setSubmission((prev) => ({
+        ...prev,
         buttonText: 'Submit',
         allowSubmit: 'block',
-        success: false,
-      });
+      }));
     } else {
       setSubmission({
         buttonText: 'Submitted',
@@ -150,7 +162,9 @@ function NewQuestion() {
                   d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <span>Question created!</span>
+              <span>
+                Question created! Redirecting back to admin page in 3 seconds...
+              </span>
             </div>
           )}
           {error && (
@@ -303,7 +317,9 @@ function NewQuestion() {
                   type="button"
                   className="btn btn-primary"
                   onClick={handleSubmit}
-                  disabled={submission.allowSubmit !== 'allow'}
+                  disabled={
+                    submission.allowSubmit !== 'allow' || submission.success
+                  }
                 >
                   {submission.buttonText}
                 </button>
