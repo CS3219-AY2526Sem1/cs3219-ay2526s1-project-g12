@@ -1,6 +1,6 @@
 import uuid
 from typing import Annotated, Optional
-from utils.logger import log
+
 from fastapi import Depends, Header, HTTPException, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
@@ -19,6 +19,7 @@ from controllers.user_controller import UserController
 from models.api_models import UuidBearerResponse
 from models.db_models import User
 from service.db_svc import get_user_db
+from utils.logger import log
 from utils.utils import AppConfig
 
 config = AppConfig()

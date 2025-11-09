@@ -48,8 +48,6 @@ from models.api_models import RoutePayload
 from models.registry_models import RouteDefinition
 from utils.utils import build_route_path, path_variants
 
-from utils.logger import log
-
 
 class ServiceRegistry:
     """Redis‑backed registry for microservice routes and instances."""

@@ -8,17 +8,17 @@ routes defined elsewhere take precedence.
 """
 
 from uuid import uuid4
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from controllers.gateway_controller import GatewayController
 from service.cookie_management import extend_access_token_cookie
 from service.redis_settings import get_gateway
+from utils.logger import log
 
 router = APIRouter(include_in_schema=False)
 
-from utils.logger import log
-from utils.utils import get_envvar
 
 
 async def auth_user(
