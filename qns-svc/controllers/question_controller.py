@@ -250,15 +250,23 @@ async def delete_difficulty_level(difficulty: CreateDeleteDifficultyModel) -> di
 
 async def fetch_all_questions(start: int | None = None, end: int | None = None) -> dict:
     log.info("Fetching all questions")
+    qns_count = await Question.all().count()
     if start is not None and end is not None:
+        if start <= 0:
+            raise HTTPException(status_code=400, detail="start begins from 1")
+        if end < start:
+            raise HTTPException(
+                status_code=400, detail="end cannot be smaller than start"
+            )
         qns_db_list = (
             await Question.all()
             .offset(start - 1)
             .limit(end - start + 1)
             .prefetch_related("difficulty")
+            .order_by("id")
         )
     else:
-        qns_db_list = await Question.all().prefetch_related("difficulty")
+        qns_db_list = await Question.all().prefetch_related("difficulty").order_by("id")
 
     qns_list = []
     for qns in qns_db_list:
@@ -268,7 +276,7 @@ async def fetch_all_questions(start: int | None = None, end: int | None = None) 
         qns_cat = [str(cat.category) for cat in qns_cat_db]
         qns_list.append(convert_question_orm_to_py_model(qns, qns_cat))
 
-    return {"questions": qns_list}
+    return {"total": qns_count, "questions": qns_list}
 
 
 async def fetch_question_bank_categories() -> dict:
