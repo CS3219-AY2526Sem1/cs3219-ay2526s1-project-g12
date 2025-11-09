@@ -63,6 +63,20 @@ jobs:
       - name: Configure Docker
         run: |
           gcloud auth configure-docker asia-southeast1-docker.pkg.dev
+
+          
+      - name: (FE) Make Cloud Run build configuration changes
+        working-directory: ./PeerPrep
+        run: |
+          sed -i 's/EXPOSE 80/EXPOSE 8080/' ./Dockerfile
+          sed -i 's/listen 80;/listen 8080;/' ./nginx.conf
+          sed -i 's/localhost/_/' ./nginx.conf
+
+      - name: (FE) Build and Push Docker Image
+        working-directory: ./PeerPrep
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest --platform=linux/amd64 .
+          docker push ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest
        
       - name: (MS) Make Cloud Run build configuration changes
         working-directory: ./matching-svc
@@ -96,19 +110,6 @@ jobs:
         run: |
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-user-svc:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-user-svc:latest
-   
-      - name: (FE) Make Cloud Run build configuration changes
-        working-directory: ./PeerPrep
-        run: |
-          sed -i 's/EXPOSE 80/EXPOSE 8080/' ./Dockerfile
-          sed -i 's/listen 80;/listen 8080;/' ./nginx.conf
-          sed -i 's/localhost/_/' ./nginx.conf
-
-      - name: (FE) Build and Push Docker Image
-        working-directory: ./PeerPrep
-        run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest --platform=linux/amd64 .
-          docker push ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest
 
       - name: (CS) Make Cloud Run build configuration changes
         working-directory: ./collaboration-svc
