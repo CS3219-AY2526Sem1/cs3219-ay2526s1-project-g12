@@ -80,7 +80,7 @@ async def test():
         print(f"DNS Resolution failed: {e}")
         print("Your Cloud Run environment cannot resolve external DNS")
     try:
-        async with websockets.connect(f'wss://{hostname}/ws/collab') as ws:
+        async with websockets.connect(f'ws://{hostname}/ws/collab') as ws:
             await ws.send("test")
             print(await ws.recv())
     except Exception as e:
