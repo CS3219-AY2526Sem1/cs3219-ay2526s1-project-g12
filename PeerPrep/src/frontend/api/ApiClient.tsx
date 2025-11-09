@@ -61,6 +61,4 @@ export class ApiClient {
 }
 
 // Singleton instance (shared across services)
-export const apiClient = new ApiClient(
-  'https://pp-api-gateway-161940165499.asia-east1.run.app'
-);
+export const apiClient = new ApiClient('https://api.gateway.peerprep.com');
