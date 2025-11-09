@@ -166,3 +166,24 @@ if ENVIROMENT =="DEV":
             return {"message": "All Redis databases have been flushed successfully"}
         except Exception as e:
             return {"error": f"Failed to flush Redis: {str(e)}"}
+
+    @app.get("/health")
+    async def health_check():
+        try:
+            # Test all Redis connections
+            matchmaking_ping = await app.state.redis_matchmaking_service.ping()
+            message_ping = await app.state.redis_message_service.ping()
+            confirmation_ping = await app.state.redis_confirmation_service.ping()
+            
+            return {
+                "status": "healthy",
+                "redis_connections": {
+                    "matchmaking": matchmaking_ping,
+                    "message": message_ping,
+                    "confirmation": confirmation_ping
+                }
+            }
+        except Exception as e:
+            log.error(f"Health check failed: {e}")
+            return {"status": "unhealthy", "error": str(e)}, 503
+
