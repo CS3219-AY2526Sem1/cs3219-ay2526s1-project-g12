@@ -253,10 +253,10 @@ async def fetch_all_questions(start: int | None = None, end: int | None = None) 
     qns_count = await Question.all().count()
     if start is not None and end is not None:
         if start <= 0:
-            raise HTTPException(status_code=400, detail=f"start begins from 1")
+            raise HTTPException(status_code=400, detail="start begins from 1")
         if end < start:
             raise HTTPException(
-                status_code=400, detail=f"end cannot be smaller than start"
+                status_code=400, detail="end cannot be smaller than start"
             )
         qns_db_list = (
             await Question.all()
