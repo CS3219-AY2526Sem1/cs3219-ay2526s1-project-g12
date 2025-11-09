@@ -20,8 +20,6 @@ router = APIRouter(include_in_schema=False)
 from utils.logger import log
 from utils.utils import get_envvar
 
-USER_SERVICE_me_PATH = get_envvar("USER_SERVICE_me_PATH")
-
 
 async def auth_user(
     access_token: str = Depends(extend_access_token_cookie),
@@ -85,7 +83,7 @@ async def dynamic_forward(
 
     try:
         code, data = await gateway.forward(
-            "GET", USER_SERVICE_me_PATH, data=body, user_data=user_data
+            method, "/" + path, data=body, user_data=user_data
         )
 
         log.info(f"{request_id} [DYNAMIC_FORWARD] Gateway returned status code: {code}")
