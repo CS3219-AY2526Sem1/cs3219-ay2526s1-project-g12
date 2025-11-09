@@ -6,7 +6,7 @@ ENV_REDIS_HOST_KEY = "REDIS_HOST"
 ENV_REDIS_PORT_KEY = "REDIS_PORT"
 
 
-def connect_to_redis_confirmation_service() -> Redis:
+def connect_to_redis_matchmaking_service() -> Redis:
     """
     Establishes a connection with redis message queue.
     """
