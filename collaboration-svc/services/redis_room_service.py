@@ -22,7 +22,7 @@ async def connect_to_redis_room_service() -> Redis:
 
     redis =  Redis(host=host, port=redis_port, decode_responses=True, db=0)
     # Configure redis so that expired keys will be sent as a event within redis
-    await redis.config_set('notify-keyspace-events', 'Ex')
+    # await redis.config_set('notify-keyspace-events', 'Ex')
     return redis
 
 async def create_room(match_data: dict, room_connection: Redis) -> None:
