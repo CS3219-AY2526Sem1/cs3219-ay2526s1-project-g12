@@ -33,7 +33,7 @@ async def lifespan(app: FastAPI):
     app.state.room_connection = await connect_to_redis_room_service()
     # app.state.websocket_manager = WebSocketManager() 
 
-    await app.state.websocket_manager.connect()
+    # await app.state.websocket_manager.connect()
 
     stop_event = asyncio.Event()
     room_listener = asyncio.create_task(create_room_listener(app.state.event_queue_connection, app.state.room_connection, stop_event))
