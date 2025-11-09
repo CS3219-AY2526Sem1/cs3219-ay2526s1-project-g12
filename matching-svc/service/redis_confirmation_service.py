@@ -12,11 +12,9 @@ async def connect_to_redis_confirmation_service() -> Redis:
     redis_port = get_envvar(ENV_REDIS_PORT_KEY)
     host = get_envvar(ENV_REDIS_HOST_KEY)
     try:
-        client = Redis(
-            host=host,
-            port=int(redis_port),
+        client = await Redis.from_url(
+            f"redis://{host}:{redis_port}/2",
             decode_responses=True,
-            db=2,
         )
         
         await client.ping()

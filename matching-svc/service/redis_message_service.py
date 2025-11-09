@@ -12,11 +12,9 @@ async def connect_to_redis_message_service() -> Redis:
     redis_port = get_envvar(ENV_REDIS_PORT_KEY)
     host = get_envvar(ENV_REDIS_HOST_KEY)
     try:
-        client = Redis(
-            host=host,
-            port=int(redis_port),
+        client = await Redis.from_url(
+            f"redis://{host}:{redis_port}/1",
             decode_responses=True,
-            db=1,
         )
         
         await client.ping()
