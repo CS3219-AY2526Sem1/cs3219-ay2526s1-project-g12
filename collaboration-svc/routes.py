@@ -72,7 +72,7 @@ app = FastAPI(title="PeerPrep Collaboration Service", lifespan=lifespan)
 
 @app.get("/test")
 async def test():
-    hostname = get_envvar("API_WEBSOCKET")
+    hostname = f"{get_envvar("API_WEBSOCKET")}."
     try:
         ip = socket.gethostbyname(hostname)
         print(f"Resolved to: {ip}")
