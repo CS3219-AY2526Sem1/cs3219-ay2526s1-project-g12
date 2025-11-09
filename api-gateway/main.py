@@ -26,7 +26,7 @@ app.include_router(websocket_router)
 
 @app.get("/")
 async def root():
-    return {"status": "working"}
+    return {"status": "Gateway working"}
 
 
 if ENVIROMENT == "DEV":
@@ -85,7 +85,8 @@ if ENVIROMENT == "DEV":
         )
         return {"status": res.status_code, "message": res.text}
 
-    app.include_router(dynamic_router)
+
+# app.include_router(dynamic_router)
 
 app.add_middleware(
     CORSMiddleware,
