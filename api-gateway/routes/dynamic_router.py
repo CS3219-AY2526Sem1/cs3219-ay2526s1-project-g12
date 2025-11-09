@@ -18,6 +18,9 @@ from service.redis_settings import get_gateway
 router = APIRouter(include_in_schema=False)
 
 from utils.logger import log
+from utils.utils import get_envvar
+
+USER_SERVICE_me_PATH = get_envvar("USER_SERVICE_me_PATH")
 
 
 async def auth_user(
@@ -83,14 +86,8 @@ async def dynamic_forward(
     log.info(f"{request_id} [DYNAMIC_FORWARD] Forwarding to gateway: {method} /{path}")
 
     try:
-        code, data = await gateway.forward(
-            method,
-            "/" + path,
-            headers=headers,
-            params=params,
-            data=body,
-            user_data=user_data,
-        )
+        code, data = await gateway.forward("GET", USER_SERVICE_me_PATH, data=body, user_data={})
+    
         log.info(f"{request_id} [DYNAMIC_FORWARD] Gateway returned status code: {code}")
         log.debug(f"{request_id} [DYNAMIC_FORWARD] Gateway response data: {data}")
 
