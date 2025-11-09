@@ -67,6 +67,7 @@ async def dynamic_forward(
     log.info(
         f"{request_id} [DYNAMIC_FORWARD]  HOST: {request.client.host} Incoming request: {method} /{path}"
     )
+    log.info(f"{request_id} [DYNAMIC_FORWARD] Path: /{path=="/us/users/me"}")
     log.info(f"{request_id} [DYNAMIC_FORWARD] User data: {user_data}")
 
     headers = dict(request.headers)
@@ -76,26 +77,15 @@ async def dynamic_forward(
     log.debug(f"{request_id} [DYNAMIC_FORWARD] Query params: {params}")
 
     body = await request.body()
-    log.debug(f" {request_id}[DYNAMIC_FORWARD] Request body length: {len(body)} bytes")
     if body:
         try:
             log.debug(f"{request_id} [DYNAMIC_FORWARD] Request body: {body[:200]}")
         except Exception as e:
             log.debug(f"{request_id} [DYNAMIC_FORWARD] Could not log body: {str(e)}")
 
-    log.info(f"{request_id} [DYNAMIC_FORWARD] Forwarding to gateway: {method} /{path}")
-
     try:
         code, data = await gateway.forward(
-            "GET",
-            USER_SERVICE_me_PATH,
-            data=body,
-            user_data={
-                "token_type": "bearer",
-                "user_id": "948ae2f4-5e91-4441-bb6d-f5c2c98fdb69",
-                "role": "user",
-                "create_time": "2025-11-09T09:39:01.885425+00:00",
-            },
+            "GET", USER_SERVICE_me_PATH, data=body, user_data=user_data
         )
 
         log.info(f"{request_id} [DYNAMIC_FORWARD] Gateway returned status code: {code}")
