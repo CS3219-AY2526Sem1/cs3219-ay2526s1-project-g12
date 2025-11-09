@@ -131,7 +131,7 @@ if ENVIROMENT =="DEV":
         except Exception as e:
             log.info(f"Redis c connection error: {e}")
 
-        r = app.state.redis_message_queue
+        r = app.state.redis_message_service
 
         async for key in r.scan_iter("*"):
             try:
@@ -162,7 +162,7 @@ if ENVIROMENT =="DEV":
         WARNING: This operation is irreversible and will delete ALL data!
         """
         try:
-            await app.state.redis_message_queue.flushall()
+            await app.state.redis_message_service.flushall()
             return {"message": "All Redis databases have been flushed successfully"}
         except Exception as e:
             return {"error": f"Failed to flush Redis: {str(e)}"}
