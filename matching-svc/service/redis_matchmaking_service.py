@@ -6,7 +6,7 @@ ENV_REDIS_HOST_KEY = "REDIS_HOST"
 ENV_REDIS_PORT_KEY = "REDIS_PORT"
 
 
-def connect_to_redis_matchmaking_service() -> Redis:
+async def connect_to_redis_matchmaking_service() -> Redis:
     """
     Establishes a connection with redis message queue.
     """
@@ -26,8 +26,8 @@ def connect_to_redis_matchmaking_service() -> Redis:
                 f"Invalid Redis port: '{redis_port_str}'. Must be an integer."
             )
 
-        redis_client = Redis(host=host, port=redis_port, decode_responses=True, db=2)
-        redis_client.ping() 
+        redis_client = await Redis(host=host, port=redis_port, decode_responses=True, db=2)
+        await redis_client.ping() 
         log.info(
             f"Successfully connected to Redis messaging server at {host}:{redis_port}"
         )
