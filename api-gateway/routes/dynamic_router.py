@@ -86,8 +86,18 @@ async def dynamic_forward(
     log.info(f"{request_id} [DYNAMIC_FORWARD] Forwarding to gateway: {method} /{path}")
 
     try:
-        code, data = await gateway.forward("GET", USER_SERVICE_me_PATH, data=body, user_data={})
-    
+        code, data = await gateway.forward(
+            "GET",
+            USER_SERVICE_me_PATH,
+            data=body,
+            user_data={
+                "token_type": "bearer",
+                "user_id": "948ae2f4-5e91-4441-bb6d-f5c2c98fdb69",
+                "role": "user",
+                "create_time": "2025-11-09T09:39:01.885425+00:00",
+            },
+        )
+
         log.info(f"{request_id} [DYNAMIC_FORWARD] Gateway returned status code: {code}")
         log.debug(f"{request_id} [DYNAMIC_FORWARD] Gateway response data: {data}")
 

@@ -159,14 +159,10 @@ class ServiceRegistry:
         """
         # Try exact match first
         service_name = await self.redis.hget(self.ROUTE_MAP_KEY, path)
-        log.info(
-            f"[FIND_ROUTE] Looking for path: {path}, found service: {service_name}"
-        )
         if service_name:
             return service_name, path
         # Otherwise perform a parameterised match
         routes = await self.redis.hgetall(self.ROUTE_MAP_KEY)
-        log.info(f"[FIND_ROUTE] No exact match, checking patterns: {routes}")
         for route_pattern, svc in routes.items():
             pattern_regex = re.sub(r"\{[^/{}]+\}", "[^/]+", route_pattern)
             pattern_regex = f"^{pattern_regex}$"
