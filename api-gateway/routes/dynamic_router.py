@@ -75,7 +75,7 @@ async def dynamic_forward(
 
     try:
         code, data = await gateway.forward(
-            method, "/" + path, data=body, user_data=user_data,params=params, headers=headers
+            method, "/" + path, data=body, user_data=user_data,params=params
         )
 
     except Exception as e:
