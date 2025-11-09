@@ -48,6 +48,8 @@ from models.api_models import RoutePayload
 from models.registry_models import RouteDefinition
 from utils.utils import build_route_path, path_variants
 
+from utils.logger import log
+
 
 class ServiceRegistry:
     """Redis‑backed registry for microservice routes and instances."""
@@ -58,7 +60,9 @@ class ServiceRegistry:
     SERVICE_INSTANCES_KEY = "gw:service:{service_name}:instances"
     HEARTBEAT_KEY = "gw:service:{service_name}:instance:{instance_id}:heartbeat"
 
-    def __init__(self, redis: aioredis.Redis, heartbeat_ttl: int = 30, rr_ttl: int = 3600) -> None:
+    def __init__(
+        self, redis: aioredis.Redis, heartbeat_ttl: int = 30, rr_ttl: int = 3600
+    ) -> None:
         """Initialize the registry.
 
         Args:
@@ -155,6 +159,9 @@ class ServiceRegistry:
         """
         # Try exact match first
         service_name = await self.redis.hget(self.ROUTE_MAP_KEY, path)
+        log.info(
+            f"[FIND_ROUTE] Looking for path: {path}, found service: {service_name}"
+        )
         if service_name:
             return service_name, path
         # Otherwise perform a parameterised match
