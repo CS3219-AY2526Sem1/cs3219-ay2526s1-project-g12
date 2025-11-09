@@ -15,7 +15,7 @@ from services.redis_room_service import connect_to_redis_room_service
 from typing import Annotated
 from utils.logger import log
 from utils.utils import sever_connection, get_envvar
-
+import socket
 FRONT_END_URL = get_envvar("FRONT_END_URL")
 
 ADMIN_ROLE = "admin"
@@ -72,8 +72,15 @@ app = FastAPI(title="PeerPrep Collaboration Service", lifespan=lifespan)
 
 @app.get("/test")
 async def test():
+    hostname = get_envvar("API_WEBSOCKET")
     try:
-        async with websockets.connect(f'wss://{get_envvar("API_WEBSOCKET")}/ws/collab') as ws:
+        ip = socket.gethostbyname(hostname)
+        print(f"Resolved to: {ip}")
+    except socket.gaierror as e:
+        print(f"DNS Resolution failed: {e}")
+        print("Your Cloud Run environment cannot resolve external DNS")
+    try:
+        async with websockets.connect(f'wss://{hostname}/ws/collab') as ws:
             await ws.send("test")
             print(await ws.recv())
     except Exception as e:
