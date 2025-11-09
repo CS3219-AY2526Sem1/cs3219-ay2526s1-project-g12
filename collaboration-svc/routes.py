@@ -73,7 +73,7 @@ app = FastAPI(title="PeerPrep Collaboration Service", lifespan=lifespan)
 @app.get("/test")
 async def test():
     try:
-        async with websockets.connect(f'ws://{get_envvar("API_WEBSOCKET")}/ws/collab') as ws:
+        async with websockets.connect(f'wss://{get_envvar("API_WEBSOCKET")}/ws/collab') as ws:
             await ws.send("test")
             print(await ws.recv())
     except Exception as e:
