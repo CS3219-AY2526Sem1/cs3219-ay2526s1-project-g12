@@ -166,6 +166,7 @@ class ServiceRegistry:
             return service_name, path
         # Otherwise perform a parameterised match
         routes = await self.redis.hgetall(self.ROUTE_MAP_KEY)
+        log.info(f"[FIND_ROUTE] No exact match, checking patterns: {routes}")
         for route_pattern, svc in routes.items():
             pattern_regex = re.sub(r"\{[^/{}]+\}", "[^/]+", route_pattern)
             pattern_regex = f"^{pattern_regex}$"
