@@ -13,7 +13,7 @@ async def connect_to_redis_message_service() -> Redis:
     host = get_envvar(ENV_REDIS_HOST_KEY)
     try:
         client = await Redis.from_url(
-            f"redis://{host}:{redis_port}/1",
+            f"redis://{host}:{redis_port}",
             decode_responses=True,
         )
         
