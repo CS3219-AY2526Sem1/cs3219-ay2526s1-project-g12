@@ -61,4 +61,4 @@ export class ApiClient {
 }
 
 // Singleton instance (shared across services)
-export const apiClient = new ApiClient('https://api.peerprep.com');
+export const apiClient = new ApiClient('https://api.peerprep.cloud');
