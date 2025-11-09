@@ -5,27 +5,48 @@ from utils.utils import get_envvar
 ENV_REDIS_HOST_KEY = "REDIS_HOST"
 ENV_REDIS_PORT_KEY = "REDIS_PORT"
 
-def connect_to_redis_matchmaking_service() -> Redis:
-    """
-    Establishes a connection with redis queue.
-    """
-    redis_port = get_envvar(ENV_REDIS_PORT_KEY)
-    host = get_envvar(ENV_REDIS_HOST_KEY)
-    # decode_responses = True is to allow redis to automatically decode responses
-    log.info("Connected to redis queue server.")
-    return Redis(host=host, port=redis_port, decode_responses=True, db=0)
 
-async def add_user_queue_details(key: str, difficulty: str, category: str, matchmaking_conn: Redis) -> None:
+def connect_to_redis_confirmation_service() -> Redis:
+    """
+    Establishes a connection with redis message queue.
+    """
+    try:
+        redis_port_str = get_envvar(ENV_REDIS_PORT_KEY)
+        host = get_envvar(ENV_REDIS_HOST_KEY)
+
+        log.info(
+            f"Attempting to connect to Redis at host: '{host}', port: '{redis_port_str}'"
+        )
+
+        try:
+            redis_port = int(redis_port_str)
+        except ValueError:
+            log.error(f"Invalid Redis port: '{redis_port_str}'. Must be an integer.")
+            raise ValueError(
+                f"Invalid Redis port: '{redis_port_str}'. Must be an integer."
+            )
+
+        redis_client = Redis(host=host, port=redis_port, decode_responses=True, db=2)
+        redis_client.ping() 
+        log.info(
+            f"Successfully connected to Redis messaging server at {host}:{redis_port}"
+        )
+        return redis_client
+    except Exception as e:
+        log.error(f"Failed to connect to Redis messaging server: {e}", exc_info=True)
+        raise  
+
+
+async def add_user_queue_details(
+    key: str, difficulty: str, category: str, matchmaking_conn: Redis
+) -> None:
     """
     Adds the user into the set of queued users.\n
     """
-    mapping = {
-        "difficulty": difficulty,
-        "category": category,
-        "match_found": 0
-    }
+    mapping = {"difficulty": difficulty, "category": category, "match_found": 0}
 
     await matchmaking_conn.hset(key, mapping=mapping)
+
 
 async def check_user_in_any_queue(key: str, matchmaking_conn: Redis) -> bool:
     """
@@ -33,10 +54,11 @@ async def check_user_in_any_queue(key: str, matchmaking_conn: Redis) -> bool:
     """
     does_exist = await matchmaking_conn.exists(key)
 
-    if (does_exist == 1):
+    if does_exist == 1:
         return True
     else:
         return False
+
 
 async def check_user_found_match(key: str, matchmaking_conn: Redis) -> bool:
     """
@@ -44,10 +66,11 @@ async def check_user_found_match(key: str, matchmaking_conn: Redis) -> bool:
     """
     has_found_match = await matchmaking_conn.hget(key, "match_found")
 
-    if (has_found_match == "1"):
+    if has_found_match == "1":
         return True
     else:
         return False
+
 
 async def update_user_match_found_status(key: str, matchmaking_conn: Redis) -> None:
     """
@@ -55,41 +78,47 @@ async def update_user_match_found_status(key: str, matchmaking_conn: Redis) -> N
     """
     await matchmaking_conn.hset(key, mapping={"match_found": 1})
 
+
 async def remove_user_queue_details(key: str, matchmaking_conn: Redis) -> None:
     """
     Removes the user from the set of queued users.\n
     """
     await matchmaking_conn.delete(key)
 
-async def find_user_in_queue(user_id: str, key:str,  matchmaking_conn: Redis) -> int:
+
+async def find_user_in_queue(user_id: str, key: str, matchmaking_conn: Redis) -> int:
     """
     Finds the user in the queue based on the key and return the index. If the user is no in the queue \n
     return none.
     """
-    index = await  matchmaking_conn.lpos(key, user_id)
+    index = await matchmaking_conn.lpos(key, user_id)
     return index
+
 
 async def get_user_queue_details(key: str, matchmaking_conn: Redis) -> dict:
     """
     Retrieves the queue details of the user.
     """
-    return  await matchmaking_conn.hgetall(key)
+    return await matchmaking_conn.hgetall(key)
 
-async def enqueue_user(user_id: str, key:str,  matchmaking_conn: Redis) -> None:
+
+async def enqueue_user(user_id: str, key: str, matchmaking_conn: Redis) -> None:
     """
     Adds the user into the queue based on the key.
     """
     await matchmaking_conn.rpush(key, user_id)
     log.info(f"User id, {user_id} has been added into the queue with the key: {key}.")
 
-async def dequeue_user(user_id: str, key:str,  matchmaking_conn: Redis) -> None:
+
+async def dequeue_user(user_id: str, key: str, matchmaking_conn: Redis) -> None:
     """
     Removes the user from the queue based on the key.
     """
     await matchmaking_conn.lrem(key, 1, user_id)
     log.info(f"User id, {user_id} has been removed from the queue: {key}.")
 
-async def get_next_user(key:str, matchmaking_conn: Redis) -> str:
+
+async def get_next_user(key: str, matchmaking_conn: Redis) -> str:
     """
     Retrieves the next person in the queue based on the key.
     """
@@ -97,12 +126,13 @@ async def get_next_user(key:str, matchmaking_conn: Redis) -> str:
     log.info(f"User id, {user_id} has been removed from the queue: {key}.")
     return user_id
 
-async def find_partner(key:str, matchmaking_conn: Redis) -> str:
+
+async def find_partner(key: str, matchmaking_conn: Redis) -> str:
     """
     Based on the difficulty and category fetch the next person in the queue.\n
     """
-    length = await matchmaking_conn.llen(key) 
-    if (length > 0):
+    length = await matchmaking_conn.llen(key)
+    if length > 0:
         user_id = await get_next_user(key, matchmaking_conn)
         return user_id
     else:
