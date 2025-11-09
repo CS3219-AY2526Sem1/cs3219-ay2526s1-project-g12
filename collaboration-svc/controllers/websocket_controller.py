@@ -21,6 +21,7 @@ class WebSocketManager:
         """
         Establishes a WebSocket connection with the API gateway.
         """
+        log.info(f"Connecting to API gateway WebSocket at {get_envvar(ENV_API_WEBSOCKET_URL)}")
         try:
             self.active_connection = await websockets.connect(get_envvar(ENV_API_WEBSOCKET_URL))
         except Exception:
