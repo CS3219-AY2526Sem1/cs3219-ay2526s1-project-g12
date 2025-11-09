@@ -17,9 +17,6 @@ async def connect_to_redis_matchmaking_service() -> Redis:
             port=int(redis_port),
             decode_responses=True,
             db=0,
-            socket_connect_timeout=5,
-            socket_keepalive=True,
-            health_check_interval=30
         )
         
         await client.ping()
