@@ -35,6 +35,7 @@ from models.api_models import (
 )
 from service.database_svc import register_database
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # pragma: no cover
     register_self_as_service(app)
