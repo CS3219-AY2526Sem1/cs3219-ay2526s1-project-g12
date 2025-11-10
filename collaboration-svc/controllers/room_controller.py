@@ -120,8 +120,8 @@ async def alert_partner_left(
     """
     Sends a message to the user altering them that their partner has left.
     """
-    await websocket_manager.send_message(user_id, room_id, f"partner_left")
-    log.info(f"Sent a notification to {user_id} that their parter has left the mattch")
+    await websocket_manager.send_message(user_id, room_id, "partner_left")
+    log.info(f"Sent a notification to {user_id} that their partner has left the match")
 
 
 async def alert_partner_rejoined(
@@ -130,8 +130,8 @@ async def alert_partner_rejoined(
     """
     Sends a message to the partner that the user has rejoined the room.
     """
-    await websocket_manager.send_message(user_id, room_id, f"partner_join")
-    log.info(f"Sent a notification to {user_id} that their parter has joined the room")
+    await websocket_manager.send_message(user_id, room_id, "partner_join")
+    log.info(f"Sent a notification to {user_id} that their partner has joined the room")
 
 
 async def remove_user(

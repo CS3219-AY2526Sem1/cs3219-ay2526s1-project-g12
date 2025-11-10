@@ -1,11 +1,8 @@
-import asyncio
 from datetime import datetime
-import json
 from redis.asyncio import Redis
 import requests
 from utils.logger import log
 from utils.utils import get_envvar, format_user_room_key, format_heartbeat_key
-import aiohttp 
 
 ENV_REDIS_HOST_KEY = "REDIS_HOST"
 ENV_REDIS_PORT_KEY = "REDIS_PORT"
@@ -188,7 +185,7 @@ def send_room_for_review(user_one: str, user_two: str, submitted_solution: str, 
             "users": [user_one, user_two]
         }
 
-        r = requests.post(f"{get_envvar(ENV_QN_SVC_HISTORY_ENDPOINT)}", json= body)
+        requests.post(f"{get_envvar(ENV_QN_SVC_HISTORY_ENDPOINT)}", json= body)
         log.info("INFO: Match attempt sent to question history")
 
 async def get_partner_name(room_key: str, user_id: str, room_connection: Redis) -> str:
