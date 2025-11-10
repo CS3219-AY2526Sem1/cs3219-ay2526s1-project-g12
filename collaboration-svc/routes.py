@@ -6,7 +6,14 @@ from controllers.heartbeat_controller import (
     register_heartbeat,
     register_self_as_service,
 )
-from controllers.room_controller import create_room_listener, create_ttl_expire_listener, terminate_match, remove_user, reconnect_user, create_heartbeat_listener
+from controllers.room_controller import (
+    create_room_listener,
+    create_ttl_expire_listener,
+    terminate_match,
+    remove_user,
+    reconnect_user,
+    create_heartbeat_listener,
+)
 from controllers.websocket_controller import WebSocketManager
 import websockets
 from fastapi import FastAPI, Header
@@ -17,6 +24,7 @@ from typing import Annotated
 from utils.logger import log
 from utils.utils import sever_connection, get_envvar
 import socket
+
 FRONT_END_URL = get_envvar("FRONT_END_URL")
 
 ADMIN_ROLE = "admin"
@@ -24,6 +32,7 @@ USER_ROLE = "user"
 
 ENV_REDIS_STREAM_KEY = "REDIS_STREAM_KEY"
 ENV_REDIS_GROUP_KEY = "REDIS_GROUP"
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,7 +43,7 @@ async def lifespan(app: FastAPI):
     app.state.room_connection = await connect_to_redis_room_service()
     # Create SSL context that verifies certificates properly
     app.state.ssl_context = ssl.create_default_context()
-    # app.state.websocket_manager = WebSocketManager() 
+    # app.state.websocket_manager = WebSocketManager()
 
     # await app.state.websocket_manager.connect()
 
@@ -54,11 +63,10 @@ async def lifespan(app: FastAPI):
     #     await room_listener
     # log.info("Room listner worker is done.")
 
-
     # if (expired_ttl_listener and not expired_ttl_listener.done()):
     #     await expired_ttl_listener
     # log.info("Expired ttl listner worker is done.")
-    
+
     # if (websocket_listner and not websocket_listner.done()):
     #     await websocket_listner
     # log.info("Websocket listner worker is done.")
@@ -71,7 +79,9 @@ async def lifespan(app: FastAPI):
     # log.info("Collaboration service shutting down.")
     hc_task.cancel()
 
+
 app = FastAPI(title="PeerPrep Collaboration Service", lifespan=lifespan)
+
 
 @app.get("/test/link")
 async def test():
@@ -83,9 +93,14 @@ async def test():
         print(f"DNS Resolution failed: {e}")
         print("Your Cloud Run environment cannot resolve external DNS")
     try:
-        url = f'ws://{hostname}/ws/collab'
+        url = f"wss://{hostname}/ws/collab"
         print(f"Connecting to: {url}")
-        async with websockets.connect(url,ssl=app.state.ssl_context) as ws:
+        server_hostname = hostname.split(":")[0]
+        async with websockets.connect(
+            url,
+            ssl=app.state.ssl_context,
+            server_hostname=server_hostname,  # This tells SSL what hostname to verify
+        ) as ws:
             await ws.send("test")
             print(await ws.recv())
     except Exception as e:
@@ -102,9 +117,14 @@ async def test_WSS():
         print(f"DNS Resolution failed: {e}")
         print("Your Cloud Run environment cannot resolve external DNS")
     try:
-        url = f'wss://{hostname}/ws/collab'
+        url = f"wss://{hostname}/ws/collab"
         print(f"Connecting to: {url}")
-        async with websockets.connect(url, ssl=app.state.ssl_context) as ws:
+        server_hostname = hostname.split(":")[0]
+        async with websockets.connect(
+            url,
+            ssl=app.state.ssl_context,
+            server_hostname=server_hostname,  # This tells SSL what hostname to verify
+        ) as ws:
             await ws.send("test")
             print(await ws.recv())
     except Exception as e:
@@ -115,17 +135,24 @@ async def test_WSS():
 async def root() -> dict:
     return {"status": "Collab Working"}
 
+
 @app.post("/reconnect", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
 async def reconnect_user_to_match(x_user_id: Annotated[str, Header()]) -> dict:
-    await reconnect_user(x_user_id, app.state.room_connection, app.state.websocket_manager)
+    await reconnect_user(
+        x_user_id, app.state.room_connection, app.state.websocket_manager
+    )
     return {"message": "Reconnecting user"}
+
 
 @app.post("/exit", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
 async def user_exit_match(x_user_id: Annotated[str, Header()]) -> dict:
     await remove_user(x_user_id, app.state.room_connection, app.state.websocket_manager)
     return {"message": "Exit match"}
 
+
 @app.post("/terminate/{room_id}", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
-async def terminate_user_match(room_id: str, match_data: MatchData, x_user_id: Annotated[str, Header()]) -> dict:
+async def terminate_user_match(
+    room_id: str, match_data: MatchData, x_user_id: Annotated[str, Header()]
+) -> dict:
     await terminate_match(x_user_id, room_id, match_data, app.state.room_connection)
     return {"message": "match has been terminated"}
