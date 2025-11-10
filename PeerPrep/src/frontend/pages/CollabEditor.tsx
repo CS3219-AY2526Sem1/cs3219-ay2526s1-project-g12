@@ -43,7 +43,7 @@ export default function CollabEditor() {
 
     const connectWS = () => {
       try {
-        const ws = new WebSocket('ws://localhost:8000/ws/fe');
+        const ws = new WebSocket(import.meta.env.VITE_WS_GATEWAY_URL);
         wsRef.current = ws;
 
         ws.onopen = async () => {

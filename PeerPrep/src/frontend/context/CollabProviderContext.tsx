@@ -29,10 +29,10 @@ export function CollabProvider({ roomId, children }: CollabProviderProps) {
   useEffect(() => {
     const ydoc = new Y.Doc();
     const provider = new WebrtcProvider(`room-${roomId}`, ydoc, {
-      signaling: ["ws://localhost:4444"],
+      signaling: [import.meta.env.VITE_SIGNALING_SERVER_URL],
       peerOpts: {
         config: {
-          iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
+          iceServers: [{ urls: [import.meta.env.VITE_ICE_SERVERS] }],
         },
       },
     });
