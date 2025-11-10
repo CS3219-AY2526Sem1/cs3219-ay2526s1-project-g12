@@ -86,7 +86,7 @@ if ENVIROMENT == "DEV":
         return {"status": res.status_code, "message": res.text}
 
 
-# app.include_router(dynamic_router)
+app.include_router(dynamic_router)
 
 app.add_middleware(
     CORSMiddleware,
