@@ -63,11 +63,11 @@ export default function CollabEditor() {
           }
 
           const res = await collabApi.connect(matchDetails);
-          if (res.data) {
+          if (res.data && res.data?.message) {
             try {
-              console.log('Problem data:', res.data);
-              const question = res.data.question;
-              const partner = res.data.partner_name;
+              console.log('Problem data:', res.data.message);
+              const question = res.data.message.question;
+              const partner = res.data.message.partner_name;
               setProblem(question);
               setPartnerName(partner);
             } catch {
@@ -85,6 +85,13 @@ export default function CollabEditor() {
 
           if (data.message === 'partner_left') {
             toast.error('Your partner left the session');
+          } else if (data.message === 'match_terminate') {
+            // Partner terminated the session, force exit
+            toast.info('Your partner ended the session. Exiting session...');
+            localStorage.removeItem('collab_code');
+            setTimeout(() => {
+              navigate('/matching');
+            }, 2000);
           }
         };
 
