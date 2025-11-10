@@ -70,7 +70,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="PeerPrep Collaboration Service", lifespan=lifespan)
 
-@app.get("/test")
+@app.get("/testWS")
 async def test():
     hostname = f"{get_envvar("API_WEBSOCKET")}."
     try:
@@ -87,9 +87,26 @@ async def test():
         print(f"Error: {e}")
 
 
+@app.get("/testWsS")
+async def test_WSS():
+    hostname = f"{get_envvar("API_WEBSOCKET")}."
+    try:
+        ip = socket.gethostbyname(hostname)
+        print(f"Resolved to: {ip}")
+    except socket.gaierror as e:
+        print(f"DNS Resolution failed: {e}")
+        print("Your Cloud Run environment cannot resolve external DNS")
+    try:
+        async with websockets.connect(f'wSs://{hostname}/ws/collab') as ws:
+            await ws.send("test")
+            print(await ws.recv())
+    except Exception as e:
+        print(f"Error: {e}")
+
+
 @app.get("/")
 async def root() -> dict:
-    return {"status": "working"}
+    return {"status": "Collab Working"}
 
 @app.post("/reconnect", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
 async def reconnect_user_to_match(x_user_id: Annotated[str, Header()]) -> dict:
