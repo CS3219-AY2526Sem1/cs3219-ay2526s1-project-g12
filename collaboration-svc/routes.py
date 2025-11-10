@@ -43,6 +43,8 @@ async def lifespan(app: FastAPI):
     app.state.room_connection = await connect_to_redis_room_service()
     # Create SSL context that verifies certificates properly
     app.state.ssl_context = ssl.create_default_context()
+    app.state.ssl_context.check_hostname = False
+    app.state.ssl_context.verify_mode = ssl.CERT_NONE
     # app.state.websocket_manager = WebSocketManager()
 
     # await app.state.websocket_manager.connect()
@@ -95,11 +97,12 @@ async def test():
     try:
         url = f"wss://{hostname}/ws/collab"
         print(f"Connecting to: {url}")
-        server_hostname = hostname.split(":")[0]
+        server_hostname = hostname.split(":")
+        print(f"Server Hostname: {server_hostname}")
         async with websockets.connect(
             url,
             ssl=app.state.ssl_context,
-            server_hostname=server_hostname,  # This tells SSL what hostname to verify
+            # server_hostname=server_hostname,  # This tells SSL what hostname to verify
         ) as ws:
             await ws.send("test")
             print(await ws.recv())
@@ -119,11 +122,12 @@ async def test_WSS():
     try:
         url = f"wss://{hostname}/ws/collab"
         print(f"Connecting to: {url}")
-        server_hostname = hostname.split(":")[0]
+        server_hostname = hostname.split(":")
+        print(f"Server Hostname: {server_hostname}")
         async with websockets.connect(
             url,
             ssl=app.state.ssl_context,
-            server_hostname=server_hostname,  # This tells SSL what hostname to verify
+            # server_hostname=server_hostname,  # This tells SSL what hostname to verify
         ) as ws:
             await ws.send("test")
             print(await ws.recv())
