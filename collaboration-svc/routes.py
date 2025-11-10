@@ -1,4 +1,5 @@
 import asyncio
+import ssl
 from contextlib import asynccontextmanager
 from controllers.heartbeat_controller import (
     INSTANCE_ID,
@@ -31,6 +32,8 @@ async def lifespan(app: FastAPI):
     """
     app.state.event_queue_connection = connect_to_redis_event_queue()
     app.state.room_connection = await connect_to_redis_room_service()
+    # Create SSL context that verifies certificates properly
+    app.state.ssl_context = ssl.create_default_context()
     # app.state.websocket_manager = WebSocketManager() 
 
     # await app.state.websocket_manager.connect()
@@ -70,9 +73,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="PeerPrep Collaboration Service", lifespan=lifespan)
 
-@app.get("/test/ws")
+@app.get("/test/link")
 async def test():
-    hostname = f"{get_envvar("API_WEBSOCKET")}."
+    hostname = "api.peerprep.cloud."
     try:
         ip = socket.gethostbyname(hostname)
         print(f"Resolved to: {ip}")
@@ -82,7 +85,7 @@ async def test():
     try:
         url = f'ws://{hostname}/ws/collab'
         print(f"Connecting to: {url}")
-        async with websockets.connect(url) as ws:
+        async with websockets.connect(url,ssl=app.state.ssl_context) as ws:
             await ws.send("test")
             print(await ws.recv())
     except Exception as e:
@@ -101,7 +104,7 @@ async def test_WSS():
     try:
         url = f'wss://{hostname}/ws/collab'
         print(f"Connecting to: {url}")
-        async with websockets.connect(url) as ws:
+        async with websockets.connect(url, ssl=app.state.ssl_context) as ws:
             await ws.send("test")
             print(await ws.recv())
     except Exception as e:
