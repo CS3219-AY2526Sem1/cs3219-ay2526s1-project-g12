@@ -7,6 +7,7 @@ from websockets import ClientConnection
 
 ENV_API_WEBSOCKET_URL = "GATEWAY_WEBSOCKET_URL"
 
+
 class WebSocketManager:
     def __init__(self):
         self.active_connection = None
@@ -17,15 +18,22 @@ class WebSocketManager:
         """
         return self.active_connection
 
-    async def connect(self) -> None:
+    async def connect(self, ssl_context) -> None:
         """
         Establishes a WebSocket connection with the API gateway.
         """
-        log.info(f"Connecting to API gateway WebSocket at {get_envvar(ENV_API_WEBSOCKET_URL)}")
+        log.info(
+            f"Connecting to API gateway WebSocket at {get_envvar(ENV_API_WEBSOCKET_URL)}"
+        )
         try:
-            self.active_connection = await websockets.connect(get_envvar(ENV_API_WEBSOCKET_URL))
+            self.active_connection = await websockets.connect(
+                get_envvar(ENV_API_WEBSOCKET_URL),
+                ssl=ssl_context,
+            )
         except Exception:
-            log.error(f"Unable to establish a WebSocket connection with API gateway {get_envvar(ENV_API_WEBSOCKET_URL)}")
+            log.error(
+                f"Unable to establish a WebSocket connection with API gateway {get_envvar(ENV_API_WEBSOCKET_URL)}"
+            )
             raise
 
     async def disconnect(self) -> None:
@@ -41,11 +49,7 @@ class WebSocketManager:
         Sends a message though the WebSocket to the API gateway.
         """
 
-        message = {
-            "user_id": receiver,
-            "room_id": room_id,
-            "event": body
-        }
+        message = {"user_id": receiver, "room_id": room_id, "event": body}
 
         if self.active_connection:
             await self.active_connection.send(json.dumps(message))

@@ -15,7 +15,6 @@ from controllers.room_controller import (
     create_heartbeat_listener,
 )
 from controllers.websocket_controller import WebSocketManager
-import websockets
 from fastapi import FastAPI, Header
 from models.api_models import MatchData
 from services.redis_event_queue import connect_to_redis_event_queue
@@ -23,7 +22,6 @@ from services.redis_room_service import connect_to_redis_room_service
 from typing import Annotated
 from utils.logger import log
 from utils.utils import sever_connection, get_envvar
-import socket
 
 FRONT_END_URL = get_envvar("FRONT_END_URL")
 
@@ -45,95 +43,44 @@ async def lifespan(app: FastAPI):
     app.state.ssl_context = ssl.create_default_context()
     app.state.ssl_context.check_hostname = False
     app.state.ssl_context.verify_mode = ssl.CERT_NONE
-    # app.state.websocket_manager = WebSocketManager()
+    app.state.websocket_manager = WebSocketManager()
 
-    # await app.state.websocket_manager.connect()
+    await app.state.websocket_manager.connect(app.state.ssl_context)
 
-    # stop_event = asyncio.Event()
-    # room_listener = asyncio.create_task(create_room_listener(app.state.event_queue_connection, app.state.room_connection, stop_event))
-    # expired_ttl_listener = asyncio.create_task(create_ttl_expire_listener(INSTANCE_ID, app.state.event_queue_connection, app.state.room_connection, app.state.websocket_manager, stop_event))
-    # websocket_listner =  asyncio.create_task(create_heartbeat_listener(app.state.room_connection, app.state.websocket_manager, stop_event))
+    stop_event = asyncio.Event()
+    room_listener = asyncio.create_task(create_room_listener(app.state.event_queue_connection, app.state.room_connection, stop_event))
+    expired_ttl_listener = asyncio.create_task(create_ttl_expire_listener(INSTANCE_ID, app.state.event_queue_connection, app.state.room_connection, app.state.websocket_manager, stop_event))
+    websocket_listner =  asyncio.create_task(create_heartbeat_listener(app.state.room_connection, app.state.websocket_manager, stop_event))
 
     register_self_as_service(app)
     hc_task = register_heartbeat()
 
     yield
     # This is the shut down procedure when the collaboration service stops.
-    # stop_event.set()
+    stop_event.set()
 
-    # if (room_listener and not room_listener.done()):
-    #     await room_listener
-    # log.info("Room listner worker is done.")
+    if (room_listener and not room_listener.done()):
+        await room_listener
+    log.info("Room listner worker is done.")
 
-    # if (expired_ttl_listener and not expired_ttl_listener.done()):
-    #     await expired_ttl_listener
-    # log.info("Expired ttl listner worker is done.")
+    if (expired_ttl_listener and not expired_ttl_listener.done()):
+        await expired_ttl_listener
+    log.info("Expired ttl listner worker is done.")
 
-    # if (websocket_listner and not websocket_listner.done()):
-    #     await websocket_listner
-    # log.info("Websocket listner worker is done.")
+    if (websocket_listner and not websocket_listner.done()):
+        await websocket_listner
+    log.info("Websocket listner worker is done.")
 
-    # await app.state.websocket_manager.disconnect()
+    await app.state.websocket_manager.disconnect()
 
-    # await sever_connection(app.state.event_queue_connection)
-    # await sever_connection(app.state.room_connection)
+    await sever_connection(app.state.event_queue_connection)
+    await sever_connection(app.state.room_connection)
 
-    # log.info("Collaboration service shutting down.")
+    log.info("Collaboration service shutting down.")
     hc_task.cancel()
 
 
 app = FastAPI(title="PeerPrep Collaboration Service", lifespan=lifespan)
-
-
-@app.get("/test/link")
-async def test():
-    hostname = "api.peerprep.cloud."
-    try:
-        ip = socket.gethostbyname(hostname)
-        print(f"Resolved to: {ip}")
-    except socket.gaierror as e:
-        print(f"DNS Resolution failed: {e}")
-        print("Your Cloud Run environment cannot resolve external DNS")
-    try:
-        url = f"wss://{hostname}/ws/collab"
-        print(f"Connecting to: {url}")
-        server_hostname = hostname.split(":")
-        print(f"Server Hostname: {server_hostname}")
-        async with websockets.connect(
-            url,
-            ssl=app.state.ssl_context,
-            # server_hostname=server_hostname,  # This tells SSL what hostname to verify
-        ) as ws:
-            await ws.send("test")
-            print(await ws.recv())
-    except Exception as e:
-        print(f"Error: {e}")
-
-
-@app.get("/test/wss")
-async def test_WSS():
-    hostname = f"{get_envvar("API_WEBSOCKET")}."
-    try:
-        ip = socket.gethostbyname(hostname)
-        print(f"Resolved to: {ip}")
-    except socket.gaierror as e:
-        print(f"DNS Resolution failed: {e}")
-        print("Your Cloud Run environment cannot resolve external DNS")
-    try:
-        url = f"wss://{hostname}/ws/collab"
-        print(f"Connecting to: {url}")
-        server_hostname = hostname.split(":")
-        print(f"Server Hostname: {server_hostname}")
-        async with websockets.connect(
-            url,
-            ssl=app.state.ssl_context,
-            # server_hostname=server_hostname,  # This tells SSL what hostname to verify
-        ) as ws:
-            await ws.send("test")
-            print(await ws.recv())
-    except Exception as e:
-        print(f"Error: {e}")
-
 
 @app.get("/")
 async def root() -> dict:
