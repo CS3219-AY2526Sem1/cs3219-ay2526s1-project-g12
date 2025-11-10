@@ -70,7 +70,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="PeerPrep Collaboration Service", lifespan=lifespan)
 
-@app.get("/testWS")
+@app.get("/test/ws")
 async def test():
     hostname = f"{get_envvar("API_WEBSOCKET")}."
     try:
@@ -80,14 +80,16 @@ async def test():
         print(f"DNS Resolution failed: {e}")
         print("Your Cloud Run environment cannot resolve external DNS")
     try:
-        async with websockets.connect(f'ws://{hostname}/ws/collab') as ws:
+        url = f'ws://{hostname}/ws/collab'
+        print(f"Connecting to: {url}")
+        async with websockets.connect(url) as ws:
             await ws.send("test")
             print(await ws.recv())
     except Exception as e:
         print(f"Error: {e}")
 
 
-@app.get("/testWsS")
+@app.get("/test/wss")
 async def test_WSS():
     hostname = f"{get_envvar("API_WEBSOCKET")}."
     try:
@@ -97,7 +99,9 @@ async def test_WSS():
         print(f"DNS Resolution failed: {e}")
         print("Your Cloud Run environment cannot resolve external DNS")
     try:
-        async with websockets.connect(f'wSs://{hostname}/ws/collab') as ws:
+        url = f'wss://{hostname}/ws/collab'
+        print(f"Connecting to: {url}")
+        async with websockets.connect(url) as ws:
             await ws.send("test")
             print(await ws.recv())
     except Exception as e:
