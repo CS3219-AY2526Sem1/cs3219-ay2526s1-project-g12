@@ -1,7 +1,8 @@
 import asyncio
 from fastapi import HTTPException
-from models.api_models import MatchRequest, MatchConfirmRequest
+from models.api_models import MatchRequest
 from redis.asyncio import Redis
+import requests
 from service.redis_confirmation_service import (
     setup_match_confirmation,
     check_match_exist,
@@ -43,9 +44,11 @@ from utils.utils import (
     format_match_key,
     acquire_lock,
     release_lock,
+    get_envvar
 )
 from uuid import uuid5, NAMESPACE_DNS
 
+ENV_USER_SVC_USER_DETAILS_ENDPOINT = "USER_SERVICE_GET_USER_DETAILS_URL"
 
 def check_redis_connection(reds_connection: Redis):
     """
@@ -59,6 +62,7 @@ def check_redis_connection(reds_connection: Redis):
 
 
 async def find_match(
+    user_id: str,
     match_request: MatchRequest,
     matchmaking_conn: Redis,
     message_conn: Redis,
@@ -68,7 +72,6 @@ async def find_match(
     Finds a match based on the user topic and difficulty.\n
     If no match is made then add the user into the queue
     """
-    user_id = match_request.user_id
     difficulty = match_request.difficulty
     category = match_request.category
 
@@ -104,18 +107,35 @@ async def find_match(
                 f"Could not find a partner for {user_id}. Adding user to the queue"
             )
         else:
+            
+            response = requests.get(
+                get_envvar(ENV_USER_SVC_USER_DETAILS_ENDPOINT),
+                headers= {"X-User-ID" : user_id}
+            )
+
+            user_data = response.json()
+            user_name = f"{user_data["first_name"]} {user_data["last_name"]}"
+
+            response = requests.get(
+                get_envvar(ENV_USER_SVC_USER_DETAILS_ENDPOINT),
+                headers= {"X-User-ID" : partner}
+            )
+
+            partner_data = response.json()
+            partner_name = f"{partner_data["first_name"]} {partner_data["last_name"]}"
+
             # Create a unique match ID
             match_id = str(uuid5(NAMESPACE_DNS, user_id + partner))
 
             # Create a table to store information on who has comfirm the match and who has not.
             match_key = format_match_key(match_id)
             await setup_match_confirmation(
-                match_key, partner, user_id, difficulty, category, confirmation_conn
+                match_key, partner, partner_name, user_id, user_name, difficulty, category, confirmation_conn
             )
 
             # Alert the other user through the message queue
             message_key = format_match_found_key(partner)
-            await send_match_found_message(message_key, match_id, message_conn)
+            await send_match_found_message(message_key, f"{match_id}_{user_name})", message_conn)
             log.info(f"Notified {partner} that a match has been found.")
 
             partner_in_queue_key = format_in_queue_key(partner)
@@ -129,24 +149,23 @@ async def find_match(
             )
 
             log.info(f"A match has been made between {user_id} and {partner}.")
-            return {"match_id": match_id, "message": "match has been found"}
+            return {"match_id": match_id, "partner_name": partner_name, "message": "match has been found"}
     finally:
         # Redis Lock class handles if the lock is expired it will not release another person's lock
         await release_lock(lock)
         log.info(f"User id, {user_id} has released the lock with key: {lock_key} .")
 
     # Then we will constantly poll until a match has been found
-    return await wait_for_match(match_request, matchmaking_conn, message_conn)
+    return await wait_for_match(user_id, match_request, matchmaking_conn, message_conn)
 
 
 async def wait_for_match(
-    match_request: MatchRequest, matchmaking_conn: Redis, message_conn: Redis
+    user_id: str, match_request: MatchRequest, matchmaking_conn: Redis, message_conn: Redis
 ) -> dict:
     """
     Waits for a match found message from the message queue for a period of time before returning.\n
     If no match is found then remove the user from the queue.
     """
-    user_id = match_request.user_id
     difficulty = match_request.difficulty
     category = match_request.category
 
@@ -172,8 +191,10 @@ async def wait_for_match(
     elif message[1] == "new request made":
         raise HTTPException(status_code=400, detail="A new request has been made")
     else:
-        match_id = message[1]  # Index 0 is the key where the value is popped from
-        return {"match_id": match_id, "message": "match has been found"}
+        message_body = message[1]  # Index 0 is the key where the value is popped from
+        match_id, partner_name = message_body.split("_")
+        log.info(f"Hello I got a message {message_body}")
+        return {"match_id": match_id, "partner_name": partner_name, "message": "match has been found"}
 
 
 async def terminate_previous_match_request(
@@ -194,16 +215,16 @@ async def terminate_previous_match_request(
 
     # Just call terminate match
     old_match_request = MatchRequest(
-        user_id=user_id, difficulty=difficulty, category=category
+        difficulty=difficulty, category=category
     )
     await terminate_match(
-        old_match_request, matchmaking_conn, message_conn, is_new_request=True
+        user_id, old_match_request, matchmaking_conn, message_conn, is_new_request=True
     )
 
     return True
 
-
 async def terminate_match(
+    user_id: str,
     match_request: MatchRequest,
     matchmaking_conn: Redis,
     message_conn: Redis,
@@ -212,7 +233,6 @@ async def terminate_match(
     """
     Terminates the match request for the user.
     """
-    user_id = match_request.user_id
     difficulty = match_request.difficulty
     category = match_request.category
 
@@ -261,7 +281,7 @@ async def terminate_match(
 
 async def confirm_match(
     match_id: str,
-    confirm_request: MatchConfirmRequest,
+    user_id: str,
     matchmaking_conn: Redis,
     message_conn: Redis,
     confirmation_conn: Redis,
@@ -270,7 +290,6 @@ async def confirm_match(
     Acknowledges the user's comfirmation with the given match id.\n
     If the user is the second person who is accepting the match, they will initate the room creating in the collaboration service.
     """
-    user_id = confirm_request.user_id
     match_key = format_match_key(match_id)
 
     if not await check_match_exist(match_key, confirmation_conn):
@@ -287,29 +306,30 @@ async def confirm_match(
 
     try:
         await update_user_confirmation(match_key, user_id, confirmation_conn)
+        log.debug("Checking both parties")
         # The other user has accepted
         if (await is_match_confirmed(match_key, confirmation_conn)):
-            
+            log.debug("Confirmed")
             partner = await get_match_partner(user_id, match_key, confirmation_conn)
             message_key = format_match_accepted_key(partner)
             await send_match_finalised_message(message_key, match_id, message_conn)
             log.info(f"Match comfirm message has been sent for user id, {partner}.")
 
             match_info = await get_match_details(match_key, confirmation_conn)
-            await send_match_confirmed_event(match_id, user_id, partner, match_info["difficulty"], match_info["category"])
+            await send_match_confirmed_event(match_id, match_info["user_one"], match_info["user_one_name"], match_info["user_two"], match_info["user_two_name"], match_info["difficulty"], match_info["category"])
 
             return {"match_details": match_id, "message": "starting match"}
     finally:
         await release_lock(lock)
 
     return await wait_for_confirmation(
-        match_id, confirm_request, matchmaking_conn, message_conn, confirmation_conn
+        match_id, user_id, matchmaking_conn, message_conn, confirmation_conn
     )
 
 
 async def wait_for_confirmation(
     match_id: str,
-    confirm_request: MatchConfirmRequest,
+    user_id: str,
     matchmaking_conn: Redis,
     message_conn: Redis,
     confirmation_conn: Redis,
@@ -317,12 +337,14 @@ async def wait_for_confirmation(
     """
     Waits for the other user to confirm their match.
     """
-    user_id = confirm_request.user_id
     message_key = format_match_accepted_key(user_id)
     # Set timeout to be 15 seconds in case the redis server goes down it will return a response
+    log.debug("Waiting for message")
     message = await wait_for_message(message_key, message_conn, timeout=15)
+    log.debug("Message received")
 
     if message is None or message[1] == "":
+        log.debug("Got a empty or no message")
         log.info(f"The partner for user id, {user_id} has failed to accept the match")
         return {"message": "partner failed to accept the match"}
     else:

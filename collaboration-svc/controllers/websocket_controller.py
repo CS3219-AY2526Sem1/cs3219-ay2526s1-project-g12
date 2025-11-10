@@ -24,7 +24,7 @@ class WebSocketManager:
         try:
             self.active_connection = await websockets.connect(get_envvar(ENV_API_WEBSOCKET_URL))
         except Exception:
-            log.error(f"Unable to establish a WebSocket connection with API gateway {get_envvar(ENV_API_WEBSOCKET_URL)}")
+            log.info(f"Unable to establish a WebSocket connection with API gateway {get_envvar(ENV_API_WEBSOCKET_URL)}")
             raise
 
     async def disconnect(self) -> None:
@@ -43,7 +43,7 @@ class WebSocketManager:
         message = {
             "user_id": receiver,
             "room_id": room_id,
-            "event": body
+            "message": body
         }
 
         if self.active_connection:

@@ -5,7 +5,7 @@ from controllers.heartbeat_controller import (
     register_heartbeat,
     register_self_as_service,
 )
-from controllers.room_controller import create_room_listener, create_ttl_expire_listener, terminate_match, remove_user, reconnect_user, create_heartbeat_listener
+from controllers.room_controller import create_room_listener, create_ttl_expire_listener, terminate_match, remove_user, reconnect_user, create_heartbeat_listener, connect_user
 from controllers.websocket_controller import WebSocketManager
 from fastapi import FastAPI, Header
 from models.api_models import MatchData
@@ -73,6 +73,11 @@ app = FastAPI(title="PeerPrep Collaboration Service", lifespan=lifespan)
 async def root() -> dict:
     return {"status": "working"}
 
+@app.get("/connect/{room_id}", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
+async def connect(room_id: str, x_user_id: Annotated[str, Header()]):
+    data = await connect_user(x_user_id, room_id,  app.state.room_connection) # Dictionary
+    return {"message": data}
+
 @app.post("/reconnect", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
 async def reconnect_user_to_match(x_user_id: Annotated[str, Header()]) -> dict:
     await reconnect_user(x_user_id, app.state.room_connection, app.state.websocket_manager)
@@ -85,5 +90,5 @@ async def user_exit_match(x_user_id: Annotated[str, Header()]) -> dict:
 
 @app.post("/terminate/{room_id}", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
 async def terminate_user_match(room_id: str, match_data: MatchData, x_user_id: Annotated[str, Header()]) -> dict:
-    await terminate_match(x_user_id, room_id, match_data, app.state.room_connection)
+    await terminate_match(x_user_id, room_id, match_data, app.state.room_connection, app.state.websocket_manager)
     return {"message": "match has been terminated"}

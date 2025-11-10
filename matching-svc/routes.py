@@ -5,12 +5,13 @@ from controllers.matching_controller import (
     confirm_match,
     terminate_match,
 )
-from fastapi import FastAPI
+from fastapi import FastAPI, Header
 from fastapi.middleware.cors import CORSMiddleware
-from models.api_models import MatchRequest, MatchConfirmRequest
+from models.api_models import MatchRequest
 from service.redis_confirmation_service import connect_to_redis_confirmation_service
 from service.redis_message_service import connect_to_redis_message_service
 from service.redis_matchmaking_service import connect_to_redis_matchmaking_service
+from typing import Annotated
 from utils.logger import log
 from utils.utils import sever_connection, get_envvar
 
@@ -77,8 +78,9 @@ async def check_message_connection():
 
 
 @app.post("/find_match", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
-async def match(match_request: MatchRequest):
+async def match(match_request: MatchRequest, x_user_id: Annotated[str, Header()]):
     return await find_match(
+        x_user_id,
         match_request,
         app.state.redis_matchmaking_service,
         app.state.redis_message_service,
@@ -87,8 +89,9 @@ async def match(match_request: MatchRequest):
 
 
 @app.delete("/terminate_match", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
-async def terminate(cancel_request: MatchRequest):
+async def terminate(cancel_request: MatchRequest, x_user_id: Annotated[str, Header()]):
     return await terminate_match(
+        x_user_id,
         cancel_request,
         app.state.redis_matchmaking_service,
         app.state.redis_message_service,
@@ -98,10 +101,11 @@ async def terminate(cancel_request: MatchRequest):
 @app.post(
     "/confirm_match/{match_id}", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]}
 )
-async def confirm_user_match(match_id: str, confirm_request: MatchConfirmRequest):
+async def confirm_user_match(match_id: str, x_user_id: Annotated[str, Header()]):
+    log.debug("Confirm match endpoint called")
     return await confirm_match(
         match_id,
-        confirm_request,
+        x_user_id,
         app.state.redis_matchmaking_service,
         app.state.redis_message_service,
         app.state.redis_confirmation_service,
