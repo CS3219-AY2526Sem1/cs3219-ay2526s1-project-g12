@@ -72,7 +72,7 @@ async def create_room_listener(
             )
             log.info(f"INFO: Room ID : {room_id}, match details : {match_details}")
             await create_room(match_details, room_connection)
-            await remove_match_confirmation_event(event_queue_connection)
+            await remove_match_confirmation_event(room_id, event_queue_connection)
 
 
 async def create_ttl_expire_listener(
@@ -286,6 +286,7 @@ async def terminate_match(
         await websocket_manager.send_message(partner, room_id, "match_terminate")
 
         cleanup_key = format_cleanup_key(room_id)
+        await add_room_cleanup(cleanup_key, user_id, room_connection)
         await cleanup(cleanup_key, room_connection)
         partner_heartbeat_key = format_heartbeat_key(partner)
 

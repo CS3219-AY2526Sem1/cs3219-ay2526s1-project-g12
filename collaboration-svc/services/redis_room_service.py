@@ -213,7 +213,10 @@ async def get_room_question(room_key: str, user_id: str, room_connection: Redis)
 
         url = f"{get_envvar(ENV_QN_SVC_POOL_ENDPOINT)}/{category}/{difficulty}"
         log.info(f"INFO: Sending request to {url}")
-        response = requests.get(url, timeout=10)
+        try:
+            response = requests.get(url, timeout=10)
+        except Exception as err:
+            log.info(f"ERROR: {err}")
 
         data = response.json()
         log.info(f"INFO: Data received from question service, {data}")
