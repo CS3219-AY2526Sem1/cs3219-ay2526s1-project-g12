@@ -29,7 +29,7 @@ export function CodeEditor({
 
   const handleEditorDidMount: OnMount = (editor, monacoNs) => {
     if (!ydoc || !provider) {
-      console.warn("Collab provider not ready yet");
+      console.warn('Collab provider not ready yet');
       return;
     }
 
@@ -39,7 +39,7 @@ export function CodeEditor({
     const ytext = ydoc.getText('monaco');
 
     // Load initial code
-    const savedCode = localStorage.getItem("collab_code") || "";
+    const savedCode = localStorage.getItem('collab_code') || '';
     const initialCode = isReconnecting && savedCode ? savedCode : defaultCode;
     // Seed Yjs doc with initial code only if empty
     if (ytext.length === 0 && initialCode) {
@@ -108,7 +108,7 @@ export function CodeEditor({
       // ydocRef.current?.destroy();
       bindingRef.current?.destroy();
       modelRef.current?.dispose();
-      localStorage.removeItem("collab_code");
+      localStorage.removeItem('collab_code');
     };
   }, []);
 
@@ -127,7 +127,7 @@ export function CodeEditor({
       height="70vh"
       theme="light"
       language="python"
-      defaultValue={defaultCode ?? ""}
+      defaultValue={defaultCode ?? ''}
       onMount={handleEditorDidMount}
       options={{
         scrollBeyondLastLine: false,

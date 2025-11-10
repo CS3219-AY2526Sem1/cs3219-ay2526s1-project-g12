@@ -55,10 +55,10 @@ export function TopBar({
               <button
                 onClick={onToggleMute}
                 className={`btn font-normal ${
-                  isMuted ? "btn-warning" : "btn-success text-white"
+                  isMuted ? 'btn-warning' : 'btn-success text-white'
                 }`}
               >
-                {isMuted ? "🔇 Unmute Mic" : "🎙️ Mute Mic"}
+                {isMuted ? '🔇 Unmute Mic' : '🎙️ Mute Mic'}
               </button>
 
               {/* Glowing Dot */}
@@ -66,8 +66,8 @@ export function TopBar({
                 <div
                   className={`w-3 h-3 rounded-full transition-all duration-300 ${
                     isSpeaking
-                      ? "bg-green-400 shadow-[0_0_8px_3px_rgba(34,197,94,0.7)]"
-                      : "bg-gray-300"
+                      ? 'bg-green-400 shadow-[0_0_8px_3px_rgba(34,197,94,0.7)]'
+                      : 'bg-gray-300'
                   }`}
                 ></div>
               )}

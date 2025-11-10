@@ -1,12 +1,12 @@
-import { useMatching } from "../../hooks/useMatching";
-import { useMatchTimer } from "../../hooks/useMatchTimer";
-import { MatchState } from "../../types/MatchState";
-import { MatchIdle } from "./MatchIdle";
-import { MatchSearching } from "./MatchSearching";
-import { MatchFound } from "./MatchFound";
-import { MatchConfirmed } from "./MatchConfirmed";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useMatching } from '../../hooks/useMatching';
+import { useMatchTimer } from '../../hooks/useMatchTimer';
+import { MatchState } from '../../types/MatchState';
+import { MatchIdle } from './MatchIdle';
+import { MatchSearching } from './MatchSearching';
+import { MatchFound } from './MatchFound';
+import { MatchConfirmed } from './MatchConfirmed';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface MatchCardProps {
   userId: string;
@@ -52,10 +52,10 @@ export function MatchCard({
       addTime(10);
     }
     if (matchState === MatchState.Confirmed && matchDetails) {
-      navigate("/collabeditor", {
+      navigate('/collabeditor', {
         state: {
           matchDetails,
-          userId
+          userId,
         },
       });
     }
@@ -86,7 +86,7 @@ export function MatchCard({
       case MatchState.Found:
         return (
           <MatchFound
-            partnerName={partnerName ?? "Your Partner"}
+            partnerName={partnerName ?? 'Your Partner'}
             isAccepting={isAccepting}
             statusMessage={statusMessage}
             onAccept={acceptMatch}

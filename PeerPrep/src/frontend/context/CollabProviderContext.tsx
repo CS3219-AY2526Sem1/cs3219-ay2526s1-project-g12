@@ -1,6 +1,12 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
-import * as Y from "yjs";
-import { WebrtcProvider } from "y-webrtc";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import * as Y from 'yjs';
+import { WebrtcProvider } from 'y-webrtc';
 
 type CollabContextType = {
   ydoc: Y.Doc | null;
@@ -11,7 +17,7 @@ type CollabContextType = {
 const CollabContext = createContext<CollabContextType>({
   ydoc: null,
   provider: null,
-  roomId: "",
+  roomId: '',
 });
 
 export const useCollab = () => useContext(CollabContext);

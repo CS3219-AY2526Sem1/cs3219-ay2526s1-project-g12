@@ -3,6 +3,25 @@ import { useCollab } from '../../context/CollabProviderContext';
 import { ProblemPanel } from './ProblemPanel';
 import { CodeEditor } from './CodeEditor';
 import { TopBar } from './TopBar';
+import type { WebrtcProvider } from 'y-webrtc';
+
+interface CollabSessionProps {
+  userId: string;
+  problem: ProblemData | null;
+  partnerName: string;
+  isReconnecting: boolean;
+  handleExit: () => void;
+  minutes: string;
+  seconds: string;
+}
+
+interface ProblemData {
+  title: string;
+  description: string;
+  code_template: string;
+  category: string;
+  difficulty: string;
+}
 
 export function CollabSession({
   userId,
@@ -12,7 +31,7 @@ export function CollabSession({
   handleExit,
   minutes,
   seconds,
-}: any) {
+}: CollabSessionProps) {
   // Add audio context for voice chat
   const { provider } = useCollab();
   const [isMuted, setIsMuted] = useState(true);
@@ -24,15 +43,19 @@ export function CollabSession({
 
   useEffect(() => {
     if (!provider) return;
-    const room = (provider as any).room;
+    const room = (
+      provider as WebrtcProvider & {
+        room?: { webrtcConns?: Map<string, { peer: RTCPeerConnection }> };
+      }
+    ).room;
     if (!room) {
       console.warn('⚠️ provider.room not available yet');
       return;
     }
 
-    let cleanup: (() => void)[] = [];
+    const cleanup: (() => void)[] = [];
 
-    console.log('🎙️ Initializing voice chat for room:', room.roomName);
+    console.log('🎙️ Initializing voice chat for room:');
 
     navigator.mediaDevices
       .getUserMedia({ audio: true })
@@ -42,11 +65,12 @@ export function CollabSession({
         stream.getTracks().forEach((t) => (t.enabled = false)); // start muted
 
         const attachToPeers = () => {
-          const conns: Map<string, any> = room.webrtcConns || new Map();
+          const conns =
+            room.webrtcConns ?? new Map<string, { peer: RTCPeerConnection }>();
           console.log('📡 Current peer connections:', [...conns.keys()]);
 
-          conns.forEach((conn: any, peerId: string) => {
-            const pc: RTCPeerConnection | undefined = conn?.peer;
+          conns.forEach((conn, peerId) => {
+            const pc = conn.peer;
             if (!pc) {
               console.warn(`⚠️ Peer ${peerId} has no RTCPeerConnection yet`);
               return;
@@ -91,14 +115,6 @@ export function CollabSession({
               );
             }, 2000);
 
-            // stream.getTracks().forEach((track) => {
-            //   try {
-            //     pc.addTrack(track, stream);
-            //   } catch (e) {
-            //     console.warn(`❌ Failed to add track to peer ${peerId}:`, e);
-            //   }
-            // });
-
             pc.ontrack = (event: RTCTrackEvent) => {
               console.log(
                 `🎵 Received remote ${event.track.kind} from ${peerId}`
@@ -116,14 +132,14 @@ export function CollabSession({
               console.log(`🔗 ${peerId} connectionState:`, pc.connectionState);
             pc.oniceconnectionstatechange = () =>
               console.log(`❄️ ${peerId} ICE:`, pc.iceConnectionState);
-            pc.onicecandidate = (e) => {
-              if (!e.candidate) {
-                console.log(
-                  `📜 [${peerId}] Final local SDP:`,
-                  pc.localDescription?.sdp
-                );
-              }
-            };
+            // pc.onicecandidate = (e) => {
+            //   if (!e.candidate) {
+            //     console.log(
+            //       `📜 [${peerId}] Final local SDP:`,
+            //       pc.localDescription?.sdp
+            //     );
+            //   }
+            // };
           });
         };
 
@@ -141,11 +157,14 @@ export function CollabSession({
         tryAttach();
 
         // React to new peers joining
-        provider.on('peers', ({ added, removed }: any) => {
-          if (added?.length) console.log('🆕 Peers added:', added);
-          if (removed?.length) console.log('❌ Peers removed:', removed);
-          setTimeout(attachToPeers, 500);
-        });
+        provider.on(
+          'peers',
+          ({ added, removed }: { added: string[]; removed: string[] }) => {
+            if (added?.length) console.log('🆕 Peers added:', added);
+            if (removed?.length) console.log('❌ Peers removed:', removed);
+            setTimeout(attachToPeers, 500);
+          }
+        );
 
         // Voice activity detection
         const audioCtx = new AudioContext();
@@ -263,8 +282,8 @@ export function CollabSession({
     <div className="min-h-screen flex flex-col px-20 py-10">
       <TopBar
         onExit={handleExit}
-        category={problem? problem.category : ""}
-        difficulty={problem? problem.difficulty : ""}
+        category={problem ? problem.category : ''}
+        difficulty={problem ? problem.difficulty : ''}
         minutes={minutes}
         seconds={seconds}
         partnerName={partnerName}
@@ -282,8 +301,8 @@ export function CollabSession({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-10 justify-center overflow-hidden">
         <div className="card shadow-sm border-1 border-base-200 p-10 overflow-y-auto">
           <ProblemPanel
-            title={problem ? problem.title : ""}
-            description={problem? problem.description : ""}
+            title={problem ? problem.title : ''}
+            description={problem ? problem.description : ''}
           />
         </div>
 
@@ -291,7 +310,7 @@ export function CollabSession({
           <div className="w-full overflow-visible">
             <CodeEditor
               userId={userId}
-              defaultCode={problem ? problem.code_template : ""}
+              defaultCode={problem ? problem.code_template : ''}
               isReconnecting={isReconnecting}
             />
           </div>
