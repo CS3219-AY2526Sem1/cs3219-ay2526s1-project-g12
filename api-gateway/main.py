@@ -15,7 +15,7 @@ from utils.logger import log
 from utils.utils import get_envvar
 
 FRONT_END_URL = get_envvar("FRONT_END_URL")
-ENVIROMENT = get_envvar("ENVIROMENT")
+
 app = FastAPI(title="API Gateway", lifespan=lifespan)
 
 app.include_router(auth_router)
@@ -29,7 +29,7 @@ async def root():
     return {"status": "Gateway working"}
 
 
-if ENVIROMENT == "DEV":
+if get_envvar("ENVIRONMENT") == "DEV":
     # --- Redis Debugging Endpoints
     @app.get("/print-all")
     async def print_all_from_redis_aioredis(r: aioredis = Depends(get_redis)):

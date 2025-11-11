@@ -22,7 +22,6 @@ from controllers.heartbeat_controller import (
 
 HOST_URL = get_envvar("HOST_URL")
 FRONT_END_URL = get_envvar("FRONT_END_URL")
-ENVIROMENT = get_envvar("ENVIROMENT")
 
 ADMIN_ROLE = "admin"
 USER_ROLE = "user"
@@ -110,7 +109,7 @@ async def confirm_user_match(match_id: str, x_user_id: Annotated[str, Header()])
         app.state.redis_confirmation_service,
     )
 
-if ENVIROMENT =="DEV":
+if get_envvar("ENVIRONMENT") =="DEV":
     # --- Redis Debugging Endpoints
     @app.get("/health")
     async def health_check():
