@@ -1,7 +1,7 @@
 import json
 
 import redis.asyncio as aioredis
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
 from fastapi.security import HTTPBearer
 
 from controllers.websocket_manager import WebSocketManager
@@ -81,11 +81,11 @@ async def collab_websocket_endpoint(
 @router.websocket("/ws/fe")
 async def fe_websocket_endpoint(
     websocket: WebSocket,
-    user_data: dict = Depends(auth_user),
+    token: str = Query(None),
     redis: aioredis.Redis = Depends(get_redis),
 ):
     """WebSocket endpoint for Frontend clients to connect"""
-    user_id = user_data.get(
+    user_id = await auth_user(token).get(
         "user_id"
     )  #  Please edit this with the desired user ID for testing.
     connection_id = f"fe:{user_id}"
