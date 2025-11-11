@@ -63,6 +63,14 @@ jobs:
       - name: Configure Docker
         run: |
           gcloud auth configure-docker asia-southeast1-docker.pkg.dev
+          
+      - name: (FE) Create .env for Cloud Run
+        working-directory: ./PeerPrep
+        run: |
+          echo "VITE_API_URL=https://api.peerprep.cloud" > .env
+          echo "VITE_SIGNALING_SERVER_URL=wss://signal.peerprep.cloud:4444" >> .env
+          echo "VITE_ICE_SERVERS=stun:stun.l.google.com:19302" >> .env
+          echo "VITE_WS_GATEWAY_URL=ws://api.peerprep.cloud/ws/fe" >> .env
 
       - name: (US) Make Cloud Run build configuration changes
         working-directory: ./user-svc
