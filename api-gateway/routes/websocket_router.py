@@ -86,8 +86,7 @@ async def fe_websocket_endpoint(
 ):
     """WebSocket endpoint for Frontend clients to connect"""
     log.info(f"Token received from FE: {token}")
-    user_data = await auth_user(token)
-    user_id = user_data.get("user_id")
+    user_id = token
     connection_id = f"fe:{user_id}"
 
     # Store connection info in Redis

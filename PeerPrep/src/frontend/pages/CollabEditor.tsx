@@ -5,23 +5,8 @@ import { useMatchTimer } from '../hooks/useMatchTimer';
 import { collabApi } from '../api/CollaborationApi';
 import { CollabProvider } from '../context/CollabProviderContext';
 import { CollabSession } from '../components/Collab/CollabSession';
+import { useAuth } from '../context/AuthContext';
 
-function getCookie(name: string): string | null {
-  if (typeof document === 'undefined') {
-    return null;
-  }
-  const nameEQ = name + '=';
-  const ca = document.cookie.split(';');
-  console.log('Cookies:', document.cookie);
-  for (let i = 0; i < ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-    if (c.indexOf(nameEQ) === 0) {
-      return c.substring(nameEQ.length, c.length);
-    }
-  }
-  return null;
-}
 export default function CollabEditor() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -34,6 +19,7 @@ export default function CollabEditor() {
     navigate('/matching');
     return null;
   }
+  const { user } = useAuth();
 
   const { matchDetails, userId } = matchState;
   const wsRef = useRef<WebSocket | null>(null);
@@ -56,12 +42,11 @@ export default function CollabEditor() {
 
   useEffect(() => {
     let isUnmounted = false;
-    const token = getCookie('access_token') || '';
 
     const connectWS = () => {
       try {
         const url = new URL(import.meta.env.VITE_WS_GATEWAY_URL);
-        url.searchParams.append('token', token);
+        url.searchParams.append('token', user?.id.toString() || '');
         console.log('Connecting to WS URL:', url.toString());
         const ws = new WebSocket(url.toString());
         wsRef.current = ws;
