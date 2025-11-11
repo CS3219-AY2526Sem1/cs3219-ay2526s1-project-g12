@@ -1,4 +1,4 @@
-import type { NavButton } from '../types/NavButton.tsx';
+import type { NavButton } from '../types/NavButton';
 
 export const NAV_BUTTONS: NavButton[] = [
   {

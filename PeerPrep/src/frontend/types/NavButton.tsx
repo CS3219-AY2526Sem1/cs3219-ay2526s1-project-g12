@@ -1,6 +1,6 @@
 import type { RoleName } from './Role';
 
-/*
+/**
  * Interface representing a navigation button
  */
 export interface NavButton {
