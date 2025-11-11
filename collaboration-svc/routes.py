@@ -130,5 +130,11 @@ async def user_exit_match(x_user_id: Annotated[str, Header()]) -> dict:
 async def terminate_user_match(
     room_id: str, match_data: MatchData, x_user_id: Annotated[str, Header()]
 ) -> dict:
-    await terminate_match(x_user_id, room_id, match_data, app.state.room_connection)
+    await terminate_match(
+        x_user_id,
+        room_id,
+        match_data,
+        app.state.room_connection,
+        app.state.websocket_manager,
+    )
     return {"message": "match has been terminated"}

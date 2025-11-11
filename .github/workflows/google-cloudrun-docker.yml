@@ -68,9 +68,9 @@ jobs:
         working-directory: ./PeerPrep
         run: |
           echo "VITE_API_URL=https://api.peerprep.cloud" > .env
-          echo "VITE_SIGNALING_SERVER_URL=ws://pp-ss-161940165499.asia-east1.run.app/:4444" >> .env
+          echo "VITE_SIGNALING_SERVER_URL=wss://pp-ss-161940165499.asia-east1.run.app/:4444" >> .env
           echo "VITE_ICE_SERVERS=stun:stun.l.google.com:19302" >> .env
-          echo "VITE_WS_GATEWAY_URL=ws://api.peerprep.cloud/ws/fe" >> .env
+          echo "VITE_WS_GATEWAY_URL=wss://pp-api-gateway-161940165499.asia-east1.run.app/ws/fe" >> .env
   
       - name: (FE) Make Cloud Run build configuration changes
         working-directory: ./PeerPrep
