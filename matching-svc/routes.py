@@ -172,7 +172,7 @@ if ENVIROMENT =="DEV":
         """
         try:
             await app.state.redis_matchmaking_service.flushall()
-            await app.state.redis_message_servic.flushall()
+            await app.state.redis_message_service.flushall()
             await app.state.redis_confirmation_service.flushall()
             return {"message": "All Redis databases have been flushed successfully"}
         except Exception as e:
