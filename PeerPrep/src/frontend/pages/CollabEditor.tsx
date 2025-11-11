@@ -44,8 +44,9 @@ export default function CollabEditor() {
 
     const connectWS = () => {
       try {
-        const url = new URL(`${import.meta.env.VITE_WS_GATEWAY_URL}/ws/fe`);
+        const url = new URL(import.meta.env.VITE_WS_GATEWAY_URL);
         url.searchParams.append('token', token);
+        console.log('Connecting to WS URL:', url.toString());
         const ws = new WebSocket(url.toString());
         wsRef.current = ws;
 

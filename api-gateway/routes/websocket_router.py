@@ -85,9 +85,9 @@ async def fe_websocket_endpoint(
     redis: aioredis.Redis = Depends(get_redis),
 ):
     """WebSocket endpoint for Frontend clients to connect"""
-    user_id = await auth_user(token).get(
-        "user_id"
-    )  #  Please edit this with the desired user ID for testing.
+    log.info(f"Token received from FE: {token}")
+    user_data = await auth_user(token)
+    user_id = user_data.get("user_id")
     connection_id = f"fe:{user_id}"
 
     # Store connection info in Redis
