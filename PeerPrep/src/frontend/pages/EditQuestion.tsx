@@ -394,7 +394,7 @@ function EditQuestion() {
                   className="btn btn-outline"
                   onClick={handleCancel}
                 >
-                  Cancel
+                  Reset
                 </button>
               </div>
             </>
