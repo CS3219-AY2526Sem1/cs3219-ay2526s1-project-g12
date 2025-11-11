@@ -34,6 +34,7 @@ export function CollabProvider({ roomId, children }: CollabProviderProps) {
 
   useEffect(() => {
     const ydoc = new Y.Doc();
+    console.log('Y.Doc created for room:', roomId);
     const provider = new WebrtcProvider(`room-${roomId}`, ydoc, {
       signaling: [import.meta.env.VITE_SIGNALING_SERVER_URL],
       peerOpts: {
@@ -42,6 +43,7 @@ export function CollabProvider({ roomId, children }: CollabProviderProps) {
         },
       },
     });
+    console.log('WebRTC Provider:', provider);
 
     ydocRef.current = ydoc;
     providerRef.current = provider;
