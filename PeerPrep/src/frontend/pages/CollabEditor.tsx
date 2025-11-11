@@ -6,6 +6,21 @@ import { collabApi } from '../api/CollaborationApi';
 import { CollabProvider } from '../context/CollabProviderContext';
 import { CollabSession } from '../components/Collab/CollabSession';
 
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') {
+    return null;
+  }
+  const nameEQ = name + '=';
+  const ca = document.cookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) === 0) {
+      return c.substring(nameEQ.length, c.length);
+    }
+  }
+  return null;
+}
 export default function CollabEditor() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -40,7 +55,7 @@ export default function CollabEditor() {
 
   useEffect(() => {
     let isUnmounted = false;
-    const token = localStorage.getItem('access_token') || '';
+    const token = getCookie('access_token') || '';
 
     const connectWS = () => {
       try {
