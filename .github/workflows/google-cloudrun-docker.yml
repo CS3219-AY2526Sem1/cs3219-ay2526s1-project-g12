@@ -64,6 +64,17 @@ jobs:
         run: |
           gcloud auth configure-docker asia-southeast1-docker.pkg.dev
 
+      - name: (SS) Make Cloud Run build configuration changes
+        working-directory: ./signaling-svc
+        run: |
+          sed -i -e 's/EXPOSE 4444/EXPOSE 8080/' ./Dockerfile
+
+      - name: (SS) Build and Push Docker Image
+        working-directory: ./signaling-svc
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-ss:latest --platform=linux/amd64 .
+          docker push ${{ env.DOCKER_IMAGE_URL }}pp-ss:latest
+
       - name: (AG) Make Cloud Run build configuration changes
         working-directory: ./api-gateway
         run: |
@@ -79,7 +90,7 @@ jobs:
         working-directory: ./PeerPrep
         run: |
           echo "VITE_API_URL=https://api.peerprep.cloud" > .env
-          echo "VITE_SIGNALING_SERVER_URL=wss://pp-ss-161940165499.asia-east1.run.app/:4444" >> .env
+          echo "VITE_SIGNALING_SERVER_URL=wss://pp-ss-161940165499.asia-east1.run.app" >> .env
           echo "VITE_ICE_SERVERS=stun:stun.l.google.com:19302" >> .env
           echo "VITE_WS_GATEWAY_URL=wss://pp-api-gateway-161940165499.asia-east1.run.app/ws/fe" >> .env
 
@@ -95,13 +106,7 @@ jobs:
         run: |
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest
-
-      - name: (SS) Build and Push Docker Image
-        working-directory: ./signaling-svc
-        run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-ss:latest --platform=linux/amd64 .
-          docker push ${{ env.DOCKER_IMAGE_URL }}pp-ss:latest
-
+      
       - name: (MS) Make Cloud Run build configuration changes
         working-directory: ./matching-svc
         run: |
