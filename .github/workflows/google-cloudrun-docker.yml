@@ -79,6 +79,12 @@ jobs:
           sed -i 's/listen 80;/listen 8080;/' ./nginx.conf
           sed -i 's/localhost/_/' ./nginx.conf
 
+      - name: (FE) Build and Push Docker Image
+        working-directory: ./PeerPrep
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest --platform=linux/amd64 .
+          docker push ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest
+       
       - name: (MS) Make Cloud Run build configuration changes
         working-directory: ./matching-svc
         run: |
@@ -96,12 +102,6 @@ jobs:
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-ss:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-ss:latest
 
-      - name: (FE) Build and Push Docker Image
-        working-directory: ./PeerPrep
-        run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest --platform=linux/amd64 .
-          docker push ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest
-       
       - name: (US) Make Cloud Run build configuration changes
         working-directory: ./user-svc
         run: |
