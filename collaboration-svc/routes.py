@@ -165,7 +165,7 @@ if get_envvar("ENVIRONMENT") =="DEV":
                         value = await r.lrange(key, 0, -1) # Get all elements of the list
                         print("  Value (list elements):")
                         for item in value:
-                            print(f"    - {item.decode()}") # Decode list items
+                            print(f"    - {item}") # Decode list items
                     else:
                         value = f"<{key_type} type>"
                         print(f"  Value: {value}")

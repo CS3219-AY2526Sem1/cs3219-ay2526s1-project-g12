@@ -44,6 +44,7 @@ export function CollabProvider({ roomId, children }: CollabProviderProps) {
       },
     });
     console.log('WebRTC Provider:', provider);
+    console.log('WebRTC ydoc:', ydoc);
 
     ydocRef.current = ydoc;
     providerRef.current = provider;
