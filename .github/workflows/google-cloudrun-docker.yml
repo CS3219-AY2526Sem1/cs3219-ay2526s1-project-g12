@@ -63,7 +63,7 @@ jobs:
       - name: Configure Docker
         run: |
           gcloud auth configure-docker asia-southeast1-docker.pkg.dev
-          
+
       - name: (FE) Create .env for Cloud Run
         working-directory: ./PeerPrep
         run: |
@@ -71,7 +71,20 @@ jobs:
           echo "VITE_SIGNALING_SERVER_URL=wss://signal.peerprep.cloud:4444" >> .env
           echo "VITE_ICE_SERVERS=stun:stun.l.google.com:19302" >> .env
           echo "VITE_WS_GATEWAY_URL=ws://api.peerprep.cloud/ws/fe" >> .env
+  
+      - name: (FE) Make Cloud Run build configuration changes
+        working-directory: ./PeerPrep
+        run: |
+          sed -i 's/EXPOSE 80/EXPOSE 8080/' ./Dockerfile
+          sed -i 's/listen 80;/listen 8080;/' ./nginx.conf
+          sed -i 's/localhost/_/' ./nginx.conf
 
+      - name: (FE) Build and Push Docker Image
+        working-directory: ./PeerPrep
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest --platform=linux/amd64 .
+          docker push ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest
+       
       - name: (US) Make Cloud Run build configuration changes
         working-directory: ./user-svc
         run: |
@@ -110,20 +123,7 @@ jobs:
         run: |
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-expire-observer-svc:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-expire-observer-svc:latest
-          
-      - name: (FE) Make Cloud Run build configuration changes
-        working-directory: ./PeerPrep
-        run: |
-          sed -i 's/EXPOSE 80/EXPOSE 8080/' ./Dockerfile
-          sed -i 's/listen 80;/listen 8080;/' ./nginx.conf
-          sed -i 's/localhost/_/' ./nginx.conf
-
-      - name: (FE) Build and Push Docker Image
-        working-directory: ./PeerPrep
-        run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest --platform=linux/amd64 .
-          docker push ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest
-       
+        
       - name: (MS) Make Cloud Run build configuration changes
         working-directory: ./matching-svc
         run: |
