@@ -7,6 +7,7 @@ from controllers.heartbeat_controller import (
     register_self_as_service,
 )
 from controllers.room_controller import (
+    connect_user,
     create_room_listener,
     create_ttl_expire_listener,
     terminate_match,

@@ -64,6 +64,17 @@ jobs:
         run: |
           gcloud auth configure-docker asia-southeast1-docker.pkg.dev
 
+      - name: (CS) Make Cloud Run build configuration changes
+        working-directory: ./collaboration-svc
+        run: |
+          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
+
+      - name: (CS) Build and Push Docker Image
+        working-directory: ./collaboration-svc
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-collaboration-svc:latest --platform=linux/amd64 .
+          docker push ${{ env.DOCKER_IMAGE_URL }}pp-collaboration-svc:latest
+
       - name: (FE) Create .env for Cloud Run
         working-directory: ./PeerPrep
         run: |
@@ -128,17 +139,6 @@ jobs:
         run: |
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-user-svc:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-user-svc:latest
-
-      - name: (CS) Make Cloud Run build configuration changes
-        working-directory: ./collaboration-svc
-        run: |
-          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
-
-      - name: (CS) Build and Push Docker Image
-        working-directory: ./collaboration-svc
-        run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-collaboration-svc:latest --platform=linux/amd64 .
-          docker push ${{ env.DOCKER_IMAGE_URL }}pp-collaboration-svc:latest
 
       - name: (ES) Build and Push Docker Image
         working-directory: ./expire-observer-svc
