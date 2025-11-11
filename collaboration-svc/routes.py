@@ -161,9 +161,14 @@ if get_envvar("ENVIRONMENT") =="DEV":
                         value = await r.get(key)
                     elif key_type == "hash":
                         value = await r.hgetall(key)
+                    elif key_type == "list":
+                        value = await r.lrange(key, 0, -1) # Get all elements of the list
+                        print("  Value (list elements):")
+                        for item in value:
+                            print(f"    - {item.decode()}") # Decode list items
                     else:
                         value = f"<{key_type} type>"
-
+                        print(f"  Value: {value}")
                     # print(f"{key} ({key_type}) => {value}")
                     result[key] = value
 
