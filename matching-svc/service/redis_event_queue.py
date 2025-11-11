@@ -15,7 +15,7 @@ def connect_to_redis_event_queue() -> Redis:
     log.info("Connected to event queue")
     return Redis(host=host, port=redis_port, decode_responses=True, db=1)
 
-async def send_match_confirmed_event(match_id : str, user1: str, user2: str, difficulty: str, category: str) -> None:
+async def send_match_confirmed_event(match_id : str, user1: str, user1_name: str, user2: str, user2_name: str, difficulty: str, category: str) -> None:
     """
     Sends a event to the event queue to signal the collaboration service to create a room.
     """
@@ -24,12 +24,15 @@ async def send_match_confirmed_event(match_id : str, user1: str, user2: str, dif
     data = {
         "match_id": match_id,
         "user_one": user1,
+        "user_one_name": user1_name,
         "user_two": user2,
+        "user_two_name": user2_name,
         "difficulty": difficulty,
         "category": category
     }
 
-    await redis_connection.hset("create_room", mapping = data)
+    await redis_connection.hset(match_id, mapping = data)
+    await redis_connection.rpush("create_room", match_id)
     await sever_connection(redis_connection)
 
     log.info("Match confirmed event has been sent")

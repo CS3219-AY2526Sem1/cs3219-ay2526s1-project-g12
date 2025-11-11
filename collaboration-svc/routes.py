@@ -48,9 +48,25 @@ async def lifespan(app: FastAPI):
     await app.state.websocket_manager.connect(app.state.ssl_context)
 
     stop_event = asyncio.Event()
-    room_listener = asyncio.create_task(create_room_listener(app.state.event_queue_connection, app.state.room_connection, stop_event))
-    expired_ttl_listener = asyncio.create_task(create_ttl_expire_listener(INSTANCE_ID, app.state.event_queue_connection, app.state.room_connection, app.state.websocket_manager, stop_event))
-    websocket_listner =  asyncio.create_task(create_heartbeat_listener(app.state.room_connection, app.state.websocket_manager, stop_event))
+    room_listener = asyncio.create_task(
+        create_room_listener(
+            app.state.event_queue_connection, app.state.room_connection, stop_event
+        )
+    )
+    expired_ttl_listener = asyncio.create_task(
+        create_ttl_expire_listener(
+            INSTANCE_ID,
+            app.state.event_queue_connection,
+            app.state.room_connection,
+            app.state.websocket_manager,
+            stop_event,
+        )
+    )
+    websocket_listner = asyncio.create_task(
+        create_heartbeat_listener(
+            app.state.room_connection, app.state.websocket_manager, stop_event
+        )
+    )
 
     register_self_as_service(app)
     hc_task = register_heartbeat()
@@ -59,15 +75,15 @@ async def lifespan(app: FastAPI):
     # This is the shut down procedure when the collaboration service stops.
     stop_event.set()
 
-    if (room_listener and not room_listener.done()):
+    if room_listener and not room_listener.done():
         await room_listener
     log.info("Room listner worker is done.")
 
-    if (expired_ttl_listener and not expired_ttl_listener.done()):
+    if expired_ttl_listener and not expired_ttl_listener.done():
         await expired_ttl_listener
     log.info("Expired ttl listner worker is done.")
 
-    if (websocket_listner and not websocket_listner.done()):
+    if websocket_listner and not websocket_listner.done():
         await websocket_listner
     log.info("Websocket listner worker is done.")
 
@@ -82,9 +98,18 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="PeerPrep Collaboration Service", lifespan=lifespan)
 
+
 @app.get("/")
 async def root() -> dict:
     return {"status": "Collab Working"}
+
+
+@app.get("/connect/{room_id}", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
+async def connect(room_id: str, x_user_id: Annotated[str, Header()]):
+    data = await connect_user(
+        x_user_id, room_id, app.state.room_connection
+    )  # Dictionary
+    return {"message": data}
 
 
 @app.post("/reconnect", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})

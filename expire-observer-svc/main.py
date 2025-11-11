@@ -29,7 +29,7 @@ def connect_to_redis_event_queue() -> Redis:
     return Redis(host=host, port=redis_port, decode_responses=True, db=1)
 
 def main():
-    log.info("listner is up")
+    log.info("Listener is up")
 
     room_service = connect_to_redis_room_service()
     message_queue = connect_to_redis_event_queue()

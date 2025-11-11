@@ -15,17 +15,23 @@ def connect_to_redis_event_queue() -> Redis:
     # decode_responses = True is to allow redis to automatically decode responses
     return Redis(host=host, port=redis_port, decode_responses=True, db=1)
 
-async def get_match_confirmation_event(event_queue_connection: Redis) -> dict:
+async def get_match_confirmation_event(event_queue_connection: Redis) -> str:
     """
     Retrieves a match confirmation event from the event queue.
     """
-    return await event_queue_connection.hgetall(MATCH_CONFIRMATION_EVENT_KEY)
+    return await event_queue_connection.lpop(MATCH_CONFIRMATION_EVENT_KEY)
 
-async def remove_match_confirmation_event(event_queue_connection: Redis) -> None:
+async def get_match_confirmation_event_data(room_id: str, event_queue_connection: Redis) -> dict:
     """
     Removes the match confirmation event log from the event queue.
     """
-    await event_queue_connection.delete(MATCH_CONFIRMATION_EVENT_KEY)
+    return await event_queue_connection.hgetall(room_id)
+
+async def remove_match_confirmation_event(room_id: str, event_queue_connection: Redis) -> None:
+    """
+    Removes the match confirmation event log from the event queue.
+    """
+    await event_queue_connection.delete(room_id)
 
 async def create_group(event_queue_connection: Redis, stream_key: str, group_key: str) -> None:
     """

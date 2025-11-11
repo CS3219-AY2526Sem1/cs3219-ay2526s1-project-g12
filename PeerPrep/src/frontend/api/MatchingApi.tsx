@@ -16,6 +16,12 @@ export interface ConfirmMatchSuccess {
   match_details?: string;
 }
 
+interface MatchFoundSuccess {
+  message: string;
+  match_id: string;
+  partner_name: string;
+}
+
 export const matchingApi = {
   async getRootStatus(): Promise<ApiResponse<{ status: string }>> {
     return apiClient.request('/ms', { method: 'GET' });
@@ -35,14 +41,18 @@ export const matchingApi = {
     });
   },
 
-  async findMatch(matchRequest: MatchRequest): Promise<ApiResponse<any>> {
+  async findMatch(
+    matchRequest: MatchRequest
+  ): Promise<ApiResponse<MatchFoundSuccess>> {
     return apiClient.request('/ms/find_match', {
       method: 'POST',
       body: JSON.stringify(matchRequest),
     });
   },
 
-  async terminateMatch(cancelRequest: MatchRequest): Promise<ApiResponse<any>> {
+  async terminateMatch(
+    cancelRequest: MatchRequest
+  ): Promise<ApiResponse<{ message: string }>> {
     return apiClient.request('/ms/terminate_match', {
       method: 'DELETE',
       body: JSON.stringify(cancelRequest),

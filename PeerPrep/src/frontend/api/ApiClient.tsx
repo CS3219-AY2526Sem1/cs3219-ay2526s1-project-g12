@@ -61,4 +61,4 @@ export class ApiClient {
 }
 
 // Singleton instance (shared across services)
-export const apiClient = new ApiClient('https://api.peerprep.cloud');
+export const apiClient = new ApiClient(import.meta.env.VITE_API_URL);

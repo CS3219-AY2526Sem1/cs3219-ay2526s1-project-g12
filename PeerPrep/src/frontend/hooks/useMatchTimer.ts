@@ -3,15 +3,18 @@ import { useEffect, useRef, useState } from 'react';
 export function useMatchTimer(
   active: boolean,
   initialTime = 180,
-  onTimeout?: () => void
+  onTimeout?: () => void,
+  countDown = true
 ) {
   const [timeLeft, setTimeLeft] = useState(initialTime);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (active && timeLeft > 0) {
+    if (active) {
       timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
+        setTimeLeft((prev) =>
+          countDown ? (timeLeft > 0 ? prev - 1 : 0) : prev + 1
+        );
       }, 1000);
     }
     return () => {
@@ -20,8 +23,8 @@ export function useMatchTimer(
   }, [active]);
 
   useEffect(() => {
-    if (active && timeLeft === 0 && onTimeout) onTimeout();
-  }, [timeLeft]);
+    if (countDown && active && timeLeft === 0 && onTimeout) onTimeout();
+  }, [timeLeft, countDown]);
 
   const reset = (seconds = initialTime) => setTimeLeft(seconds);
   const stop = () => {
