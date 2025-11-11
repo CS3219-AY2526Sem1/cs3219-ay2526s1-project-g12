@@ -139,3 +139,54 @@ async def terminate_user_match(
         app.state.websocket_manager,
     )
     return {"message": "match has been terminated"}
+
+
+
+if get_envvar("ENVIRONMENT") =="DEV":
+    # --- Redis Debugging Endpoints
+    @app.get("/print-all")
+    async def print_all_from_redis_aioredis():
+        """
+        Retrieves all keys and their corresponding values from Redis using aioredis
+        and returns them. Also prints them to the server console.
+        """
+        result = {}
+        async def printall(r, result):
+            async for key in r.scan_iter("*"):
+                try:
+                    # Check the type of the key first
+                    key_type = await r.type(key)
+                    print(f"Key:, Type: {key_type}")
+                    if key_type == "string":
+                        value = await r.get(key)
+                    elif key_type == "hash":
+                        value = await r.hgetall(key)
+                    else:
+                        value = f"<{key_type} type>"
+
+                    # print(f"{key} ({key_type}) => {value}")
+                    result[key] = value
+
+                except Exception as e:
+                    print(f"Error processing key {key}: {e}")
+                    result[key] = f"<error: {str(e)}>"
+        await printall(app.state.event_queue_connection, result)
+        await printall(app.state.room_connection, result)
+
+        return result
+    
+    @app.delete("/flush-all")
+    async def flush_all_redis():
+        """
+        Delete all keys from all Redis databases.
+        WARNING: This operation is irreversible and will delete ALL data!
+        """
+        try:
+            await app.state.room_connection.flushall()
+            await app.state.event_queue_connection.flushall()
+            return {"message": "All Redis databases have been flushed successfully"}
+        except Exception as e:
+            return {"error": f"Failed to flush Redis: {str(e)}"}
+
+
+
