@@ -64,6 +64,23 @@ jobs:
         run: |
           gcloud auth configure-docker asia-southeast1-docker.pkg.dev
 
+      - name: (MS) Make Cloud Run build configuration changes
+        working-directory: ./matching-svc
+        run: |
+          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
+
+      - name: (MS) Build and Push Docker Image
+        working-directory: ./matching-svc
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-matching-svc:latest --platform=linux/amd64 .
+          docker push ${{ env.DOCKER_IMAGE_URL }}pp-matching-svc:latest
+
+      - name: (SS) Build and Push Docker Image
+        working-directory: ./signaling-svc
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-ss:latest --platform=linux/amd64 .
+          docker push ${{ env.DOCKER_IMAGE_URL }}pp-ss:latest
+       
       - name: (FE) Create .env for Cloud Run
         working-directory: ./PeerPrep
         run: |
@@ -124,17 +141,6 @@ jobs:
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-expire-observer-svc:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-expire-observer-svc:latest
         
-      - name: (MS) Make Cloud Run build configuration changes
-        working-directory: ./matching-svc
-        run: |
-          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
-
-      - name: (MS) Build and Push Docker Image
-        working-directory: ./matching-svc
-        run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-matching-svc:latest --platform=linux/amd64 .
-          docker push ${{ env.DOCKER_IMAGE_URL }}pp-matching-svc:latest
-
       - name: (QHS) Make Cloud Run build configuration changes
         working-directory: ./qns-hist-svc
         run: |

@@ -1,5 +1,4 @@
-# ---- Dockerfile ----
-FROM node:18-alpine
+FROM node:22.20.0-alpine AS build-stage
 
 COPY . /app
 
