@@ -57,6 +57,7 @@ async def evalation_question_attempt(qa_id: int) -> None:
             question_attempt_id=qa_id,
             feedback=result.output.feedback,
         )
+        log.info(f"Successfully evaluated question attempt: {qa_id} with feedback {result.output.feedback[:100]}")
     except ModelHTTPError as e:
         log.warning(f"Failed to evaluate question attempt: {qa_id}")
         log.debug(e)
