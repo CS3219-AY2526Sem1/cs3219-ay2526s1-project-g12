@@ -40,10 +40,13 @@ export default function CollabEditor() {
 
   useEffect(() => {
     let isUnmounted = false;
+    const token = localStorage.getItem('access_token') || '';
 
     const connectWS = () => {
       try {
-        const ws = new WebSocket(import.meta.env.VITE_WS_GATEWAY_URL);
+        const url = new URL(`${import.meta.env.VITE_WS_GATEWAY_URL}/ws/fe`);
+        url.searchParams.append('token', token);
+        const ws = new WebSocket(url.toString());
         wsRef.current = ws;
 
         ws.onopen = async () => {

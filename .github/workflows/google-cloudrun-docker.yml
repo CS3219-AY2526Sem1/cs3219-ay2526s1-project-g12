@@ -64,17 +64,6 @@ jobs:
         run: |
           gcloud auth configure-docker asia-southeast1-docker.pkg.dev
 
-      - name: (SS) Make Cloud Run build configuration changes
-        working-directory: ./signaling-svc
-        run: |
-          sed -i -e 's/EXPOSE 4444/EXPOSE 8080/' ./Dockerfile
-
-      - name: (SS) Build and Push Docker Image
-        working-directory: ./signaling-svc
-        run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-ss:latest --platform=linux/amd64 .
-          docker push ${{ env.DOCKER_IMAGE_URL }}pp-ss:latest
-
       - name: (AG) Make Cloud Run build configuration changes
         working-directory: ./api-gateway
         run: |
@@ -107,6 +96,17 @@ jobs:
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest
       
+      - name: (SS) Make Cloud Run build configuration changes
+        working-directory: ./signaling-svc
+        run: |
+          sed -i -e 's/EXPOSE 4444/EXPOSE 8080/' ./Dockerfile
+
+      - name: (SS) Build and Push Docker Image
+        working-directory: ./signaling-svc
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-ss:latest --platform=linux/amd64 .
+          docker push ${{ env.DOCKER_IMAGE_URL }}pp-ss:latest
+
       - name: (MS) Make Cloud Run build configuration changes
         working-directory: ./matching-svc
         run: |
