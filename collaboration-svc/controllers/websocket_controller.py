@@ -9,8 +9,9 @@ ENV_API_WEBSOCKET_URL = "GATEWAY_WEBSOCKET_URL"
 
 
 class WebSocketManager:
-    def __init__(self):
+    def __init__(self,ssl_context):
         self.active_connection = None
+        self.ssl_context = ssl_context
 
     def get_websocket_connection(self) -> ClientConnection:
         """
@@ -18,7 +19,7 @@ class WebSocketManager:
         """
         return self.active_connection
 
-    async def connect(self, ssl_context) -> None:
+    async def connect(self) -> None:
         """
         Establishes a WebSocket connection with the API gateway.
         """
@@ -28,7 +29,7 @@ class WebSocketManager:
         try:
             self.active_connection = await websockets.connect(
                 get_envvar(ENV_API_WEBSOCKET_URL),
-                ssl=ssl_context,
+                ssl=self.ssl_context,
             )
         except Exception:
             log.error(
@@ -72,4 +73,4 @@ class WebSocketManager:
                 return None
         except ConnectionClosed:
             log.error("WebSocket connection is closed.")
-            raise
+            self.connect(self.ssl_context)

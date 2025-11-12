@@ -44,9 +44,9 @@ async def lifespan(app: FastAPI):
     app.state.ssl_context = ssl.create_default_context()
     app.state.ssl_context.check_hostname = False
     app.state.ssl_context.verify_mode = ssl.CERT_NONE
-    app.state.websocket_manager = WebSocketManager()
+    app.state.websocket_manager = WebSocketManager( app.state.ssl_context)
 
-    await app.state.websocket_manager.connect(app.state.ssl_context)
+    await app.state.websocket_manager.connect()
 
     stop_event = asyncio.Event()
     room_listener = asyncio.create_task(
