@@ -7,6 +7,7 @@ from fastapi.security import HTTPBearer
 from controllers.websocket_manager import WebSocketManager
 from service.redis_settings import get_redis
 from utils.logger import log
+from utils.utils import get_envvar
 
 router = APIRouter()
 security = HTTPBearer(auto_error=False)
@@ -136,18 +137,19 @@ async def fe_websocket_endpoint(
         await redis.delete(f"websocket:{connection_id}")
         log.info(f"FE client {user_id} disconnected")
 
+# --- Redis Debugging Endpoints
+if get_envvar("ENVIRONMENT") == "DEV":
+    @router.get("/ws/status")
+    async def websocket_status(redis: aioredis.Redis = Depends(get_redis)):
+        """Get status of all WebSocket connections"""
+        keys = await redis.keys("websocket:*")
+        connections = {}
 
-@router.get("/ws/status")
-async def websocket_status(redis: aioredis.Redis = Depends(get_redis)):
-    """Get status of all WebSocket connections"""
-    keys = await redis.keys("websocket:*")
-    connections = {}
+        for key in keys:
+            conn_data = await redis.hgetall(key)
+            connections[key] = conn_data
 
-    for key in keys:
-        conn_data = await redis.hgetall(key)
-        connections[key] = conn_data
-
-    return {
-        "active_connections_count": len(manager.connections),
-        "active_connection": connections,
-    }
+        return {
+            "active_connections_count": len(manager.connections),
+            "active_connection": connections,
+        }
