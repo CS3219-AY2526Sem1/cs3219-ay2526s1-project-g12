@@ -1,19 +1,23 @@
 import { Link, useNavigate } from 'react-router';
 import '../assets/styles.css';
 import { useAuth } from '../context/AuthContext';
+import type { RoleName } from '../types/Role';
+import type { NavButton } from '../types/NavButton';
 
 interface NavBarProps {
-  buttons: {
-    label: string;
-    role: string;
-    route: string;
-    style: string;
-  }[];
+  buttons: NavButton[];
 }
 
 function NavBar({ buttons }: NavBarProps) {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  const userRole: RoleName = user?.role.role ?? 'user';
+
+  const visibleButtons = buttons.filter((btn) => {
+    if (userRole === 'admin') return true;
+    return btn.role !== 'admin';
+  });
 
   const handleLogout = async () => {
     await logout();
@@ -29,7 +33,7 @@ function NavBar({ buttons }: NavBarProps) {
       </div>
 
       <div className="flex gap-2">
-        {buttons.map((btn) =>
+        {visibleButtons.map((btn) =>
           btn.route === '/auth/logout' ? (
             <Link
               key={btn.label}
