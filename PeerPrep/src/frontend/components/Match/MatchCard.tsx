@@ -35,7 +35,7 @@ export function MatchCard({
 
   const { minutes, seconds, reset, addTime } = useMatchTimer(
     matchState === MatchState.Searching || matchState === MatchState.Found,
-    180,
+    40,
     resetBackToIdle
   );
 
@@ -45,7 +45,7 @@ export function MatchCard({
     onMatchStateChange?.(matchState);
     // Reset timer when user cancels or returns to idle
     if (matchState === MatchState.Idle) {
-      reset(180);
+      reset(40);
     }
     // Add 10 seconds when a match is found
     if (matchState === MatchState.Found) {

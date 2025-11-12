@@ -16,7 +16,7 @@ def connect_to_redis_room_service() -> Redis:
 
     redis =  Redis(host=host, port=redis_port, decode_responses=True, db=0)
     # Configure redis so that expired keys will be sent as a event within redis
-    redis.config_set('notify-keyspace-events', 'Ex')
+    # redis.config_set('notify-keyspace-events', 'Ex')
     return redis
 
 def connect_to_redis_event_queue() -> Redis:

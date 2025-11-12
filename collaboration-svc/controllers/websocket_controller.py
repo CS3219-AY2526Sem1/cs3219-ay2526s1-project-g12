@@ -2,14 +2,23 @@ import json
 from utils.utils import get_envvar
 from utils.logger import log
 import websockets
+import ssl
 from websockets.exceptions import ConnectionClosed
 from websockets import ClientConnection
 
 ENV_API_WEBSOCKET_URL = "GATEWAY_WEBSOCKET_URL"
+RUN_TYPE = get_envvar("RUN_TYPE")
+
 
 class WebSocketManager:
     def __init__(self):
         self.active_connection = None
+        if RUN_TYPE != "local":
+            # Create SSL context that verifies certificates properly
+            ssl_context = ssl.create_default_context()
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+            self.ssl_context = ssl_context
 
     def get_websocket_connection(self) -> ClientConnection:
         """
@@ -21,10 +30,23 @@ class WebSocketManager:
         """
         Establishes a WebSocket connection with the API gateway.
         """
+        log.info(
+            f"Connecting to API gateway WebSocket at {get_envvar(ENV_API_WEBSOCKET_URL)}"
+        )
         try:
-            self.active_connection = await websockets.connect(get_envvar(ENV_API_WEBSOCKET_URL))
+            if RUN_TYPE != "local":
+                self.active_connection = await websockets.connect(
+                    get_envvar(ENV_API_WEBSOCKET_URL),
+                    ssl=self.ssl_context,
+                )
+            else:
+                self.active_connection = await websockets.connect(
+                    get_envvar(ENV_API_WEBSOCKET_URL)
+                )
         except Exception:
-            log.info(f"Unable to establish a WebSocket connection with API gateway {get_envvar(ENV_API_WEBSOCKET_URL)}")
+            log.error(
+                f"Unable to establish a WebSocket connection with API gateway {get_envvar(ENV_API_WEBSOCKET_URL)}"
+            )
             raise
 
     async def disconnect(self) -> None:
@@ -40,11 +62,8 @@ class WebSocketManager:
         Sends a message though the WebSocket to the API gateway.
         """
 
-        message = {
-            "user_id": receiver,
-            "room_id": room_id,
-            "message": body
-        }
+        message = {"user_id": receiver, "room_id": room_id, "message": body}
+        log.info(f"Sending message to API gateway: {message}")
 
         if self.active_connection:
             await self.active_connection.send(json.dumps(message))
@@ -67,4 +86,5 @@ class WebSocketManager:
                 return None
         except ConnectionClosed:
             log.error("WebSocket connection is closed.")
-            raise
+            await self.connect()
+            log.info("Reconnected to WebSocket.")

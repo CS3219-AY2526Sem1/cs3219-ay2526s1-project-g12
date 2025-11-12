@@ -252,8 +252,16 @@ class GatewayController:
         try:
             async with httpx.AsyncClient(timeout=190.0) as client:
                 r = await client.request(
-                    method, url, headers=headers, params=params or {}, data=data
+                    method,
+                    url,
+                    headers=headers,
+                    params=params or {},
+                    data=data,
+                    follow_redirects=False,
                 )
+                log.info(f"Received HTTP response with status code: {r.status_code}")
+                log.info(f"Response URL: {r.url}")
+                log.info(f"Response Headers: {r.headers}")
                 try:
                     body = r.json()
                 except Exception:

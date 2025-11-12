@@ -56,24 +56,13 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          
+
       - name: Set up Cloud SDK
         uses: 'google-github-actions/setup-gcloud@v2'
-      
+
       - name: Configure Docker
         run: |
           gcloud auth configure-docker asia-southeast1-docker.pkg.dev
-      
-      - name: (AG) Make Cloud Run build configuration changes
-        working-directory: ./api-gateway
-        run: |
-          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
-
-      - name: (AG) Build and Push Docker Image
-        working-directory: ./api-gateway
-        run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-api-gateway:latest --platform=linux/amd64 .
-          docker push ${{ env.DOCKER_IMAGE_URL }}pp-api-gateway:latest
 
       - name: (CS) Make Cloud Run build configuration changes
         working-directory: ./collaboration-svc
@@ -84,57 +73,21 @@ jobs:
         working-directory: ./collaboration-svc
         run: |
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-collaboration-svc:latest --platform=linux/amd64 .
-          docker push ${{ env.DOCKER_IMAGE_URL }}pp-collaboration-svc:latest     
+          docker push ${{ env.DOCKER_IMAGE_URL }}pp-collaboration-svc:latest
 
       - name: (ES) Build and Push Docker Image
         working-directory: ./expire-observer-svc
         run: |
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-expire-observer-svc:latest --platform=linux/amd64 .
-          docker push ${{ env.DOCKER_IMAGE_URL }}pp-expire-observer-svc:latest 
+          docker push ${{ env.DOCKER_IMAGE_URL }}pp-expire-observer-svc:latest
 
-      - name: (MS) Make Cloud Run build configuration changes
-        working-directory: ./matching-svc
+      - name: (FE) Create .env for Cloud Run
+        working-directory: ./PeerPrep
         run: |
-          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
-
-      - name: (MS) Build and Push Docker Image
-        working-directory: ./matching-svc
-        run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-matching-svc:latest --platform=linux/amd64 .
-          docker push ${{ env.DOCKER_IMAGE_URL }}pp-matching-svc:latest
-
-      - name: (QHS) Make Cloud Run build configuration changes
-        working-directory: ./qns-hist-svc
-        run: |
-          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
-
-      - name: (QHS) Build and Push Docker Image
-        working-directory: ./qns-hist-svc
-        run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-qns-hist-svc:latest --platform=linux/amd64 .
-          docker push  ${{ env.DOCKER_IMAGE_URL }}pp-qns-hist-svc:latest
-      
-      - name: (QS) Make Cloud Run build configuration changes
-        working-directory: ./qns-svc
-        run: |
-          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
-
-      - name: (QS) Build and Push Docker Image
-        working-directory: ./qns-svc
-        run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-qns-svc:latest --platform=linux/amd64 .
-          docker push ${{ env.DOCKER_IMAGE_URL }}pp-qns-svc:latest
-
-      - name: (US) Make Cloud Run build configuration changes
-        working-directory: ./user-svc
-        run: |
-          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
-
-      - name: (US) Build and Push Docker Image
-        working-directory: ./user-svc
-        run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-user-svc:latest --platform=linux/amd64 .
-          docker push ${{ env.DOCKER_IMAGE_URL }}pp-user-svc:latest
+          echo "VITE_API_URL=https://api.peerprep.cloud" > .env
+          echo "VITE_SIGNALING_SERVER_URL=wss://pp-ss-161940165499.asia-east1.run.app" >> .env
+          echo "VITE_ICE_SERVERS=stun:stun.l.google.com:19302" >> .env
+          echo "VITE_WS_GATEWAY_URL=wss://pp-api-gateway-161940165499.asia-east1.run.app/ws/fe" >> .env
 
       - name: (FE) Make Cloud Run build configuration changes
         working-directory: ./PeerPrep
@@ -148,9 +101,75 @@ jobs:
         run: |
           docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest --platform=linux/amd64 .
           docker push ${{ env.DOCKER_IMAGE_URL }}pp-fe:latest
+      
+      - name: (SS) Make Cloud Run build configuration changes
+        working-directory: ./signaling-svc
+        run: |
+          sed -i -e 's/EXPOSE 4444/EXPOSE 8080/' ./Dockerfile
+
+      - name: (SS) Build and Push Docker Image
+        working-directory: ./signaling-svc
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-ss:latest --platform=linux/amd64 .
+          docker push ${{ env.DOCKER_IMAGE_URL }}pp-ss:latest
+
+      - name: (QHS) Make Cloud Run build configuration changes
+        working-directory: ./qns-hist-svc
+        run: |
+          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
+
+      - name: (QHS) Build and Push Docker Image
+        working-directory: ./qns-hist-svc
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-qns-hist-svc:latest --platform=linux/amd64 .
+          docker push  ${{ env.DOCKER_IMAGE_URL }}pp-qns-hist-svc:latest
+
+      - name: (AG) Make Cloud Run build configuration changes
+        working-directory: ./api-gateway
+        run: |
+          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
+
+      - name: (AG) Build and Push Docker Image
+        working-directory: ./api-gateway
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-api-gateway:latest --platform=linux/amd64 .
+          docker push ${{ env.DOCKER_IMAGE_URL }}pp-api-gateway:latest
+
+      - name: (MS) Make Cloud Run build configuration changes
+        working-directory: ./matching-svc
+        run: |
+          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
+
+      - name: (MS) Build and Push Docker Image
+        working-directory: ./matching-svc
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-matching-svc:latest --platform=linux/amd64 .
+          docker push ${{ env.DOCKER_IMAGE_URL }}pp-matching-svc:latest
+
+      - name: (US) Make Cloud Run build configuration changes
+        working-directory: ./user-svc
+        run: |
+          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
+
+      - name: (US) Build and Push Docker Image
+        working-directory: ./user-svc
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-user-svc:latest --platform=linux/amd64 .
+          docker push ${{ env.DOCKER_IMAGE_URL }}pp-user-svc:latest
+
+      - name: (QS) Make Cloud Run build configuration changes
+        working-directory: ./qns-svc
+        run: |
+          sed -i -e 's/EXPOSE 80/EXPOSE 8080/' -e 's/"--port", "80"/"--port", "8080"/' ./Dockerfile
+
+      - name: (QS) Build and Push Docker Image
+        working-directory: ./qns-svc
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}pp-qns-svc:latest --platform=linux/amd64 .
+          docker push ${{ env.DOCKER_IMAGE_URL }}pp-qns-svc:latest
 
       # - name: Deploy to Cloud Run
-        
+
       #   run: |
       #     echo SERVICE_NAME $SERVICE_NAME
       #     gcloud run deploy $SERVICE_NAME \
@@ -158,7 +177,7 @@ jobs:
       #       --platform managed \
       #       --region asia-southeast1 \
       #       --allow-unauthenticated
-            
+
       # If required, use the Cloud Run URL output in later steps
       - name: 'Show output'
         run: |2-

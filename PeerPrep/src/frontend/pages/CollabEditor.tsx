@@ -5,6 +5,7 @@ import { useMatchTimer } from '../hooks/useMatchTimer';
 import { collabApi } from '../api/CollaborationApi';
 import { CollabProvider } from '../context/CollabProviderContext';
 import { CollabSession } from '../components/Collab/CollabSession';
+import { useAuth } from '../context/AuthContext';
 
 export default function CollabEditor() {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ export default function CollabEditor() {
     navigate('/matching');
     return null;
   }
+  const { user } = useAuth();
 
   const { matchDetails, userId } = matchState;
   const wsRef = useRef<WebSocket | null>(null);
@@ -43,7 +45,10 @@ export default function CollabEditor() {
 
     const connectWS = () => {
       try {
-        const ws = new WebSocket(import.meta.env.VITE_WS_GATEWAY_URL);
+        const url = new URL(import.meta.env.VITE_WS_GATEWAY_URL);
+        url.searchParams.append('token', user?.id.toString() || '');
+        console.log('Connecting to WS URL:', url.toString());
+        const ws = new WebSocket(url.toString());
         wsRef.current = ws;
 
         ws.onopen = async () => {

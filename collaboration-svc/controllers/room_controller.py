@@ -73,6 +73,8 @@ async def create_room_listener(
             log.info(f"INFO: Room ID : {room_id}, match details : {match_details}")
             await create_room(match_details, room_connection)
             await remove_match_confirmation_event(room_id, event_queue_connection)
+    
+    log.info("Listener stopping as stop event is set.")
 
 
 async def create_ttl_expire_listener(

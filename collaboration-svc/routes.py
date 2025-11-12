@@ -1,11 +1,20 @@
 import asyncio
+
 from contextlib import asynccontextmanager
 from controllers.heartbeat_controller import (
     INSTANCE_ID,
     register_heartbeat,
     register_self_as_service,
 )
-from controllers.room_controller import create_room_listener, create_ttl_expire_listener, terminate_match, remove_user, reconnect_user, create_heartbeat_listener, connect_user
+from controllers.room_controller import (
+    connect_user,
+    create_room_listener,
+    create_ttl_expire_listener,
+    terminate_match,
+    remove_user,
+    reconnect_user,
+    create_heartbeat_listener,
+)
 from controllers.websocket_controller import WebSocketManager
 from fastapi import FastAPI, Header
 from models.api_models import MatchData
@@ -23,6 +32,7 @@ USER_ROLE = "user"
 ENV_REDIS_STREAM_KEY = "REDIS_STREAM_KEY"
 ENV_REDIS_GROUP_KEY = "REDIS_GROUP"
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -30,14 +40,31 @@ async def lifespan(app: FastAPI):
     """
     app.state.event_queue_connection = connect_to_redis_event_queue()
     app.state.room_connection = await connect_to_redis_room_service()
-    app.state.websocket_manager = WebSocketManager() 
+
+    app.state.websocket_manager = WebSocketManager()
 
     await app.state.websocket_manager.connect()
 
     stop_event = asyncio.Event()
-    room_listener = asyncio.create_task(create_room_listener(app.state.event_queue_connection, app.state.room_connection, stop_event))
-    expired_ttl_listener = asyncio.create_task(create_ttl_expire_listener(INSTANCE_ID, app.state.event_queue_connection, app.state.room_connection, app.state.websocket_manager, stop_event))
-    websocket_listner =  asyncio.create_task(create_heartbeat_listener(app.state.room_connection, app.state.websocket_manager, stop_event))
+    room_listener = asyncio.create_task(
+        create_room_listener(
+            app.state.event_queue_connection, app.state.room_connection, stop_event
+        )
+    )
+    expired_ttl_listener = asyncio.create_task(
+        create_ttl_expire_listener(
+            INSTANCE_ID,
+            app.state.event_queue_connection,
+            app.state.room_connection,
+            app.state.websocket_manager,
+            stop_event,
+        )
+    )
+    websocket_listner = asyncio.create_task(
+        create_heartbeat_listener(
+            app.state.room_connection, app.state.websocket_manager, stop_event
+        )
+    )
 
     register_self_as_service(app)
     hc_task = register_heartbeat()
@@ -46,16 +73,15 @@ async def lifespan(app: FastAPI):
     # This is the shut down procedure when the collaboration service stops.
     stop_event.set()
 
-    if (room_listener and not room_listener.done()):
+    if room_listener and not room_listener.done():
         await room_listener
     log.info("Room listner worker is done.")
 
-
-    if (expired_ttl_listener and not expired_ttl_listener.done()):
+    if expired_ttl_listener and not expired_ttl_listener.done():
         await expired_ttl_listener
     log.info("Expired ttl listner worker is done.")
-    
-    if (websocket_listner and not websocket_listner.done()):
+
+    if websocket_listner and not websocket_listner.done():
         await websocket_listner
     log.info("Websocket listner worker is done.")
 
@@ -67,28 +93,102 @@ async def lifespan(app: FastAPI):
     log.info("Collaboration service shutting down.")
     hc_task.cancel()
 
+
 app = FastAPI(title="PeerPrep Collaboration Service", lifespan=lifespan)
+
 
 @app.get("/")
 async def root() -> dict:
-    return {"status": "working"}
+    return {"status": "Collab Working"}
+
 
 @app.get("/connect/{room_id}", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
 async def connect(room_id: str, x_user_id: Annotated[str, Header()]):
-    data = await connect_user(x_user_id, room_id,  app.state.room_connection) # Dictionary
+    data = await connect_user(
+        x_user_id, room_id, app.state.room_connection
+    )  # Dictionary
     return {"message": data}
+
 
 @app.post("/reconnect", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
 async def reconnect_user_to_match(x_user_id: Annotated[str, Header()]) -> dict:
-    await reconnect_user(x_user_id, app.state.room_connection, app.state.websocket_manager)
+    await reconnect_user(
+        x_user_id, app.state.room_connection, app.state.websocket_manager
+    )
     return {"message": "Reconnecting user"}
+
 
 @app.post("/exit", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
 async def user_exit_match(x_user_id: Annotated[str, Header()]) -> dict:
     await remove_user(x_user_id, app.state.room_connection, app.state.websocket_manager)
     return {"message": "Exit match"}
 
+
 @app.post("/terminate/{room_id}", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
-async def terminate_user_match(room_id: str, match_data: MatchData, x_user_id: Annotated[str, Header()]) -> dict:
-    await terminate_match(x_user_id, room_id, match_data, app.state.room_connection, app.state.websocket_manager)
+async def terminate_user_match(
+    room_id: str, match_data: MatchData, x_user_id: Annotated[str, Header()]
+) -> dict:
+    await terminate_match(
+        x_user_id,
+        room_id,
+        match_data,
+        app.state.room_connection,
+        app.state.websocket_manager,
+    )
     return {"message": "match has been terminated"}
+
+
+if get_envvar("ENVIRONMENT") == "DEV":
+    # --- Redis Debugging Endpoints
+    @app.get("/print-all")
+    async def print_all_from_redis_aioredis():
+        """
+        Retrieves all keys and their corresponding values from Redis using aioredis
+        and returns them. Also prints them to the server console.
+        """
+        result = {}
+
+        async def printall(r, result):
+            async for key in r.scan_iter("*"):
+                try:
+                    # Check the type of the key first
+                    key_type = await r.type(key)
+                    print(f"Key:, Type: {key_type}")
+                    if key_type == "string":
+                        value = await r.get(key)
+                    elif key_type == "hash":
+                        value = await r.hgetall(key)
+                    elif key_type == "list":
+                        value = await r.lrange(
+                            key, 0, -1
+                        )  # Get all elements of the list
+                        print("  Value (list elements):")
+                        for item in value:
+                            print(f"    - {item}")  # Decode list items
+                    else:
+                        value = f"<{key_type} type>"
+                        print(f"  Value: {value}")
+                    # print(f"{key} ({key_type}) => {value}")
+                    result[key] = value
+
+                except Exception as e:
+                    print(f"Error processing key {key}: {e}")
+                    result[key] = f"<error: {str(e)}>"
+
+        await printall(app.state.event_queue_connection, result)
+        await printall(app.state.room_connection, result)
+
+        return result
+
+    @app.delete("/flush-all")
+    async def flush_all_redis():
+        """
+        Delete all keys from all Redis databases.
+        WARNING: This operation is irreversible and will delete ALL data!
+        """
+        try:
+            await app.state.room_connection.flushall()
+            await app.state.event_queue_connection.flushall()
+            return {"message": "All Redis databases have been flushed successfully"}
+        except Exception as e:
+            return {"error": f"Failed to flush Redis: {str(e)}"}

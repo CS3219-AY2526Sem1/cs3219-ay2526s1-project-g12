@@ -1,11 +1,10 @@
 import json
 
 import redis.asyncio as aioredis
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
 from fastapi.security import HTTPBearer
 
 from controllers.websocket_manager import WebSocketManager
-from routes.dynamic_router import auth_user
 from service.redis_settings import get_redis
 from utils.logger import log
 
@@ -19,7 +18,10 @@ async def collab_websocket_endpoint(
     websocket: WebSocket, redis: aioredis.Redis = Depends(get_redis)
 ):
     """WebSocket endpoint for Collab service to connect"""
-    connection_id = "collab" # Can change to use instance ID if needed
+    connection_id = "collab"  # Can change to use instance ID if needed
+    log.info(
+        f"Attempting to connect Collab service from: {websocket.client.host}:{websocket.client.port}"
+    )
 
     # Store connection info in Redis
     client_url = f"{websocket.client.host}:{websocket.client.port}"
@@ -29,6 +31,9 @@ async def collab_websocket_endpoint(
             "url": client_url,
             "type": "collab",
         },
+    )
+    log.debug(
+        f"Redis: Stored connection info for {connection_id}: url={client_url}, type=collab"
     )
 
     await manager.connect(websocket, connection_id)
@@ -75,15 +80,20 @@ async def collab_websocket_endpoint(
 @router.websocket("/ws/fe")
 async def fe_websocket_endpoint(
     websocket: WebSocket,
-    user_data: dict = Depends(auth_user),
+    token: str = Query(None),
     redis: aioredis.Redis = Depends(get_redis),
 ):
     """WebSocket endpoint for Frontend clients to connect"""
-    user_id = user_data.get("user_id") #  Please edit this with the desired user ID for testing.
+    log.info(f"Token received from FE: {token}")
+    user_id = token
     connection_id = f"fe:{user_id}"
 
     # Store connection info in Redis
     client_url = f"{websocket.client.host}:{websocket.client.port}"
+    log.info(f"Attempting to connect FE client {user_id} from: f{client_url}")
+
+    await manager.connect(websocket, connection_id)
+    log.info(f"FE client {user_id} connected from: {client_url}")
     await redis.hset(
         f"websocket:{connection_id}",
         mapping={
@@ -92,9 +102,6 @@ async def fe_websocket_endpoint(
             "user_id": user_id,
         },
     )
-
-    await manager.connect(websocket, connection_id)
-    log.info(f"FE client {user_id} connected from: {client_url}")
 
     try:
         while True:
