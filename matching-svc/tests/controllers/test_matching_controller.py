@@ -412,7 +412,7 @@ class TestTerminateMatchRequest:
         response = await terminate_previous_match_request(self.user_one_id, mock_matchmaking_conn, mock_message_conn)
 
         mock_terminate_match.assert_awaited_once_with(user_one_old_request, mock_matchmaking_conn, mock_message_conn, is_new_request = True)
-        assert response ==  True
+        assert response is True
 
     @pytest.mark.asyncio
     @patch("controllers.matching_controller.format_in_queue_key")
@@ -439,4 +439,4 @@ class TestTerminateMatchRequest:
 
         response = await terminate_previous_match_request(self.user_one_id, mock_matchmaking_conn, mock_message_conn)
 
-        assert response ==  False
+        assert response is False

@@ -11,7 +11,7 @@ from utils.utils import (
     release_lock,
     ping_redis_server
 )
-from unittest.mock import patch, AsyncMock, MagicMock
+from unittest.mock import patch, AsyncMock
 
 class TestUtilFunctions:
     """
@@ -55,7 +55,7 @@ class TestUtilFunctions:
 
             assert key == f"match_confirm:{self.user_id}"
     
-    def test_acquire_lock(self):
+    def test_format_match_confirm_key(self):
             key = format_match_accepted_key(self.user_id)
 
             assert key == f"match_confirm:{self.user_id}"
@@ -81,5 +81,5 @@ class TestUtilFunctions:
 
     @pytest.mark.asyncio
     async def test_ping_redis_server(self):
-           result = await ping_redis_server(self.mock_redis_client)
-           assert result == True
+        result = await ping_redis_server(self.mock_redis_client)
+        assert result is True
