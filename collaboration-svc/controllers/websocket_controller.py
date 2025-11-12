@@ -12,12 +12,12 @@ ENV_API_WEBSOCKET_URL = "GATEWAY_WEBSOCKET_URL"
 class WebSocketManager:
     def __init__(self):
         self.active_connection = None
-
+        
         # Create SSL context that verifies certificates properly
-        # ssl_context = ssl.create_default_context()
-        # ssl_context.check_hostname = False
-        # ssl_context.verify_mode = ssl.CERT_NONE
-        # self.ssl_context = ssl_context
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        self.ssl_context = ssl_context
 
     def get_websocket_connection(self) -> ClientConnection:
         """
@@ -35,7 +35,7 @@ class WebSocketManager:
         try:
             self.active_connection = await websockets.connect(
                 get_envvar(ENV_API_WEBSOCKET_URL),
-                # ssl=self.ssl_context,
+                ssl=self.ssl_context,
             )
         except Exception:
             log.error(
