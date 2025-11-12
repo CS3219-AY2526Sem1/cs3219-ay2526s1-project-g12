@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 export function useMatchTimer(
   active: boolean,
-  initialTime = 180,
+  initialTime = 40,
   onTimeout?: () => void,
   countDown = true
 ) {
