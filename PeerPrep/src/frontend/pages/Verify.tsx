@@ -43,11 +43,19 @@ export default function Verify() {
           setMessage('Verification completed');
           setStatus('success');
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Handle unexpected errors (network errors, parsing errors, etc.)
         console.error('Verification error:', error);
         setMessage('An unexpected error occurred');
-        setErrorDetails(error.detail);
+        if (error instanceof Error) {
+          setErrorDetails(error.message);
+        } else if (typeof error === 'object' && error && 'detail' in error) {
+          setErrorDetails(
+            (error as { detail?: string }).detail ?? 'Unknown error'
+          );
+        } else {
+          setErrorDetails(String(error));
+        }
         setStatus('error');
       }
     };

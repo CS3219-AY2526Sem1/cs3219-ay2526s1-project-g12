@@ -22,6 +22,13 @@ async def ping_redis_server(redis_connection: Redis) -> bool:
     """
     return await redis_connection.ping()
 
+def format_lock_key(key: str) -> str:
+    """
+    Formats the given key into a key to be used as a lock.
+    """
+    key = f"lock:{key}"
+    return key
+
 async def acquire_lock(key: str, redis_connection: Redis) -> Lock:
     """
     Attempts to acquire the lock and will be blocked it is being used by someone else.

@@ -153,4 +153,4 @@ async def get_question_pool_category_difficulty_levels(category: str):
     "/pool/{category}/{difficulty}/", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]}
 )
 async def get_single_question_from_pool(category: str, difficulty: str):
-    return await fetch_single_question_from_bank(category, difficulty)
+    return  await fetch_single_question_from_bank(category, difficulty)

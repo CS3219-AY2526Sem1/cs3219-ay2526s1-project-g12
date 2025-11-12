@@ -26,7 +26,9 @@ class GatewayController:
     ):
         self.redis = redis
         self.ttl = token_ttl_seconds
-        self.registry = ServiceRegistry(redis, heartbeat_ttl=heartbeat_ttl, rr_ttl=rr_ttl)
+        self.registry = ServiceRegistry(
+            redis, heartbeat_ttl=heartbeat_ttl, rr_ttl=rr_ttl
+        )
 
     async def _find_existing_token_key(self, user_id: str) -> str | None:
         """Scans for an existing access token key associated with a user ID.
@@ -233,7 +235,7 @@ class GatewayController:
             )
             return 503, {"detail": "Service unavailable"}
 
-        url = f"http://{address}{internal_path}"
+        url = f"{address}{internal_path}"
 
         log.info(f"Forwarding request: {method} {path} → [{service_name}] {url}")
 
@@ -250,15 +252,24 @@ class GatewayController:
         try:
             async with httpx.AsyncClient(timeout=190.0) as client:
                 r = await client.request(
-                    method, url, headers=headers, params=params or {}, data=data
+                    method,
+                    url,
+                    headers=headers,
+                    params=params or {},
+                    data=data,
+                    follow_redirects=False,
                 )
+                log.info(f"Received HTTP response with status code: {r.status_code}")
+                log.info(f"Response URL: {r.url}")
+                log.info(f"Response Headers: {r.headers}")
                 try:
                     body = r.json()
                 except Exception:
                     body = r.text
+                    log.error(f"Forwarding error [httpx int Exception]: {body}")
                 return r.status_code, body
         except httpx.TimeoutException:
             return 504, {"detail": "Gateway timeout"}
         except httpx.RequestError as e:
-            log.error(f"Forwarding error: {e}")
+            log.error(f"Forwarding error [RequestError]: {e}")
             return 502, {"detail": "Bad gateway"}

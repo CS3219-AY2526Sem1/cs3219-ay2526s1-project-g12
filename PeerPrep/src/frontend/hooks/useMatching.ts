@@ -1,4 +1,3 @@
-// hooks/useMatching.ts
 import { useState } from 'react';
 import { matchingApi } from '../api/MatchingApi';
 import { MatchState } from '../types/MatchState';
@@ -34,10 +33,10 @@ export function useMatching(
         return;
       }
 
-      if (res.data?.match_id) {
+      if (res.data?.message === 'match has been found') {
         setMatchState(MatchState.Found);
         setMatchId(res.data.match_id);
-        setPartnerName(res.data.partner_id || 'Your partner');
+        setPartnerName(res.data.partner_name || 'Your Partner');
       }
     } catch (err) {
       console.error('Find match exception:', err);

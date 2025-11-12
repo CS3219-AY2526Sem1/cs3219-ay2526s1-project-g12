@@ -1,6 +1,7 @@
 import logging
 import logging.handlers
 import os
+import sys
 
 from utils.utils import get_envvar
 
@@ -45,6 +46,11 @@ error_handler = create_time_rotating_file_handler(
 # info_handler
 info_handler = create_time_rotating_file_handler(logging.INFO, "info", msg_formatter)
 
+print_handler = logging.StreamHandler(sys.stdout)
+print_handler.setLevel(get_envvar("LOG_LEVEL"))
+print_handler.setFormatter(msg_formatter)
+
 log.addHandler(debug_handler)
 log.addHandler(error_handler)
 log.addHandler(info_handler)
+log.addHandler(print_handler)

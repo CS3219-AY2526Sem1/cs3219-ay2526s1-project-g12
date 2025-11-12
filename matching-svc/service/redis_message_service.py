@@ -39,10 +39,10 @@ async def send_new_request_message(message_key: str, message_conn:Redis) -> None
     """
     await message_conn.rpush(message_key, "new request made")
 
-async def wait_for_message(message_key: str, message_conn: Redis, timeout: int = 180) -> list:
+async def wait_for_message(message_key: str, message_conn: Redis, timeout: int = 40) -> str:
     """
     Waits for a message to be sent based on the key. If no message is sent after the timeout,
     then return None
     """
-    message =  await message_conn.blpop(message_key, timeout= timeout) # Timeout 3 Minutes
+    message =  await message_conn.blpop(message_key, timeout= timeout) # Timeout 40 seconds
     return message

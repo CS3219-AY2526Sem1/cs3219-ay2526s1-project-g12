@@ -1,4 +1,4 @@
-type RoleName = 'user' | 'admin' | 'guest';
+export type RoleName = 'user' | 'admin' | 'guest';
 
 /**
  * Interface representing a role object
