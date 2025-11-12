@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+// This is adapted and modified from node_modules/y-webrtc/bin/server.js
 import { WebSocketServer } from 'ws';
 import http from 'http';
 import * as map from 'lib0/map';
