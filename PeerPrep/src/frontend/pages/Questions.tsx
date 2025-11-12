@@ -10,7 +10,7 @@ import { NAV_BUTTONS } from '../config/NavConfig';
 import QuestionList from '../components/QuestionList.tsx';
 import { useEffect, useMemo, useState } from 'react';
 import { questionApi, type QuestionsResponse } from '../api/QuestionApi.tsx';
-import {Link, useSearchParams} from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 
 const TOTAL_QUESTIONS = 2650;
 

@@ -5,3 +5,11 @@
 ### Note: 
 - You are required to develop individual microservices within separate folders within this repository.
 - The teaching team should be given access to the repositories as we may require viewing the history of the repository in case of any disputes or disagreements. 
+
+### Acknowledgements:
+
+* `qns-svc/tests/conftest.py` and `qns-hist-svc/tests/conftest.py`:
+
+  * Credits to `gxpd-jjh`. Re-used from: https://github.com/tortoise/tortoise-orm/issues/1110#issuecomment-1881967845
+* Gavin has adapted `server.js` inside `signaling-svc` from `node_modules/y-webrtc/bin/server.js` and modified it to support audio stream
+* Gavin has used ChatGPT to generate debugging logs to VoiceConnectionManager and signaling server
