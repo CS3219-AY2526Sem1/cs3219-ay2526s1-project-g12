@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import GitHubLogo from '../../assets/Images/github-logo.png';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 

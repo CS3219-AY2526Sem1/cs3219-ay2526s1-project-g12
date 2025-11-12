@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import GitHubLogo from '../../assets/Images/github-logo.png';
 import { Link } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 
@@ -326,14 +325,15 @@ export default function Register() {
             type="password"
             autoComplete="new-password"
             required
-            className={`input validator w-full ${formData.confirmPassword &&
-                formData.password !== formData.confirmPassword
+            className={`input validator w-full ${
+              formData.confirmPassword &&
+              formData.password !== formData.confirmPassword
                 ? 'border-error'
                 : formData.confirmPassword &&
-                  formData.password === formData.confirmPassword
+                    formData.password === formData.confirmPassword
                   ? 'border-success'
                   : ''
-              }`}
+            }`}
             placeholder="Confirm your password"
             value={formData.confirmPassword}
             onChange={handleInputChange}
