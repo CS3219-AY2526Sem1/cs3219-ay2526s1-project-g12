@@ -72,13 +72,18 @@ async def create_room(match_data: dict, room_connection: Redis) -> None:
     user_two_id = match_data["user_two"]
     user_two_key = format_user_room_key(user_two_id)
     user_two_heartbeat_key = format_heartbeat_key(user_two_id)
+    log.info(f"User one key: {user_one_key}, User two key: {user_two_key}")
+    log.info(f"match data: {match_data}")
 
-    # Set up heartbeat for user 1 and 2
-    await room_connection.set(user_one_heartbeat_key, str(datetime.now()), TTL)
-    await room_connection.set(user_two_heartbeat_key, str(datetime.now()), TTL)
+    async with room_connection.pipeline(transaction=True) as pipe:
+        # Set up heartbeat for user 1 and 2
+        await pipe.set(user_one_heartbeat_key, str(datetime.now()), TTL)
+        await pipe.set(user_two_heartbeat_key, str(datetime.now()), TTL)
 
-    await room_connection.hset(user_one_key, mapping= match_data)
-    await room_connection.hset(user_two_key, mapping= match_data)
+        await pipe.hset(user_one_key, mapping= match_data)
+        await pipe.hset(user_two_key, mapping= match_data)
+        await pipe.execute()
+
 
     log.info(f"Room has been created for match ID, {match_data["match_id"]}")
 
