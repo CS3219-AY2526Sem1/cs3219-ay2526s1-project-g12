@@ -1,5 +1,5 @@
 import asyncio
-import ssl
+
 from contextlib import asynccontextmanager
 from controllers.heartbeat_controller import (
     INSTANCE_ID,
@@ -40,11 +40,8 @@ async def lifespan(app: FastAPI):
     """
     app.state.event_queue_connection = connect_to_redis_event_queue()
     app.state.room_connection = await connect_to_redis_room_service()
-    # Create SSL context that verifies certificates properly
-    app.state.ssl_context = ssl.create_default_context()
-    app.state.ssl_context.check_hostname = False
-    app.state.ssl_context.verify_mode = ssl.CERT_NONE
-    app.state.websocket_manager = WebSocketManager( app.state.ssl_context)
+
+    app.state.websocket_manager = WebSocketManager()
 
     await app.state.websocket_manager.connect()
 
@@ -141,8 +138,7 @@ async def terminate_user_match(
     return {"message": "match has been terminated"}
 
 
-
-if get_envvar("ENVIRONMENT") =="DEV":
+if get_envvar("ENVIRONMENT") == "DEV":
     # --- Redis Debugging Endpoints
     @app.get("/print-all")
     async def print_all_from_redis_aioredis():
@@ -151,6 +147,7 @@ if get_envvar("ENVIRONMENT") =="DEV":
         and returns them. Also prints them to the server console.
         """
         result = {}
+
         async def printall(r, result):
             async for key in r.scan_iter("*"):
                 try:
@@ -162,10 +159,12 @@ if get_envvar("ENVIRONMENT") =="DEV":
                     elif key_type == "hash":
                         value = await r.hgetall(key)
                     elif key_type == "list":
-                        value = await r.lrange(key, 0, -1) # Get all elements of the list
+                        value = await r.lrange(
+                            key, 0, -1
+                        )  # Get all elements of the list
                         print("  Value (list elements):")
                         for item in value:
-                            print(f"    - {item}") # Decode list items
+                            print(f"    - {item}")  # Decode list items
                     else:
                         value = f"<{key_type} type>"
                         print(f"  Value: {value}")
@@ -175,11 +174,12 @@ if get_envvar("ENVIRONMENT") =="DEV":
                 except Exception as e:
                     print(f"Error processing key {key}: {e}")
                     result[key] = f"<error: {str(e)}>"
+
         await printall(app.state.event_queue_connection, result)
         await printall(app.state.room_connection, result)
 
         return result
-    
+
     @app.delete("/flush-all")
     async def flush_all_redis():
         """
@@ -192,6 +192,3 @@ if get_envvar("ENVIRONMENT") =="DEV":
             return {"message": "All Redis databases have been flushed successfully"}
         except Exception as e:
             return {"error": f"Failed to flush Redis: {str(e)}"}
-
-
-

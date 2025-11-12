@@ -2,6 +2,7 @@ import json
 from utils.utils import get_envvar
 from utils.logger import log
 import websockets
+import ssl
 from websockets.exceptions import ConnectionClosed
 from websockets import ClientConnection
 
@@ -9,8 +10,13 @@ ENV_API_WEBSOCKET_URL = "GATEWAY_WEBSOCKET_URL"
 
 
 class WebSocketManager:
-    def __init__(self,ssl_context):
+    def __init__(self):
         self.active_connection = None
+        
+        # Create SSL context that verifies certificates properly
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
         self.ssl_context = ssl_context
 
     def get_websocket_connection(self) -> ClientConnection:
