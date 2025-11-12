@@ -12,4 +12,4 @@ RUN npm install
 EXPOSE 4444
 
 # Start the signaling server
-CMD ["node", "./node_modules/y-webrtc/bin/server.js"]
+CMD ["node", "./server.js"]
