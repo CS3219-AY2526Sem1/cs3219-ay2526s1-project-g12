@@ -1,4 +1,6 @@
-export const NAV_BUTTONS = [
+import type { NavButton } from '../types/NavButton';
+
+export const NAV_BUTTONS: NavButton[] = [
   {
     label: '⚠ Manage Qns',
     role: 'admin',

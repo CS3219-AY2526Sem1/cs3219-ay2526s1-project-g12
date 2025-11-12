@@ -58,7 +58,9 @@ class ServiceRegistry:
     SERVICE_INSTANCES_KEY = "gw:service:{service_name}:instances"
     HEARTBEAT_KEY = "gw:service:{service_name}:instance:{instance_id}:heartbeat"
 
-    def __init__(self, redis: aioredis.Redis, heartbeat_ttl: int = 30, rr_ttl: int = 3600) -> None:
+    def __init__(
+        self, redis: aioredis.Redis, heartbeat_ttl: int = 30, rr_ttl: int = 3600
+    ) -> None:
         """Initialize the registry.
 
         Args:

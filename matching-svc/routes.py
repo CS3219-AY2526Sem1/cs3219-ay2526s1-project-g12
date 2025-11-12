@@ -5,12 +5,13 @@ from controllers.matching_controller import (
     confirm_match,
     terminate_match,
 )
-from fastapi import FastAPI
+from fastapi import FastAPI, Header
 from fastapi.middleware.cors import CORSMiddleware
-from models.api_models import MatchRequest, MatchConfirmRequest
+from models.api_models import MatchRequest
 from service.redis_confirmation_service import connect_to_redis_confirmation_service
 from service.redis_message_service import connect_to_redis_message_service
 from service.redis_matchmaking_service import connect_to_redis_matchmaking_service
+from typing import Annotated
 from utils.logger import log
 from utils.utils import sever_connection, get_envvar
 
@@ -39,9 +40,7 @@ async def lifespan(app: FastAPI):
     hc_task = register_heartbeat()
     yield
     # This is the shut down procedure when the matching service stops.
-    log.info(
-        "Matching service shutting down."
-    )
+    log.info("Matching service shutting down.")
     await sever_connection(app.state.redis_matchmaking_service)
     await sever_connection(app.state.redis_message_service)
     await sever_connection(app.state.redis_confirmation_service)
@@ -77,8 +76,9 @@ async def check_message_connection():
 
 
 @app.post("/find_match", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
-async def match(match_request: MatchRequest):
+async def match(match_request: MatchRequest, x_user_id: Annotated[str, Header()]):
     return await find_match(
+        x_user_id,
         match_request,
         app.state.redis_matchmaking_service,
         app.state.redis_message_service,
@@ -87,8 +87,9 @@ async def match(match_request: MatchRequest):
 
 
 @app.delete("/terminate_match", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]})
-async def terminate(cancel_request: MatchRequest):
+async def terminate(cancel_request: MatchRequest, x_user_id: Annotated[str, Header()]):
     return await terminate_match(
+        x_user_id,
         cancel_request,
         app.state.redis_matchmaking_service,
         app.state.redis_message_service,
@@ -98,11 +99,83 @@ async def terminate(cancel_request: MatchRequest):
 @app.post(
     "/confirm_match/{match_id}", openapi_extra={"x-roles": [ADMIN_ROLE, USER_ROLE]}
 )
-async def confirm_user_match(match_id: str, confirm_request: MatchConfirmRequest):
+async def confirm_user_match(match_id: str, x_user_id: Annotated[str, Header()]):
+    log.debug("Confirm match endpoint called")
     return await confirm_match(
         match_id,
-        confirm_request,
+        x_user_id,
         app.state.redis_matchmaking_service,
         app.state.redis_message_service,
         app.state.redis_confirmation_service,
     )
+
+if get_envvar("ENVIRONMENT") =="DEV":
+    # --- Redis Debugging Endpoints
+    @app.get("/health")
+    async def health_check():
+        try:
+            # Test all Redis connections
+            matchmaking_ping = await app.state.redis_matchmaking_service.ping()
+            message_ping = await app.state.redis_message_service.ping()
+            confirmation_ping = await app.state.redis_confirmation_service.ping()
+            
+            return {
+                "status": "healthy",
+                "redis_connections": {
+                    "matchmaking": matchmaking_ping,
+                    "message": message_ping,
+                    "confirmation": confirmation_ping
+                }
+            }
+        except Exception as e:
+            log.error(f"Health check failed: {e}")
+            return {"status": "unhealthy", "error": str(e)}, 503
+    
+    @app.get("/print-all")
+    async def print_all_from_redis_aioredis():
+        """
+        Retrieves all keys and their corresponding values from Redis using aioredis
+        and returns them. Also prints them to the server console.
+        """
+        result = {}
+        async def printall(r, result):
+            async for key in r.scan_iter("*"):
+                try:
+                    # Check the type of the key first
+                    key_type = await r.type(key)
+                    print(f"Key:, Type: {key_type}")
+                    if key_type == "string":
+                        value = await r.get(key)
+                    elif key_type == "hash":
+                        value = await r.hgetall(key)
+                    else:
+                        value = f"<{key_type} type>"
+
+                    # print(f"{key} ({key_type}) => {value}")
+                    result[key] = value
+
+                except Exception as e:
+                    print(f"Error processing key {key}: {e}")
+                    result[key] = f"<error: {str(e)}>"
+        await printall(app.state.redis_matchmaking_service, result)
+        await printall(app.state.redis_message_service, result)
+        await printall(app.state.redis_confirmation_service, result)
+
+        return result
+    
+    @app.delete("/flush-all")
+    async def flush_all_redis():
+        """
+        Delete all keys from all Redis databases.
+        WARNING: This operation is irreversible and will delete ALL data!
+        """
+        try:
+            await app.state.redis_matchmaking_service.flushall()
+            await app.state.redis_message_service.flushall()
+            await app.state.redis_confirmation_service.flushall()
+            return {"message": "All Redis databases have been flushed successfully"}
+        except Exception as e:
+            return {"error": f"Failed to flush Redis: {str(e)}"}
+
+
+

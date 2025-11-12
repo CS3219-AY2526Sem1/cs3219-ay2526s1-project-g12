@@ -10,6 +10,7 @@ COPY . /app
 WORKDIR /app
 RUN uv sync --frozen --no-cache
 
+EXPOSE 80
 # Run the application.
 ENTRYPOINT [ "/bin/bash", "/app/entrypoint.sh" ]
 CMD ["--port", "80", "--host", "0.0.0.0"]

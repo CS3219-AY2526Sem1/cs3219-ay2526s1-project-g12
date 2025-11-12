@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import GitHubLogo from '../../assets/Images/github-logo.png';
 import { Link } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 
@@ -177,7 +176,20 @@ export default function Register() {
 
         {/* Shared error display for both validation & API errors */}
         {(validationError || error) && (
-          <div className="alert alert-error">
+          <div className="alert alert-error alert-soft">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 shrink-0 stroke-current"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
             <span>{validationError || error}</span>
           </div>
         )}
@@ -350,30 +362,6 @@ export default function Register() {
           ) : (
             'Register Account'
           )}
-        </button>
-
-        <div className="divider divider-neutral mt-0">OR</div>
-
-        {/* UI to sign in using other platforms */}
-        {/* Hides Google login btn for now*/}
-        {/*
-         <button
-          type="button"
-          className="btn btn-primary btn-soft w-full font-normal pb-3"
-          disabled
-        >
-          <img className="h-5 w-5" src={GoogleLogo} alt="Google logo" />
-          <span className="ml-2">Continue with Google</span>
-        </button> 
-        */}
-
-        <button
-          type="button"
-          className="btn btn-primary btn-soft w-full font-normal mb-3"
-          disabled // Disable until Github login is set up
-        >
-          <img className="h-5 w-5" src={GitHubLogo} alt="GitHub logo" />
-          <span className="ml-2">Register with GitHub</span>
         </button>
 
         {/* Additional Register Link at Bottom */}
