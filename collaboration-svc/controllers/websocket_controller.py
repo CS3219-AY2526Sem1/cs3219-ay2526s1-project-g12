@@ -51,6 +51,7 @@ class WebSocketManager:
         """
 
         message = {"user_id": receiver, "room_id": room_id, "event": body}
+        log.info(f"Sending message to API gateway: {message}")
 
         if self.active_connection:
             await self.active_connection.send(json.dumps(message))
