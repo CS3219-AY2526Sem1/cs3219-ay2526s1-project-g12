@@ -74,4 +74,5 @@ class WebSocketManager:
                 return None
         except ConnectionClosed:
             log.error("WebSocket connection is closed.")
-            self.connect(self.ssl_context)
+            await self.connect(self.ssl_context)
+            log.info("Reconnected to WebSocket.")
