@@ -50,11 +50,11 @@ from uuid import uuid5, NAMESPACE_DNS
 
 ENV_USER_SVC_USER_DETAILS_ENDPOINT = "USER_SERVICE_GET_USER_DETAILS_URL"
 
-def check_redis_connection(reds_connection: Redis):
+async def check_redis_connection(redis_connection: Redis):
     """
     Checks if the connection between redis is up and running.
     """
-    response = ping_redis_server(reds_connection)
+    response = await ping_redis_server(redis_connection)
     if response:
         return {"status": "success", "redis": "responding"}
     else:

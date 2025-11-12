@@ -1,0 +1,48 @@
+name: (Matching Svc) Unit Testing with pytest
+
+on:
+  pull_request:
+    branches:
+    - master
+    paths:
+    - 'matching-svc/**'
+  push:
+    paths:
+    - 'matching-svc/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux]
+    strategy:
+      matrix:
+        python-version:
+        - "3.13"
+        
+    steps:
+    - uses: actions/checkout@v5
+    
+    - name: Install uv and set the Python versions ${{ matrix.python-version }}
+      uses: astral-sh/setup-uv@v6
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: (MS) Run uv sync to install dependencies
+      working-directory: ./matching-svc
+      run: uv sync --locked --all-extras --dev
+
+    - name: (MS) Setup environment
+      working-directory: ./matching-svc
+      run: cp .env.template .env
+
+    - name: (MS) Run pytest
+      working-directory: ./matching-svc
+      run: uv run pytest --cov-branch --cov-report=xml
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        working-directory: ./matching-svc
+        flags: matching-svc
+        
