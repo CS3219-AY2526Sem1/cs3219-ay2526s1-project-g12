@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
 from fastapi.security import HTTPBearer
 
 from controllers.websocket_manager import WebSocketManager
-from routes.dynamic_router import auth_user
 from service.redis_settings import get_redis
 from utils.logger import log
 
