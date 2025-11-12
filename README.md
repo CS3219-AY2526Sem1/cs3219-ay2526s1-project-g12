@@ -163,6 +163,28 @@ uv sync
 uv run fastapi dev main.py
 ```
 
+## Running Locally
+
+We support running our services as containers using docker compose
+
+> Prerequisite
+> * Ensure that docker is installed
+> * Ensure 4 Redis instances and 3 PostgreSQL instance are setup for the various services
+
+To startup the containers:
+
+```
+docker compose up -d --build
+```
+
+To tear everything down
+
+```
+docker compose down
+```
+
+
+
 ### Note: 
 - You are required to develop individual microservices within separate folders within this repository.
 - The teaching team should be given access to the repositories as we may require viewing the history of the repository in case of any disputes or disagreements. 
