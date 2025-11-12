@@ -1,0 +1,53 @@
+from contextlib import asynccontextmanager
+
+import redis.asyncio as aioredis
+from fastapi import Depends, FastAPI
+
+from controllers.gateway_controller import GatewayController
+from utils.logger import log
+from utils.utils import get_envvar
+
+# Environment
+REDIS_URL = get_envvar("REDIS_URL")
+TOKEN_EXPIRE_HOURS = int(get_envvar("TOKEN_EXPIRE_HOURS"))
+TOKEN_EXPIRE_SECONDS = int(TOKEN_EXPIRE_HOURS * 3600)
+HEARTBEAT_TTL = int(get_envvar("HEARTBEAT_TTL"))
+RR_TTL = int(get_envvar("RR_TTL"))
+
+# Singletons bound during app lifespan
+_redis: aioredis.Redis
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # On Startup
+    global _redis
+    _redis = await aioredis.from_url(
+        f"{REDIS_URL}",
+        decode_responses=True,
+        encoding="utf-8",
+        health_check_interval=5,
+    )
+    await _redis.ping()
+    log.info("Connected to Redis")
+    yield
+    # On Shutdown
+    if _redis:
+        await _redis.close()
+        log.info("Redis connection closed")
+
+
+async def get_redis() -> aioredis.Redis:
+    assert _redis is not None, "Redis not initialized"
+    return _redis
+
+
+async def get_gateway(
+    redis: aioredis.Redis = Depends(get_redis),
+) -> GatewayController:
+    return GatewayController(
+        redis=redis,
+        token_ttl_seconds=TOKEN_EXPIRE_SECONDS,
+        heartbeat_ttl=HEARTBEAT_TTL,
+        rr_ttl=RR_TTL,
+    )

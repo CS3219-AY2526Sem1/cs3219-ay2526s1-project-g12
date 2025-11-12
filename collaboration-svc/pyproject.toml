@@ -1,0 +1,17 @@
+[project]
+name = "collaboration-svc"
+version = "0.1.0"
+description = "Collaboration Service for PeerPrep"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aiohttp>=3.13.2",
+    "fastapi[standard]>=0.120.0",
+    "redis[hiredis]>=7.0.0",
+    "requests==2.32.5",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.2",
+]

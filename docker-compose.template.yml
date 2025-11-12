@@ -1,0 +1,205 @@
+services:
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: pp-api-gateway
+    ports:
+      - "8000:80"
+    networks:
+      - pp-network
+    env_file:
+      - ./api-gateway/.env
+    environment:
+      - REDIS_URL=host:port
+      - FRONT_END_URL=http://localhost:5173
+      - HEARTBEAT_TTL=300
+    volumes:
+      - ./logs/api-gateway/:/app/logs/
+    healthcheck:
+      test: curl --fail http://localhost:80 || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  user-svc:
+    build:
+      context: ./user-svc
+      dockerfile: Dockerfile
+    container_name: pp-user-svc
+    ports:
+      - "8001:80"
+    networks:
+      - pp-network
+    env_file:
+      - ./user-svc/.env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://user_name:password@host:port/database_name
+      - APIGATEWAY_URL=http://api-gateway
+      - HOST_URL=http://user-svc
+      - HEARTBEAT_PERIOD=270
+      - RR_TTL=3600
+      - VERIFY_EMAIL_BASE=http://localhost:5173/verify
+      - PASSWORD_RESET_BASE=http://localhost:5173/reset-password
+    volumes:
+      - ./logs/user-svc/:/app/logs/
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+        restart: true
+
+  qns-svc:
+    build:
+      context: ./qns-svc
+      dockerfile: Dockerfile
+    container_name: pp-qns-svc
+    ports:
+      - "8002:80"
+    networks:
+      - pp-network
+    env_file:
+      - ./qns-svc/.env
+    environment:
+      - DATABASE_URL=asyncpg://user_name:password@host:port/database_name
+      - APIGATEWAY_URL=http://api-gateway
+      - HOST_URL=http://qns-svc
+      - HEARTBEAT_PERIOD=270
+      - FRONT_END_URL=http://localhost:5173
+    volumes:
+      - ./logs/qns-svc/:/app/logs/
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+        restart: true
+
+  matching-svc:
+    build:
+      context: ./matching-svc
+      dockerfile: Dockerfile
+    container_name: pp-matching-svc
+    ports:
+      - "8003:80"
+    networks:
+      - pp-network
+    env_file:
+      - ./matching-svc/.env
+    environment:
+      - REDIS_HOST=host
+      - REDIS_PORT=port
+      - REDIS_EVENT_QUEUE_HOST=collaboration_svc_redis_host
+      - REDIS_EVENT_QUEUE_PORT=collaboration_svc_redis_port
+      - USER_SERVICE_GET_USER_DETAILS_URL=http://user-svc/users/me
+      - APIGATEWAY_URL=http://api-gateway
+      - HOST_URL=http://matching-svc
+      - HEARTBEAT_PERIOD=270
+      - FRONT_END_URL=http://localhost:5173
+    volumes:
+      - ./logs/matching-svc/:/app/logs/
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+        restart: true
+
+  qns-hist-svc:
+    build:
+      context: ./qns-hist-svc
+      dockerfile: Dockerfile
+    container_name: pp-qns-hist-svc
+    ports:
+      - "8004:80"
+    networks:
+      - pp-network
+    env_file:
+      - ./qns-hist-svc/.env
+    environment:
+      - DATABASE_URL=asyncpg://user_name:password@host:port/database_name
+      - REDIS_QUEUE_URL=host:port/database_number
+      - APIGATEWAY_URL=http://api-gateway
+      - HOST_URL=http://qns-hist-svc
+      - HEARTBEAT_PERIOD=270
+      - EVALUATION_MODEL_NAME=
+      - OPENAI_COMPAT_API_ENDPOINT=
+      - OPENAI_COMPAT_API_KEY=
+    volumes:
+      - ./logs/qns-hist-svc/:/app/logs/
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+        restart: true
+
+  collaboration-svc:
+    build:
+      context: ./collaboration-svc
+      dockerfile: Dockerfile
+    container_name: pp-collaboration-svc
+    ports:
+      - "8005:80"
+    networks:
+      - pp-network
+    env_file:
+      - ./collaboration-svc/.env
+    environment:
+      - REDIS_HOST=host
+      - REDIS_PORT=port
+      - REDIS_STREAM_KEY=expired_ttl
+      - REDIS_GROUP=cs_consumers
+      - QUESTION_SERVICE_POOL_URL=http://qns-svc/pool
+      - QUESTION_SERVICE_HISTORY_URL=http://qns-hist-svc/attempts
+      - GATEWAY_WEBSOCKET_URL=ws://api-gateway/ws/collab
+      - APIGATEWAY_URL=http://api-gateway
+      - HOST_URL=http://collaboration-svc
+      - HEARTBEAT_PERIOD=270
+      - FRONT_END_URL=http://localhost:5173
+    volumes:
+      - ./logs/collaboration-svc/:/app/logs/
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+        restart: true
+
+  expire-observer-svc:
+    build:
+      context: ./expire-observer-svc
+      dockerfile: Dockerfile
+    container_name: pp-expire-observer-svc
+    networks:
+      - pp-network
+    env_file:
+      - ./expire-observer-svc/.env
+    environment:
+      - REDIS_HOST=collaboration_svc_redis_port
+      - REDIS_PORT=collaboration_svc_redis_host
+    volumes:
+      - ./logs/expire-observer-svc/:/app/logs/
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+        restart: true
+
+  signaling-svc:
+    build:
+      context: ./signaling-svc
+      dockerfile: Dockerfile
+    container_name: pp-signaling-svc
+    ports:
+      - "4444:4444"
+    networks:
+      - pp-network
+    restart: always
+
+  frontend:
+    build:
+      context: ./PeerPrep
+      dockerfile: Dockerfile
+    container_name: pp-frontend
+    ports:
+      - "5173:80"
+    networks:
+      - pp-network
+    env_file:
+      - ./PeerPrep/.env
+
+networks:
+  pp-network:
+    driver: bridge

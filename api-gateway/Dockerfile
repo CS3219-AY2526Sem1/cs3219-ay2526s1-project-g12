@@ -1,0 +1,18 @@
+FROM python:3.13-slim
+
+RUN apt-get update && apt-get install -y curl
+
+# Install uv.
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Copy the application into the container.
+COPY . /app
+
+# Install the application dependencies.
+WORKDIR /app
+RUN uv sync --frozen --no-cache
+
+EXPOSE 80
+# Run the application.
+ENTRYPOINT ["/app/.venv/bin/fastapi", "run", "/app/main.py"]
+CMD ["--port", "80", "--host", "0.0.0.0"]
