@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import GitHubLogo from '../../assets/Images/github-logo.png';
 import { Link } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 
@@ -363,30 +362,6 @@ export default function Register() {
           ) : (
             'Register Account'
           )}
-        </button>
-
-        <div className="divider divider-neutral mt-0">OR</div>
-
-        {/* UI to sign in using other platforms */}
-        {/* Hides Google login btn for now*/}
-        {/*
-         <button
-          type="button"
-          className="btn btn-primary btn-soft w-full font-normal pb-3"
-          disabled
-        >
-          <img className="h-5 w-5" src={GoogleLogo} alt="Google logo" />
-          <span className="ml-2">Continue with Google</span>
-        </button> 
-        */}
-
-        <button
-          type="button"
-          className="btn btn-primary btn-soft w-full font-normal mb-3"
-          disabled // Disable until Github login is set up
-        >
-          <img className="h-5 w-5" src={GitHubLogo} alt="GitHub logo" />
-          <span className="ml-2">Register with GitHub</span>
         </button>
 
         {/* Additional Register Link at Bottom */}
