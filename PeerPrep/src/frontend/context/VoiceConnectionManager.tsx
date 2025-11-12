@@ -1,3 +1,7 @@
+// AI Assistance Disclosure:
+// Tool: ChatGPT, date: 2025 - 11 - 12
+// Scope: Add debugging logs to VoiceConnectionManager
+// Author review: Gavin validated correctness, edited for style
 type SignalMsg =
   | { type: 'join'; roomId: string; clientId: string }
   | { type: 'hello'; roomId: string; clientId: string }

@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 // This is adapted and modified from node_modules/y-webrtc/bin/server.js
+// AI Assistance Disclosure:
+// Tool: ChatGPT, date: 2025 - 11 - 12
+// Scope: Extends audio stream functionality to signaling server based on https://webrtc.org/getting-started/media-devices
+// Author review: Gavin validated correctness, edited for style
 import { WebSocketServer } from 'ws';
 import http from 'http';
 import * as map from 'lib0/map';
@@ -126,7 +130,7 @@ const onconnection = (conn) => {
               }
             }
             break;
-          // 🆕 VOICE MESSAGE SUPPORT
+          // VOICE MESSAGE SUPPORT
           case 'join':
             const topic = map.setIfUndefined(
               topics,
@@ -135,7 +139,7 @@ const onconnection = (conn) => {
             );
             topic.add(conn);
             subscribedTopics.add(message.roomId);
-            console.log(`👥 Client joined room: ${message.roomId}`);
+            console.log(`Client joined room: ${message.roomId}`);
             break;
           case 'offer':
           case 'answer':

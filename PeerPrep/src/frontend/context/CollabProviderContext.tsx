@@ -66,7 +66,7 @@ export function CollabProvider({ roomId, children }: CollabProviderProps) {
         await manager.startCall(); // send offer
         voiceManagerRef.current = manager;
       } catch (err) {
-        console.error('🚨 Error initializing CollabProvider:', err);
+        console.error('Error initializing CollabProvider:', err);
       }
     }
 
