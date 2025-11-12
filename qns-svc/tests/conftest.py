@@ -8,7 +8,8 @@ from tortoise.contrib.test import (
 )
 
 
-# TODO: Acknowledge and credit https://github.com/tortoise/tortoise-orm/issues/1110
+# Acknowledgement and credits to gxpd-jjh
+# Reused from: https://github.com/tortoise/tortoise-orm/issues/1110#issuecomment-1881967845
 @pytest.fixture(scope="module")
 def event_loop():
     loop = asyncio.get_event_loop_policy().new_event_loop()
