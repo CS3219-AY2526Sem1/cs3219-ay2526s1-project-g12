@@ -50,7 +50,7 @@ class WebSocketManager:
         Sends a message though the WebSocket to the API gateway.
         """
 
-        message = {"user_id": receiver, "room_id": room_id, "event": body}
+        message = {"user_id": receiver, "room_id": room_id, "message": body}
         log.info(f"Sending message to API gateway: {message}")
 
         if self.active_connection:
