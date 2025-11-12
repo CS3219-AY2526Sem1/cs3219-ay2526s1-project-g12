@@ -63,14 +63,16 @@ async def create_room(match_data: dict, room_connection: Redis) -> None:
     # Question data is already in a dictionary so append the rest of the details there
     # for key, value in match_data.items():
     #     data[key] = value
-
+    log.info("FUNCTION CALL")
     match_data["start_time"] = str(datetime.now())
     # del(data["categories"])
+    log.info("Step 1")
 
     user_one_id = match_data["user_one"]
     user_one_key = format_user_room_key(user_one_id)
     user_one_heartbeat_key = format_heartbeat_key(user_one_id)
-
+    log.info("Step 2")
+    
     user_two_id = match_data["user_two"]
     user_two_key = format_user_room_key(user_two_id)
     user_two_heartbeat_key = format_heartbeat_key(user_two_id)
