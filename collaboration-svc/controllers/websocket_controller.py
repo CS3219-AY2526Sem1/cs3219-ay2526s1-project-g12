@@ -7,17 +7,18 @@ from websockets.exceptions import ConnectionClosed
 from websockets import ClientConnection
 
 ENV_API_WEBSOCKET_URL = "GATEWAY_WEBSOCKET_URL"
+RUN_TYPE = get_envvar("RUN_TYPE")
 
 
 class WebSocketManager:
     def __init__(self):
         self.active_connection = None
-        
-        # Create SSL context that verifies certificates properly
-        ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
-        self.ssl_context = ssl_context
+        if RUN_TYPE != "local":
+            # Create SSL context that verifies certificates properly
+            ssl_context = ssl.create_default_context()
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+            self.ssl_context = ssl_context
 
     def get_websocket_connection(self) -> ClientConnection:
         """
@@ -33,10 +34,15 @@ class WebSocketManager:
             f"Connecting to API gateway WebSocket at {get_envvar(ENV_API_WEBSOCKET_URL)}"
         )
         try:
-            self.active_connection = await websockets.connect(
-                get_envvar(ENV_API_WEBSOCKET_URL),
-                ssl=self.ssl_context,
-            )
+            if RUN_TYPE != "local":
+                self.active_connection = await websockets.connect(
+                    get_envvar(ENV_API_WEBSOCKET_URL),
+                    ssl=self.ssl_context,
+                )
+            else:
+                self.active_connection = await websockets.connect(
+                    get_envvar(ENV_API_WEBSOCKET_URL)
+                )
         except Exception:
             log.error(
                 f"Unable to establish a WebSocket connection with API gateway {get_envvar(ENV_API_WEBSOCKET_URL)}"
